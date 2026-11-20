@@ -1,0 +1,89 @@
+/**
+ * @file Spotlight section view displaying the weekly featured book showcase.
+ */
+
+import { $, escapeHtml } from '../../utils/dom.js';
+import { state } from '../../core/state.js';
+
+export const spotlightView = {
+  render(container) {
+    if (!container) return;
+    const spotlightBook = state.books.find((b) => b.isSpotlight) || state.books[0];
+    if (!spotlightBook) return;
+
+    const isBorrowed = state.isBookBorrowed(spotlightBook.id);
+    const borrowBtnText = isBorrowed ? 'Buku Sedang Anda Pinjam' : 'Pinjam Buku Ini Sekarang';
+    const borrowBtnClass = isBorrowed
+      ? 'bg-stone-300 text-stone-600 cursor-not-allowed'
+      : 'bg-rose-900 hover:bg-rose-950 text-white shadow-md cursor-pointer';
+
+    container.innerHTML = `
+      <div class="bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 rounded-2xl p-6 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden border border-rose-800/40">
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative z-10">
+          <div class="md:col-span-5 lg:col-span-4 flex justify-center">
+            <div class="relative group cursor-pointer" data-action="open-detail" data-book-id="${spotlightBook.id}">
+              <div class="w-48 sm:w-56 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl border-2 border-amber-200/30 transform group-hover:-translate-y-1 transition-transform duration-300">
+                <img src="${spotlightBook.coverImg}" alt="${escapeHtml(spotlightBook.title)}" class="w-full h-full object-cover" />
+              </div>
+              <div class="absolute -bottom-3 -right-3 bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
+                Skor ${spotlightBook.rating}
+              </div>
+            </div>
+          </div>
+
+          <div class="md:col-span-7 lg:col-span-8 flex flex-col justify-center">
+            <div class="inline-flex items-center gap-2 mb-3">
+              <span class="bg-amber-400/20 text-amber-200 border border-amber-400/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
+                Buku Sorotan Pekan Ini
+              </span>
+              <span class="text-rose-200 text-xs">${escapeHtml(spotlightBook.category)}</span>
+            </div>
+
+            <h2 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-2 text-white">
+              ${escapeHtml(spotlightBook.title)}
+            </h2>
+            <p class="text-amber-200/90 text-sm sm:text-base font-medium mb-4">
+              Karya ${escapeHtml(spotlightBook.author)} &middot; Tahun ${spotlightBook.year}
+            </p>
+
+            <p class="text-rose-100/90 text-xs sm:text-sm leading-relaxed mb-6 max-w-2xl">
+              ${escapeHtml(spotlightBook.synopsis)}
+            </p>
+
+            <div class="grid grid-cols-3 gap-4 py-4 mb-6 border-y border-rose-800/60 text-xs">
+              <div>
+                <span class="text-rose-300 block text-[11px]">Ketersediaan</span>
+                <span class="font-bold text-white text-sm">${spotlightBook.stock} Eksemplar</span>
+              </div>
+              <div>
+                <span class="text-rose-300 block text-[11px]">Lokasi Fisik</span>
+                <span class="font-bold text-white text-sm">${escapeHtml(spotlightBook.shelf)}</span>
+              </div>
+              <div>
+                <span class="text-rose-300 block text-[11px]">Ulasan Pembaca</span>
+                <span class="font-bold text-white text-sm">${spotlightBook.reviewsCount} Siswa</span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <button type="button"
+                class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${borrowBtnClass}"
+                data-action="open-detail"
+                data-book-id="${spotlightBook.id}">
+                ${borrowBtnText}
+              </button>
+              <button type="button"
+                class="px-4 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/40 cursor-pointer"
+                data-action="open-detail"
+                data-book-id="${spotlightBook.id}">
+                Lihat Sinopsis Lengkap
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+};

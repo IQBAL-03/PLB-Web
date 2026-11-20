@@ -1,491 +1,272 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Dashboard kendali sistem penyiraman tanaman otomatis berbasis IoT. Monitor kelembapan tanah dan kontrol pompa secara realtime." />
-  <title>PlantCare IoT — Sistem Penyiraman Otomatis</title>
+  <title>SISPERPUS - Sistem Informasi Perpustakaan Sekolah</title>
+  <meta name="description" content="SISPERPUS - Sistem Informasi Perpustakaan Sekolah Digital. Temukan, baca, dan pinjam koleksi buku sekolah secara mudah dan terpadu." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" href="css/style.css" as="style" />
-  <link rel="modulepreload" href="js/main.js" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=1.9" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="stylesheet" href="css/tailwind.css" />
 </head>
-<body>
+<body class="bg-[#FBF9F5] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-900 selection:text-white">
 
-  <header class="header" id="header">
-    <div class="container header__inner">
-      <div class="header__brand">
-        <div class="header__logo" aria-hidden="true">
-          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="18" cy="18" r="18" fill="#2D6A4F"/>
-            <path d="M18 8C18 8 10 14 10 20C10 24.4183 13.5817 28 18 28C22.4183 28 26 24.4183 26 20C26 14 18 8 18 8Z" fill="#52B788"/>
-            <path d="M18 14C18 14 14 17 14 20C14 22.2091 15.7909 24 18 24C20.2091 24 22 22.2091 22 20C22 17 18 14 18 14Z" fill="#95D5B2"/>
-            <rect x="17" y="24" width="2" height="4" rx="1" fill="#1B4332"/>
-          </svg>
+  <!-- Header & Navigation -->
+  <header id="mainHeader" class="sticky top-0 z-40 bg-white border-b border-stone-200 transition-all duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        <a href="#beranda" class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-rose-800 rounded-lg p-1">
+          <div class="w-10 h-10 rounded-lg bg-rose-900 text-amber-200 flex items-center justify-center font-serif font-black text-xl shadow-sm group-hover:bg-rose-950 transition-colors">S</div>
+          <div class="flex flex-col">
+            <span class="font-serif font-bold text-lg sm:text-xl text-stone-900 tracking-tight leading-none">SISPERPUS</span>
+            <span class="text-[10px] sm:text-xs text-stone-500 font-medium tracking-wider uppercase">Perpustakaan Sekolah</span>
+          </div>
+        </a>
+        <nav class="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-stone-600">
+          <a href="#beranda" class="hover:text-rose-900 transition-colors py-1">Beranda</a>
+          <a href="#sorotan" class="hover:text-rose-900 transition-colors py-1">Sorotan</a>
+          <a href="#populer" class="hover:text-rose-900 transition-colors py-1">Populer</a>
+          <a href="#katalog" class="hover:text-rose-900 transition-colors py-1">Katalog Buku</a>
+          <a href="#segera-hadir" class="hover:text-rose-900 transition-colors py-1">Segera Hadir</a>
+        </nav>
+        <div class="hidden sm:flex items-center gap-3">
+          <button type="button" id="memberCardBtn" class="px-4 py-2 rounded-lg border border-stone-300 text-xs sm:text-sm font-semibold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-800">Kartu Anggota</button>
+          <a href="#katalog" class="px-4 py-2 rounded-lg bg-rose-900 text-white text-xs sm:text-sm font-semibold hover:bg-rose-950 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-800 cursor-pointer">Cari Buku</a>
         </div>
-        <div class="header__title-group">
-          <h1 class="header__title">PlantCare IoT</h1>
-          <span class="header__subtitle">Sistem Penyiraman Otomatis</span>
+        <div class="flex sm:hidden">
+          <button type="button" id="mobileMenuBtn" class="p-2 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-rose-800" aria-label="Buka navigasi utama">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
         </div>
       </div>
-
-      <!-- Hamburger Button (Mobile view <= 768px) -->
-      <button type="button" class="hamburger-btn" id="hamburgerBtn" aria-label="Menu navigasi" aria-expanded="false" aria-controls="headerNav">
-        <span class="hamburger-bar"></span>
-        <span class="hamburger-bar"></span>
-        <span class="hamburger-bar"></span>
-      </button>
-
-      <!-- Navigation & Controls (Desktop Inline / Mobile Drawer) -->
-      <nav class="header__nav" id="headerNav" aria-label="Navigasi Header">
-        <div class="header__center">
-          <div class="unit-selector-wrap" title="Pilih unit tanaman">
-            <select id="deviceSelector" class="select select--device" aria-label="Pilih Unit Tanaman">
-              <option value="DEV-PLB-001">Unit Utama</option>
-            </select>
-            <button class="btn btn--ghost btn--xs" id="addDeviceBtn" title="Hubungkan unit baru">+ Unit</button>
-            <button class="btn btn--ghost btn--xs btn--danger-ghost" id="unpairDeviceBtn" title="Lepas tautan unit ini" style="display:none;">Lepas</button>
-          </div>
-
-          <div class="header__meta">
-            <div class="connection-badge" id="connectionBadge">
-              <span class="connection-badge__dot"></span>
-              <span class="connection-badge__text" id="connectionText">Menghubungkan...</span>
-            </div>
-            <div class="header__time" id="currentTime">--:--:--</div>
-          </div>
-        </div>
-
-        <div class="header__right">
-          <div id="userAuthArea">
-            <button class="btn btn--ghost btn--xs" id="authBtn">Masuk</button>
-          </div>
-        </div>
-      </nav>
     </div>
   </header>
 
-  <main class="main" id="main">
-    <div class="container">
-
-      <section class="section" aria-label="Status Sistem">
-        <div class="section__header">
-          <h2 class="section__title">Status Sistem</h2>
-          <button class="btn btn--ghost btn--sm" id="refreshBtn" aria-label="Refresh status">
-            <svg class="btn__icon" id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-            Refresh
-          </button>
+  <!-- Mobile Drawer -->
+  <div id="mobileNavDrawer" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-label="Navigasi Menu Mobile">
+    <div id="mobileNavBackdrop" class="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity"></div>
+    <div class="fixed inset-y-0 right-0 max-w-xs w-full bg-white shadow-2xl p-6 flex flex-col justify-between z-10">
+      <div>
+        <div class="flex items-center justify-between pb-6 border-b border-stone-200">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded bg-rose-900 text-amber-200 flex items-center justify-center font-serif font-bold text-base">S</div>
+            <span class="font-serif font-bold text-base text-stone-900">SISPERPUS</span>
+          </div>
+          <button type="button" id="closeMobileMenuBtn" class="p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 text-xl font-bold leading-none" aria-label="Tutup menu navigasi">&times;</button>
         </div>
-
-        <div class="cards-grid">
-
-          <div class="card card--pump" id="pumpCard">
-            <div class="card__header">
-              <div class="card__icon-wrap card__icon-wrap--pump">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-                  <path d="M12 6v6l4 2"/>
-                </svg>
-              </div>
-              <span class="card__label">Status Pompa</span>
-            </div>
-            <div class="card__body">
-              <div class="pump-status" id="pumpStatus">
-                <div class="pump-status__indicator" id="pumpIndicator">
-                  <div class="pump-status__ring"></div>
-                  <div class="pump-status__ring pump-status__ring--2"></div>
-                  <div class="pump-status__dot" id="pumpDot"></div>
-                </div>
-                <div class="pump-status__info">
-                  <span class="pump-status__state" id="pumpState">MATI</span>
-                  <span class="pump-status__detail" id="pumpDetail">Pompa dalam keadaan standby</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card card--moisture" id="moistureCard">
-            <div class="card__header">
-              <div class="card__icon-wrap card__icon-wrap--moisture">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2L5 12a7 7 0 1 0 14 0L12 2z"/>
-                </svg>
-              </div>
-              <span class="card__label">Kelembapan Tanah</span>
-            </div>
-            <div class="card__body">
-              <div class="moisture-gauge">
-                <div class="moisture-gauge__circle">
-                  <svg class="moisture-gauge__svg" viewBox="0 0 120 120">
-                    <circle class="moisture-gauge__track" cx="60" cy="60" r="50" />
-                    <circle class="moisture-gauge__fill" id="gaugeArc" cx="60" cy="60" r="50"
-                      stroke-dasharray="314"
-                      stroke-dashoffset="314"
-                      transform="rotate(-90 60 60)" />
-                  </svg>
-                  <div class="moisture-gauge__center">
-                    <span class="moisture-gauge__value" id="moistureValue">—</span>
-                    <span class="moisture-gauge__unit">%</span>
-                  </div>
-                </div>
-                <div class="moisture-gauge__meta">
-                  <span class="moisture-gauge__status" id="moistureStatus">—</span>
-                  <div class="moisture-gauge__bar-wrap">
-                    <div class="moisture-gauge__bar" id="moistureBar"></div>
-                  </div>
-                  <div class="moisture-gauge__legend">
-                    <span>Kering</span>
-                    <span>Lembap</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card card--mode" id="modeCard">
-            <div class="card__header">
-              <div class="card__icon-wrap card__icon-wrap--mode">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M17.66 17.66l-1.41-1.41M6.75 6.75L5.34 5.34M12 19v2M12 3V1"/>
-                </svg>
-              </div>
-              <span class="card__label">Mode Sistem</span>
-              <span class="mode-badge mode-badge--auto" id="modeBadge">Otomatis</span>
-            </div>
-            <div class="card__body">
-              <div class="segmented-control" role="group" aria-label="Pilih Mode Sistem">
-                <button type="button" class="segmented-btn segmented-btn--active" id="modeAutoBtn" aria-pressed="true">
-                  <svg class="segmented-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M17.66 17.66l-1.41-1.41M6.75 6.75L5.34 5.34M12 19v2M12 3V1"/>
-                  </svg>
-                  <span>Otomatis</span>
-                </button>
-                <button type="button" class="segmented-btn" id="modeManualBtn" aria-pressed="false">
-                  <svg class="segmented-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-                    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-                    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-                    <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
-                  </svg>
-                  <span>Manual</span>
-                </button>
-                <input type="checkbox" id="modeSwitch" class="visually-hidden" checked />
-              </div>
-
-              <div class="mode-info" id="modeInfoBox">
-                <div class="mode-info__header">
-                  <span class="mode-info__dot"></span>
-                  <span class="mode-info__title" id="modeCurrent">Mode Aktif: Otomatis</span>
-                </div>
-                <p class="mode-desc" id="modeDesc">Pompa bekerja otomatis berdasarkan pembacaan sensor kelembapan tanah.</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <section class="section" aria-label="Kontrol Manual">
-        <div class="section__header">
-          <h2 class="section__title">Kontrol Manual</h2>
-          <span class="section__badge" id="manualBadgeStatus">Mode Otomatis Aktif</span>
-        </div>
-        <div class="control-panel" id="controlPanel">
-          <div class="control-panel__info">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span id="controlInfo">Aktifkan mode manual untuk mengontrol pompa secara langsung.</span>
-          </div>
-          <div class="control-buttons">
-            <button class="btn btn--primary btn--lg" id="pumpOnBtn" disabled aria-label="Nyalakan pompa">
-              <svg class="btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-              Nyalakan Pompa
-            </button>
-            <button class="btn btn--danger btn--lg" id="pumpOffBtn" disabled aria-label="Matikan pompa">
-              <svg class="btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="6" y="4" width="4" height="16"></rect>
-                <rect x="14" y="4" width="4" height="16"></rect>
-              </svg>
-              Matikan Pompa
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" aria-label="Uji Coba Pengiriman Data">
-        <div class="section__header">
-          <h2 class="section__title">Uji Coba Kirim Data ke Database (Test Form)</h2>
-          <span class="section__badge">Simulator Sensor & Webhook</span>
-        </div>
-        <div class="test-panel">
-          <form id="testForm" class="test-form">
-            <div class="test-form__group">
-              <label for="testMoisture" class="test-form__label">Kelembapan Tanah (%)</label>
-              <input type="number" id="testMoisture" class="test-form__input" min="0" max="100" placeholder="Contoh: 45" required />
-            </div>
-
-            <div class="test-form__group">
-              <label for="testPump" class="test-form__label">Status Pompa</label>
-              <select id="testPump" class="select test-form__select">
-                <option value="OFF" selected>OFF (Standby)</option>
-                <option value="ON">ON (Menyiram)</option>
-              </select>
-            </div>
-
-            <div class="test-form__group">
-              <label for="testMode" class="test-form__label">Mode Sistem</label>
-              <select id="testMode" class="select test-form__select">
-                <option value="auto">Otomatis</option>
-                <option value="manual">Manual</option>
-              </select>
-            </div>
-
-            <div class="test-form__actions">
-              <button type="submit" class="btn btn--primary" id="testSendBtn">
-                <svg class="btn__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-                Kirim Data ke DB
-              </button>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      <section class="section" aria-label="Riwayat Penyiraman">
-        <div class="section__header">
-          <h2 class="section__title">Riwayat Penyiraman</h2>
-          <div class="header-actions">
-            <button class="btn btn--ghost btn--sm" id="clearHistoryBtn" title="Bersihkan riwayat dari database">
-              <svg class="btn__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-              Bersihkan Riwayat
-            </button>
-            <div class="filter-group">
-              <select class="select" id="historyFilter" aria-label="Filter riwayat">
-                <option value="all">Semua</option>
-                <option value="auto">Otomatis</option>
-                <option value="manual">Manual</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="history-wrap">
-          <div class="skeleton-list" id="historySkeleton">
-            <div class="skeleton-item"><div class="skeleton skeleton--line"></div></div>
-            <div class="skeleton-item"><div class="skeleton skeleton--line"></div></div>
-            <div class="skeleton-item"><div class="skeleton skeleton--line"></div></div>
-          </div>
-
-          <div class="table-wrap" id="historyTableWrap" style="display:none">
-            <table class="table" id="historyTable">
-              <thead>
-                <tr>
-                  <th scope="col">Waktu</th>
-                  <th scope="col">Aksi</th>
-                  <th scope="col">Mode</th>
-                  <th scope="col">Kelembapan</th>
-                  <th scope="col">Durasi</th>
-                </tr>
-              </thead>
-              <tbody id="historyBody">
-              </tbody>
-            </table>
-          </div>
-
-          <div class="empty-state" id="historyEmpty" style="display:none">
-            <div class="empty-state__icon">—</div>
-            <p class="empty-state__text">Belum ada riwayat penyiraman</p>
-          </div>
-        </div>
-      </section>
-
+        <nav class="flex flex-col gap-4 mt-6 text-base font-semibold text-stone-700">
+          <a href="#beranda" class="hover:text-rose-900 py-1">Beranda</a>
+          <a href="#sorotan" class="hover:text-rose-900 py-1">Sorotan Pekan Ini</a>
+          <a href="#populer" class="hover:text-rose-900 py-1">Buku Terpopuler</a>
+          <a href="#katalog" class="hover:text-rose-900 py-1">Katalog Lengkap</a>
+          <a href="#segera-hadir" class="hover:text-rose-900 py-1">Segera Hadir</a>
+          <a href="#informasi" class="hover:text-rose-900 py-1">Tata Tertib</a>
+        </nav>
+      </div>
+      <div class="pt-6 border-t border-stone-200 flex flex-col gap-3">
+        <a href="#katalog" class="w-full text-center py-2.5 px-4 rounded-lg bg-rose-900 text-white font-semibold text-sm">Cari Buku Sekarang</a>
+        <p class="text-[11px] text-stone-500 text-center">Layanan Peminjaman Buku Siswa &amp; Guru</p>
+      </div>
     </div>
+  </div>
+
+  <main class="flex-grow">
+    <!-- Hero Section -->
+    <section id="beranda" class="pt-8 sm:pt-12 pb-12 sm:pb-16 bg-[#F6F2EA] border-b border-stone-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-12 shadow-sm border border-stone-200 relative overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-7 flex flex-col">
+              <div class="inline-flex items-center gap-2 mb-3">
+                <span class="text-[11px] sm:text-xs font-bold text-rose-900 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full uppercase tracking-wider">Sistem Perpustakaan Sekolah</span>
+                <span class="text-xs text-stone-500 font-medium">Koleksi Terverifikasi</span>
+              </div>
+              <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 tracking-tight leading-tight mb-4">Temukan Cerita &amp; Ilmu Favoritmu</h1>
+              <p class="text-stone-600 text-sm sm:text-base leading-relaxed mb-8 max-w-xl">
+                Jelajahi ribuan koleksi buku sastra, sains, ensiklopedia, dan buku pelajaran sekolah. Pinjam buku dengan mudah menggunakan Nomor Induk Siswa.
+              </p>
+              <div class="bg-stone-50 border border-stone-300 rounded-xl p-2 sm:p-2.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-xs mb-6">
+                <div class="flex items-center gap-2.5 flex-grow px-3 py-1">
+                  <svg class="w-5 h-5 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="heroSearchInput" placeholder="Cari judul buku, pengarang, atau topik..." class="w-full text-xs sm:text-sm bg-transparent border-none text-stone-900 placeholder-stone-400 focus:outline-none" />
+                </div>
+                <button type="button" id="heroSearchBtn" class="px-5 py-2.5 rounded-lg bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-800 shrink-0">Cari Buku</button>
+              </div>
+              <div class="flex flex-wrap items-center gap-2 text-xs">
+                <span class="text-stone-500 font-medium">Pilihan Cepat:</span>
+                <button type="button" data-hero-filter="Fiksi &amp; Sastra" class="px-3 py-1 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium transition-colors cursor-pointer">Sastra &amp; Fiksi</button>
+                <button type="button" data-hero-filter="Sains &amp; Teknologi" class="px-3 py-1 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium transition-colors cursor-pointer">Sains &amp; Astronomi</button>
+                <button type="button" data-hero-filter="Sejarah &amp; Biografi" class="px-3 py-1 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium transition-colors cursor-pointer">Sejarah Tokoh</button>
+                <button type="button" data-hero-filter="Pengembangan Diri" class="px-3 py-1 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium transition-colors cursor-pointer">Motivasi Siswa</button>
+              </div>
+            </div>
+            <div class="lg:col-span-5 flex justify-center">
+              <div class="relative w-full max-w-sm flex items-center justify-center p-4">
+                <div class="w-36 sm:w-44 aspect-[3/4] rounded-lg overflow-hidden shadow-md transform -rotate-6 translate-y-3 border-2 border-white">
+                  <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80" alt="Buku Novel Klasik" class="w-full h-full object-cover" />
+                </div>
+                <div class="w-40 sm:w-48 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transform z-10 border-2 border-white -mx-8">
+                  <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80" alt="Buku Bumi Manusia" class="w-full h-full object-cover" />
+                </div>
+                <div class="w-36 sm:w-44 aspect-[3/4] rounded-lg overflow-hidden shadow-md transform rotate-6 translate-y-3 border-2 border-white">
+                  <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80" alt="Buku Inspirasi Pelajar" class="w-full h-full object-cover" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spotlight Section -->
+    <section id="sorotan" class="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div id="spotlightContainer"></div>
+    </section>
+
+    <!-- Popular Books Section -->
+    <section id="populer" class="py-10 sm:py-14 bg-white border-y border-stone-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between mb-8 pb-4 border-b border-stone-200">
+          <div>
+            <span class="text-xs font-bold text-rose-900 uppercase tracking-wider block mb-1">Paling Banyak Dibaca</span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-stone-900">Buku Populer Pekan Ini</h2>
+          </div>
+          <a href="#katalog" class="text-xs sm:text-sm font-semibold text-rose-900 hover:text-rose-950 inline-flex items-center gap-1 group">
+            <span>Buka Semua Koleksi</span>
+            <span class="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          </a>
+        </div>
+        <div id="popularBooksGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5"></div>
+      </div>
+    </section>
+
+    <!-- Announcement & Guide Banner -->
+    <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-5">
+          <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+            <svg class="w-8 h-8 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <div>
+            <h3 class="font-serif font-bold text-lg sm:text-xl text-white mb-1">Pinjam Buku Mandiri, Bebas Antre</h3>
+            <p class="text-xs sm:text-sm text-purple-200/90 max-w-xl">Cari buku yang Anda inginkan, masukkan NIS Anda pada detail buku, dan konfirmasi peminjaman langsung dari gadget Anda.</p>
+          </div>
+        </div>
+        <button type="button" id="libraryGuideBtn" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs sm:text-sm font-bold transition-colors cursor-pointer shrink-0">Panduan Peminjaman</button>
+      </div>
+    </section>
+
+    <!-- Catalog Explorer Section -->
+    <section id="katalog" class="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mb-8">
+        <span class="text-xs font-bold text-rose-900 uppercase tracking-wider block mb-1">Koleksi Terpadu</span>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-stone-200">
+          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-stone-900">Katalog Buku Sekolah</h2>
+          <span id="activeFilterLabel" class="text-xs sm:text-sm font-semibold text-stone-600 bg-stone-100 px-3 py-1 rounded-full self-start sm:self-auto">Semua Koleksi</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none" id="categoryChips"></div>
+      <div id="catalogBooksGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 sm:gap-5"></div>
+    </section>
+
+    <!-- Coming Soon Section -->
+    <section id="segera-hadir" class="py-12 sm:py-16 bg-[#F6F2EA] border-t border-stone-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 pb-4 border-b border-stone-300">
+          <span class="text-xs font-bold text-rose-900 uppercase tracking-wider block mb-1">Pengadaan Baru</span>
+          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-stone-900">Buku yang Akan Segera Tersedia</h2>
+          <p class="text-xs sm:text-sm text-stone-600 mt-1">Daftar buku pengadaan baru perpustakaan yang sedang dalam proses katalogisasi.</p>
+        </div>
+        <div id="comingSoonGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5"></div>
+      </div>
+    </section>
+
+    <!-- Information & Operational Banner -->
+    <section id="informasi" class="py-14 bg-stone-900 text-white relative overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-2xl">
+          <span class="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-2">Layanan Perpustakaan</span>
+          <h2 class="font-serif text-2xl sm:text-4xl font-bold mb-4 text-white">Mulai Petualangan Literasimu di Perpustakaan Sekolah</h2>
+          <p class="text-sm text-stone-300 leading-relaxed mb-6">
+            Kunjungi ruang baca perpustakaan di Gedung Literasi Lantai 2. Tersedia ruang baca ber-AC, koleksi referensi akademik lengkap, serta fasilitas komputer pencarian buku.
+          </p>
+          <div class="grid grid-cols-2 gap-4 text-xs text-stone-300 mb-6 py-4 border-y border-stone-800">
+            <div>
+              <span class="text-stone-400 block font-medium">Jam Layanan Siswa</span>
+              <span class="text-white font-bold text-sm">Senin - Jumat: 07.30 - 15.30 WIB</span>
+            </div>
+            <div>
+              <span class="text-stone-400 block font-medium">Batas Maksimal Pinjam</span>
+              <span class="text-white font-bold text-sm">2 Buku / Siswa (7 Hari Kerja)</span>
+            </div>
+          </div>
+          <a href="#katalog" class="inline-block px-6 py-3 rounded-lg bg-rose-900 hover:bg-rose-950 text-white font-semibold text-sm transition-colors shadow-lg cursor-pointer">
+            Jelajahi Koleksi Buku
+          </a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Modal: Auth (Login & Register) -->
-  <div class="modal" id="authModal" style="display:none;" aria-hidden="true">
-    <div class="modal__backdrop" id="authModalBackdrop"></div>
-    <div class="modal__dialog">
-      <div class="modal__header modal__header--center">
-        <h3 class="modal__title modal__title--center" id="authModalTitle">Masuk ke Akun</h3>
-        <button class="modal__close" id="closeAuthModal" aria-label="Tutup">&times;</button>
-      </div>
-
-      <div class="modal__tabs" id="authModalTabs">
-        <button class="modal__tab modal__tab--active" id="tabLogin">Masuk</button>
-        <button class="modal__tab" id="tabRegister">Daftar Akun</button>
-      </div>
-
-      <div class="modal__body">
-        <!-- Form Login (Email & Password) -->
-        <form id="loginForm" class="auth-form">
-          <div class="form-group">
-            <label for="loginEmail" class="form-label">Email</label>
-            <input type="email" id="loginEmail" class="input" placeholder="nama@email.com" required />
+  <!-- Footer -->
+  <footer class="bg-stone-950 text-stone-400 text-xs border-t border-stone-800 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-stone-800">
+        <div class="md:col-span-1">
+          <div class="flex items-center gap-2.5 mb-3">
+            <div class="w-8 h-8 rounded bg-rose-900 text-amber-200 flex items-center justify-center font-serif font-bold text-base">S</div>
+            <span class="font-serif font-bold text-base text-white">SISPERPUS</span>
           </div>
-          <div class="form-group">
-            <label for="loginPassword" class="form-label">Password</label>
-            <div class="password-field-wrap">
-              <input type="password" id="loginPassword" class="input" placeholder="Minimal 6 karakter" required />
-              <button type="button" class="password-toggle-btn" id="toggleLoginPassword" aria-label="Tampilkan atau sembunyikan password" title="Lihat password">
-                <svg class="eye-icon eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <svg class="eye-icon eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                  <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <button type="submit" class="btn btn--primary btn--full" id="loginSubmitBtn">Masuk</button>
-
-          <div class="auth-divider">
-            <span>atau</span>
-          </div>
-
-          <button type="button" class="btn btn--google btn--full" id="googleAuthBtn">
-            <svg class="google-icon" width="18" height="18" viewBox="0 0 18 18">
-              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-              <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
-              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
-            </svg>
-            <span id="googleBtnText">Masuk dengan Google</span>
-          </button>
-
-          <p class="modal__switch-text">
-            Belum memiliki akun? <a href="#" id="linkToRegister">Daftar sekarang</a>
+          <p class="text-[11px] leading-relaxed text-stone-400">
+            Sistem Informasi Perpustakaan Sekolah Digital. Mewujudkan budaya literasi aktif bagi siswa, guru, dan tenaga kependidikan.
           </p>
-        </form>
-
-        <!-- Form Register -->
-        <form id="registerForm" class="auth-form" style="display:none;">
-          <div class="form-group">
-            <label for="regName" class="form-label">Nama Lengkap</label>
-            <input type="email" id="regName" class="input" placeholder="Nama Anda" required />
-          </div>
-          <div class="form-group">
-            <label for="regEmail" class="form-label">Email</label>
-            <input type="email" id="regEmail" class="input" placeholder="nama@email.com" required />
-          </div>
-          <div class="form-group">
-            <label for="regPassword" class="form-label">Password</label>
-            <div class="password-field-wrap">
-              <input type="password" id="regPassword" class="input" placeholder="Minimal 6 karakter" required />
-              <button type="button" class="password-toggle-btn" id="toggleRegPassword" aria-label="Tampilkan atau sembunyikan password" title="Lihat password">
-                <svg class="eye-icon eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <svg class="eye-icon eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                  <line x1="1" y1="1" x2="23" y2="23"></line>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <button type="submit" class="btn btn--primary btn--full" id="regSubmitBtn">Daftar Akun</button>
-
-          <div class="auth-divider">
-            <span>atau</span>
-          </div>
-
-          <button type="button" class="btn btn--google btn--full" id="googleRegBtn">
-            <svg class="google-icon" width="18" height="18" viewBox="0 0 18 18">
-              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-              <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
-              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
-            </svg>
-            <span id="googleRegBtnText">Daftar dengan Google</span>
-          </button>
-
-          <p class="modal__switch-text">
-            Sudah memiliki akun? <a href="#" id="linkToLogin">Masuk di sini</a>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold text-xs uppercase tracking-wider mb-3">Layanan Siswa</h3>
+          <ul class="space-y-2">
+            <li><a href="#katalog" class="hover:text-white transition-colors">Pencarian Buku Mandiri</a></li>
+            <li><a href="#sorotan" class="hover:text-white transition-colors">Buku Pilihan Pekan Ini</a></li>
+            <li><a href="#populer" class="hover:text-white transition-colors">Buku Paling Populer</a></li>
+            <li><a href="#segera-hadir" class="hover:text-white transition-colors">Jadwal Pengadaan Baru</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold text-xs uppercase tracking-wider mb-3">Ketentuan Perpustakaan</h3>
+          <ul class="space-y-2">
+            <li><span class="text-stone-300">Wajib membawa NIS / Kartu Siswa</span></li>
+            <li><span class="text-stone-300">Peminjaman maksimal 7 hari kerja</span></li>
+            <li><span class="text-stone-300">Menjaga kebersihan &amp; keutuhan buku</span></li>
+            <li><span class="text-stone-300">Perpanjangan buku via ruang pustakawan</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-white font-semibold text-xs uppercase tracking-wider mb-3">Lokasi &amp; Kontak</h3>
+          <p class="text-[11px] leading-relaxed mb-2 text-stone-300">
+            Gedung Literasi Lt. 2, Kampus Sekolah Terpadu.<br />
+            Email: perpustakaan@sekolah.sch.id
           </p>
-        </form>
-
-        <!-- View Verifikasi OTP -->
-        <div id="otpSection" style="display:none;">
-          <div class="otp-info-card">
-            <span class="badge--otp" id="otpBadge">Verifikasi Diperlukan</span>
-            <p id="otpHeading" style="font-weight:600; margin-bottom:4px;">Verifikasi Akun</p>
-            <p id="otpNotice">Kode verifikasi 6 digit telah dikirimkan ke:</p>
-            <p id="otpTargetEmail" style="font-weight:700; margin-top:2px;"></p>
-          </div>
-
-          <form id="otpVerifyForm" class="auth-form">
-            <div class="form-group">
-              <label for="otpCodeInput" class="form-label" style="text-align:center;">Masukkan 6 Digit Kode OTP</label>
-              <input type="text" id="otpCodeInput" class="input input--otp" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code" required />
-            </div>
-            <button type="submit" class="btn btn--primary btn--full" id="otpVerifyBtn">Verifikasi & Lanjutkan</button>
-            <button type="button" class="btn btn--ghost btn--sm btn--full" id="otpResendBtn" style="margin-top:8px;">Kirim Ulang Kode</button>
-            <button type="button" class="btn btn--ghost btn--sm btn--full" id="otpCancelBtn" style="margin-top:6px;">Batal & Kembali</button>
-          </form>
+          <p class="text-[10px] text-stone-500">Akses jaringan lokal sekolah &middot; Terhubung server perpustakaan</p>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Modal: Hubungkan / Claim Unit Baru -->
-  <div class="modal" id="claimModal" style="display:none;" aria-hidden="true">
-    <div class="modal__backdrop" id="claimModalBackdrop"></div>
-    <div class="modal__dialog">
-      <div class="modal__header">
-        <h3 class="modal__title">Hubungkan Unit Baru</h3>
-        <button class="modal__close" id="closeClaimModal" aria-label="Tutup">&times;</button>
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px]">
+        <p>&copy; 2026 SISPERPUS &middot; Sistem Informasi Perpustakaan Sekolah. Hak Cipta Dilindungi.</p>
+        <p class="text-stone-500">Dirancang dengan Tailwind CSS &middot; Standar Aksesibilitas Web</p>
       </div>
-      <div class="modal__body">
-        <p class="modal__desc">Masukkan kode unik yang tertera pada stiker atau layar LCD unit ESP32 Anda.</p>
-        <form id="claimForm" class="auth-form">
-          <div class="form-group">
-            <label for="claimDeviceId" class="form-label">Device ID</label>
-            <input type="text" id="claimDeviceId" class="input" placeholder="Contoh: PLB-8821 atau DEV-PLB-002" required />
-          </div>
-          <div class="form-group">
-            <label for="claimPairingCode" class="form-label">Kode Pairing</label>
-            <input type="text" id="claimPairingCode" class="input" placeholder="Kode default: 8821" required />
-          </div>
-          <div class="form-group">
-            <label for="claimDeviceName" class="form-label">Nama / Lokasi Unit</label>
-            <input type="text" id="claimDeviceName" class="input" placeholder="Contoh: Tanaman Balkon Atas" required />
-          </div>
-          <button type="submit" class="btn btn--primary btn--full" id="claimSubmitBtn">Hubungkan ke Akun</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
-
-  <footer class="footer">
-    <div class="container footer__inner">
-      <span>© 2026 PlantCare IoT — Sistem Penyiraman Tanaman Otomatis</span>
-      <span class="footer__tech">ESP32 · Blynk · Golang · Vercel</span>
     </div>
   </footer>
+
+  <!-- Book Detail & Borrow Modal Dialog -->
+  <div id="bookDetailModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="modalBookTitle">
+    <div id="bookModalBackdrop" class="fixed inset-0 bg-stone-950/70 backdrop-blur-xs transition-opacity"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4 sm:p-6">
+      <div class="relative bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-stone-200 max-h-[90vh] overflow-y-auto">
+        <button type="button" id="closeBookModalBtn" class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-800 text-2xl font-bold leading-none cursor-pointer" aria-label="Tutup jendela rincian buku">&times;</button>
+        <div id="bookModalContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4" aria-live="polite"></div>
 
   <script type="module" src="js/main.js"></script>
 </body>

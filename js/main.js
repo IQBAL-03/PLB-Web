@@ -1,50 +1,33 @@
 /**
- * @file Main application entry point & orchestrator.
+ * @file Application entry point for SISPERPUS digital school library.
  */
 
-import { CONFIG } from './config/constants.js';
-import { eventBus } from './core/events.js';
-import { authController } from './features/auth/auth.controller.js';
-import { authView } from './features/auth/auth.view.js';
-import { deviceController } from './features/devices/device.controller.js';
-import { pumpController } from './features/pump/pump.controller.js';
-import { moistureView } from './features/moisture/moisture.view.js';
-import { historyController } from './features/history/history.controller.js';
-import { simulatorController } from './features/simulator/simulator.controller.js';
-import { telemetryController } from './features/telemetry/telemetry.controller.js';
-import { navController } from './features/navigation/nav.controller.js';
+import { $ } from './utils/dom.js';
+import { navigation } from './features/navigation/navigation.js';
+import { spotlightView } from './features/spotlight/spotlight.view.js';
+import { catalogController } from './features/catalog/catalog.controller.js';
+import { bookModalController } from './features/modal/book-modal.controller.js';
+import { showToast } from './utils/toast.js';
 
-async function bootstrap() {
-  // Listen for global auth modal open requests
-  eventBus.on('auth:openModal', () => {
-    authView.openModal();
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  navigation.init();
+  spotlightView.render($('#spotlightContainer'));
+  catalogController.init();
+  bookModalController.init();
 
-  // Set default uninitialized presentation state
-  moistureView.renderMoisture(null, false, false);
+  // Guide button click handler
+  const guideBtn = $('#libraryGuideBtn');
+  if (guideBtn) {
+    guideBtn.addEventListener('click', () => {
+      showToast('Panduan: Siswa dapat meminjam maksimal 2 buku selama 7 hari kerja menggunakan NIS.', 'info', 6000);
+    });
+  }
 
-  // Initialize navigation & feature controllers
-  navController.init();
-  authController.init();
-  pumpController.init();
-  historyController.init();
-  simulatorController.init();
-  telemetryController.init();
-
-  // Load initial dataset
-  await deviceController.init();
-  await telemetryController.fetchStatus();
-  await historyController.fetchHistory();
-
-  // Background polling intervals
-  setInterval(() => telemetryController.fetchStatus(), CONFIG.POLL_INTERVAL);
-  setInterval(() => historyController.fetchHistory(), CONFIG.HISTORY_POLL_INTERVAL);
-  setInterval(() => telemetryController.keepAlive(), CONFIG.KEEPALIVE_INTERVAL);
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bootstrap);
-} else {
-  bootstrap();
-}
-
+  // Member card action trigger
+  const memberBtn = $('#memberCardBtn');
+  if (memberBtn) {
+    memberBtn.addEventListener('click', () => {
+      showToast('Layanan Kartu Anggota Digital terintegrasi dengan NIS siswa perpustakaan.', 'info');
+    });
+  }
+});

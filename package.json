@@ -1,0 +1,24 @@
+{
+  "name": "sisperpus-web",
+  "version": "1.0.0",
+  "description": "SISPERPUS - Sistem Informasi Perpustakaan Sekolah Digital",
+  "main": "js/main.js",
+  "scripts": {
+    "build": "npx @tailwindcss/cli -i src/input.css -o css/tailwind.css --minify",
+    "dev": "npx @tailwindcss/cli -i src/input.css -o css/tailwind.css --watch"
+  },
+  "keywords": [
+    "perpustakaan",
+    "school-library",
+    "sisperpus",
+    "tailwind"
+  ],
+  "author": "SISPERPUS Team",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.5",
+    "autoprefixer": "^10.7.0",
+    "postcss": "^8.5.33",
+    "tailwindcss": "^4.3.5"
+  }
+}

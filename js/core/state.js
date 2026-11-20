@@ -1,52 +1,64 @@
 /**
- * @file Centralized application state store with persistence helpers.
+ * @file Reactive application state for SISPERPUS.
  */
 
-let user = null;
-try {
-  user = JSON.parse(localStorage.getItem('plantcare_user') || 'null');
-} catch {
-  user = null;
+import { books, categories } from '../data/library-data.js';
+import { eventBus } from './events.js';
+
+class State {
+  constructor() {
+    this.books = [...books];
+    this.categories = [...categories];
+    this.activeCategory = 'Semua Koleksi';
+    this.searchQuery = '';
+    this.selectedBook = null;
+    this.borrowedBookIds = new Set(JSON.parse(localStorage.getItem('sisperpus_borrowed') || '[]'));
+  }
+
+  setCategory(category) {
+    if (this.activeCategory === category) return;
+    this.activeCategory = category;
+    eventBus.emit('catalog:filter-changed', {
+      category: this.activeCategory,
+      query: this.searchQuery,
+    });
+  }
+
+  setSearchQuery(query) {
+    this.searchQuery = (query || '').trim().toLowerCase();
+    eventBus.emit('catalog:filter-changed', {
+      category: this.activeCategory,
+      query: this.searchQuery,
+    });
+  }
+
+  setSelectedBook(bookId) {
+    this.selectedBook = this.books.find((b) => b.id === bookId) || null;
+    eventBus.emit('modal:book-selected', this.selectedBook);
+  }
+
+  borrowBook(bookId) {
+    this.borrowedBookIds.add(bookId);
+    localStorage.setItem('sisperpus_borrowed', JSON.stringify([...this.borrowedBookIds]));
+    eventBus.emit('book:borrowed', { bookId });
+  }
+
+  isBookBorrowed(bookId) {
+    return this.borrowedBookIds.has(bookId);
+  }
+
+  getFilteredBooks() {
+    return this.books.filter((book) => {
+      const matchCategory =
+        this.activeCategory === 'Semua Koleksi' || book.category === this.activeCategory;
+      const matchQuery =
+        !this.searchQuery ||
+        book.title.toLowerCase().includes(this.searchQuery) ||
+        book.author.toLowerCase().includes(this.searchQuery) ||
+        book.category.toLowerCase().includes(this.searchQuery);
+      return matchCategory && matchQuery;
+    });
+  }
 }
 
-export const state = {
-  isManual: false,
-  pumpOn: false,
-  moisture: null,
-  connected: false,
-  history: [],
-  historyFilter: 'all',
-  lastFetch: 0,
-  lastTimestamp: null,
-  currentDeviceId: localStorage.getItem('plantcare_device') || 'DEV-PLB-001',
-  devices: [],
-  token: localStorage.getItem('plantcare_token') || null,
-  user: user,
-
-  /**
-   * Updates authentication state and persists to local storage.
-   * @param {string|null} token
-   * @param {object|null} userObj
-   */
-  setAuth(token, userObj) {
-    this.token = token;
-    this.user = userObj;
-    if (token) {
-      localStorage.setItem('plantcare_token', token);
-      localStorage.setItem('plantcare_user', JSON.stringify(userObj));
-    } else {
-      localStorage.removeItem('plantcare_token');
-      localStorage.removeItem('plantcare_user');
-    }
-  },
-
-  /**
-   * Sets active IoT device ID and persists preference.
-   * @param {string} deviceId
-   */
-  setCurrentDevice(deviceId) {
-    this.currentDeviceId = deviceId;
-    localStorage.setItem('plantcare_device', deviceId);
-  },
-};
-
+export const state = new State();

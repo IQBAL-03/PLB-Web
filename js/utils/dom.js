@@ -1,42 +1,20 @@
 /**
- * @file DOM helper utilities.
+ * @file DOM utility helpers for safe node querying and class toggles.
  */
 
-/**
- * Shorthand for document.getElementById
- * @param {string} id
- * @returns {HTMLElement|null}
- */
-export const $ = (id) => document.getElementById(id);
+export const $ = (selector, parent = document) => parent.querySelector(selector);
+export const $$ = (selector, parent = document) => Array.from(parent.querySelectorAll(selector));
 
-/**
- * Shorthand for document.querySelectorAll
- * @param {string} selector
- * @returns {NodeListOf<HTMLElement>}
- */
-export const $$ = (selector) => document.querySelectorAll(selector);
+export const addClass = (el, ...cls) => el && el.classList.add(...cls);
+export const removeClass = (el, ...cls) => el && el.classList.remove(...cls);
+export const toggleClass = (el, cls, force) => el && el.classList.toggle(cls, force);
 
-/**
- * Configures an eye icon button to toggle password visibility.
- * @param {string} buttonId
- * @param {string} inputId
- */
-export function setupPasswordToggle(buttonId, inputId) {
-  const btn = $(buttonId);
-  const input = $(inputId);
-  if (!btn || !input) return;
-
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const isPass = input.type === 'password';
-    input.type = isPass ? 'text' : 'password';
-    const openEye = btn.querySelector('.eye-open');
-    const closedEye = btn.querySelector('.eye-closed');
-    if (openEye && closedEye) {
-      openEye.style.display = isPass ? 'none' : 'block';
-      closedEye.style.display = isPass ? 'block' : 'none';
-    }
-    btn.setAttribute('title', isPass ? 'Sembunyikan password' : 'Lihat password');
-  });
-}
-
+export const escapeHtml = (str) => {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};

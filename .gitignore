@@ -1,4 +1,13 @@
-# Sensitive & Credentials
+# Node and Package Managers
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Sensitive Data and Credentials
 pw*.md
 *password*
 *secret*
@@ -12,23 +21,39 @@ client_secret*.json
 *.pem
 *.cert
 
-# Local notes / hardware
+# Local Notes and Hardware Documents
 iot.io
 planning.md
 Agent.md
+AGENTS.md
+.agents/
 
-# Screenshots & Local media
+# Screenshots and Binary Media
 *.png
 *.jpg
 *.jpeg
 *.webp
 *.gif
 *.bmp
+*.ico
 
-# OS & Temp files
+# Deployment and Build Caches
+.vercel/
+.turbo/
+.cache/
+dist/
+
+# OS and Temporary Files
 .DS_Store
 Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 *.log
 *.tmp
 *.bak
-.vercel
+
+# IDE and Editor Directories
+.idea/
+*.swp
+*.swo
+*~
