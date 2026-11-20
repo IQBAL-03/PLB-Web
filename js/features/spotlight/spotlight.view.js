@@ -23,7 +23,7 @@ export const spotlightView = {
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative z-10">
           <div class="md:col-span-5 lg:col-span-4 flex justify-center">
-            <div class="relative group cursor-pointer" data-action="open-detail" data-book-id="${spotlightBook.id}">
+            <div class="relative group cursor-pointer cursor-zoom-in" data-action="preview-spotlight-cover" data-book-id="${spotlightBook.id}" title="Klik untuk memperbesar kover">
               <div class="w-48 sm:w-56 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl border-2 border-amber-200/30 transform group-hover:-translate-y-1 transition-transform duration-300">
                 <img src="${spotlightBook.coverImg}" alt="${escapeHtml(spotlightBook.title)}" class="w-full h-full object-cover" />
               </div>

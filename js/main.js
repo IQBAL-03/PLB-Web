@@ -7,6 +7,7 @@ import { navigation } from './features/navigation/navigation.js';
 import { spotlightView } from './features/spotlight/spotlight.view.js';
 import { catalogController } from './features/catalog/catalog.controller.js';
 import { bookModalController } from './features/modal/book-modal.controller.js';
+import { imagePreviewModal } from './features/modal/image-preview.modal.js';
 import { showToast } from './utils/toast.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   spotlightView.render($('#spotlightContainer'));
   catalogController.init();
   bookModalController.init();
+  imagePreviewModal.init();
 
   // Guide button click handler
   const guideBtn = $('#libraryGuideBtn');

@@ -36,6 +36,8 @@ AGENTS.md
 *.gif
 *.bmp
 *.ico
+!cover-sementara/
+!cover-sementara/**
 
 # Deployment and Build Caches
 .vercel/

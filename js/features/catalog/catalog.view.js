@@ -50,11 +50,17 @@ export const catalogView = {
       : 'bg-rose-900 hover:bg-rose-950 text-white shadow-sm cursor-pointer';
 
     return `
-      <article class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col h-full group" data-book-id="${book.id}">
-        <div class="relative aspect-[3/4] bg-stone-100 overflow-hidden">
+      <article class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col h-full group cursor-pointer" data-book-id="${book.id}">
+        <div class="relative aspect-[3/4] bg-stone-100 overflow-hidden cursor-zoom-in group/cover">
           <img src="${book.coverImg}" alt="Sampul buku ${escapeHtml(book.title)}"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy" />
+          <div class="absolute inset-0 bg-stone-950/30 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
+            <span class="bg-stone-900/85 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-md backdrop-blur-xs flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+              <span>Perbesar Foto</span>
+            </span>
+          </div>
           <div class="absolute top-2.5 left-2.5">
             <span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border ${badgeColor}">
               ${escapeHtml(book.badge || book.category)}
@@ -67,7 +73,14 @@ export const catalogView = {
 
         <div class="p-4 flex flex-col flex-grow justify-between">
           <div>
-            <p class="text-[11px] font-medium text-rose-800 uppercase tracking-wider mb-1">${escapeHtml(book.category)}</p>
+            <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+              <span class="text-[10px] font-bold text-rose-800 uppercase tracking-wider">${escapeHtml(book.category)}</span>
+              <span class="text-stone-300 text-[10px]">&bull;</span>
+              <span class="text-[10px] font-semibold ${book.language === 'Bahasa Inggris' ? 'text-indigo-900 bg-indigo-50 border border-indigo-200' : 'text-stone-700 bg-stone-100 border border-stone-200'} px-1.5 py-0.5 rounded">
+                ${escapeHtml(book.language || 'Bahasa Indonesia')}
+              </span>
+              ${book.hasVolumes ? '<span class="text-[10px] font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">7 Vol</span>' : ''}
+            </div>
             <h3 class="font-serif font-bold text-stone-900 text-sm sm:text-base leading-snug line-clamp-1 mb-1 group-hover:text-rose-900 transition-colors">
               ${escapeHtml(book.title)}
             </h3>

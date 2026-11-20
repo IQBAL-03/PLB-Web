@@ -54,7 +54,7 @@ export const historyView = {
         <td><span class="badge badge--${(r.action || '').toLowerCase()}">${r.action}</span></td>
         <td><span class="badge badge--${r.mode}">${r.mode === 'auto' ? 'Otomatis' : 'Manual'}</span></td>
         <td>${r.moisture}%</td>
-        <td>${r.duration || '—'}</td>
+        <td>${r.duration || '-'}</td>
       </tr>
     `).join('');
   },

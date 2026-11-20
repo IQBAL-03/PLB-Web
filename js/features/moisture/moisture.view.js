@@ -28,7 +28,7 @@ export const moistureView = {
     if (!isLinked) {
       el.gaugeArc.style.strokeDashoffset = 314;
       el.gaugeArc.style.stroke = 'var(--green-100)';
-      el.moistureValue.textContent = '—';
+      el.moistureValue.textContent = '-';
       el.moistureBar.style.width = '0%';
       el.moistureBar.style.background = 'var(--gray-300)';
       el.moistureStatus.textContent = 'Unit belum terhubung';
@@ -38,7 +38,7 @@ export const moistureView = {
     if (!isOnline) {
       el.gaugeArc.style.strokeDashoffset = 314;
       el.gaugeArc.style.stroke = 'var(--green-100)';
-      el.moistureValue.textContent = '—';
+      el.moistureValue.textContent = '-';
       el.moistureBar.style.width = '0%';
       el.moistureBar.style.background = 'var(--gray-300)';
       el.moistureStatus.textContent = 'Perangkat IoT offline';
@@ -48,10 +48,10 @@ export const moistureView = {
     if (pct === null || pct === undefined) {
       el.gaugeArc.style.strokeDashoffset = 314;
       el.gaugeArc.style.stroke = 'var(--green-100)';
-      el.moistureValue.textContent = '—';
+      el.moistureValue.textContent = '-';
       el.moistureBar.style.width = '0%';
       el.moistureBar.style.background = 'var(--gray-300)';
-      el.moistureStatus.textContent = '—';
+      el.moistureStatus.textContent = '-';
       return;
     }
 
