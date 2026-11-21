@@ -18,3 +18,12 @@ export const escapeHtml = (str) => {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 };
+
+export const setupPasswordToggle = (toggleBtnId, passwordInputId) => {
+  const toggleBtn = typeof toggleBtnId === 'string' ? document.getElementById(toggleBtnId) : toggleBtnId;
+  const passwordInput = typeof passwordInputId === 'string' ? document.getElementById(passwordInputId) : passwordInputId;
+  if (!toggleBtn || !passwordInput) return;
+  toggleBtn.addEventListener('click', () => {
+    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+  });
+};

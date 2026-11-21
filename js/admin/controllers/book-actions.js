@@ -14,7 +14,7 @@ export const bookActions = {
   bind(switchTabFn) {
     bookVolumeHelper.bind();
     bookGenreHelper.bind();
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async (e) => {
       // Full photo popup preview on card cover click
       const previewBtn = e.target.closest('[data-action="preview-cover"]');
       if (previewBtn) {
@@ -104,7 +104,7 @@ export const bookActions = {
       if (delBtn) {
         const id = delBtn.dataset.id;
         if (confirm(`Yakin ingin menghapus buku ${id} dari katalog TiDB?`)) {
-          adminState.deleteBook(id);
+          await adminState.deleteBook(id);
           switchTabFn('books');
           showToast(`Buku ${id} berhasil dihapus dari sistem dan TiDB.`, 'success');
         }

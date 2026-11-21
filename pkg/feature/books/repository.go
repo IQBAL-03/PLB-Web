@@ -138,11 +138,35 @@ func (r *Repository) Create(b model.Book) error {
 
 // Update modifies an existing book title and its metadata.
 func (r *Repository) Update(id string, b model.Book) error {
+	var existingVolJSON sql.NullString
+	_ = r.db.QueryRow("SELECT volumes_json FROM books WHERE id = ?", id).Scan(&existingVolJSON)
+
+	if existingVolJSON.Valid && existingVolJSON.String != "" && len(b.Volumes) > 0 {
+		var existingVols []model.Volume
+		if err := json.Unmarshal([]byte(existingVolJSON.String), &existingVols); err == nil {
+			existingMap := make(map[int]string, len(existingVols))
+			for _, ev := range existingVols {
+				if ev.CoverImg != "" {
+					existingMap[ev.VolumeNumber] = ev.CoverImg
+				}
+			}
+			for i, nv := range b.Volumes {
+				if nv.CoverImg == "" {
+					if cover, ok := existingMap[nv.VolumeNumber]; ok && cover != "" {
+						b.Volumes[i].CoverImg = cover
+					}
+				}
+			}
+		}
+	}
+
 	var volJSONStr sql.NullString
 	if b.HasVolumes && len(b.Volumes) > 0 {
 		if data, err := json.Marshal(b.Volumes); err == nil {
 			volJSONStr = sql.NullString{String: string(data), Valid: true}
 		}
+	} else if existingVolJSON.Valid && existingVolJSON.String != "" && b.HasVolumes {
+		volJSONStr = existingVolJSON
 	}
 
 	var genJSONStr sql.NullString

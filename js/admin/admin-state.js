@@ -125,7 +125,7 @@ class AdminStateManager {
 
   async syncBooksFromAPI() {
     try {
-      const res = await fetch('/api/books');
+      const res = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
@@ -144,50 +144,62 @@ class AdminStateManager {
   }
 
   async addBook(book) {
-    this.books.unshift(book);
-    this.save('books', this.books);
     try {
-      await fetch('/api/books', {
+      const res = await fetch('/api/books', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(book),
       });
+      if (res.ok) {
+        await this.syncBooksFromAPI();
+        return;
+      }
     } catch {
       // Keep local state
     }
+    this.books.unshift(book);
+    this.save('books', this.books);
   }
 
   async updateBook(id, updated) {
+    try {
+      const res = await fetch(`/api/books/update?id=${encodeURIComponent(id)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+      if (res.ok) {
+        await this.syncBooksFromAPI();
+        return this.books.find((b) => b.id === id);
+      }
+    } catch {
+      // Keep local state
+    }
     const idx = this.books.findIndex((b) => b.id === id);
     if (idx !== -1) {
       this.books[idx] = { ...this.books[idx], ...updated };
       this.save('books', this.books);
-      try {
-        await fetch(`/api/books/update?id=${encodeURIComponent(id)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.books[idx]),
-        });
-      } catch {
-        // Keep local state
-      }
       return this.books[idx];
     }
     return null;
   }
 
   async deleteBook(id) {
-    this.books = this.books.filter((b) => b.id !== id);
-    this.save('books', this.books);
     try {
-      await fetch(`/api/books/delete?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/books/delete?id=${encodeURIComponent(id)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       });
+      if (res.ok) {
+        await this.syncBooksFromAPI();
+        return;
+      }
     } catch {
       // Keep local state
     }
+    this.books = this.books.filter((b) => b.id !== id);
+    this.save('books', this.books);
   }
 
   // --- Reports by Date Range ---

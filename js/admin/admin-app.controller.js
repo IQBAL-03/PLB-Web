@@ -29,7 +29,7 @@ export const adminAppController = {
       this.switchTab('books');
     }
 
-    // Golang live change detection and auto-reload for admin
+    // Golang live change detection and silent sync for admin (no disruptive page reload)
     let lastAdminVersion = null;
     const checkAdminSync = async () => {
       try {
@@ -41,12 +41,10 @@ export const adminAppController = {
               lastAdminVersion = data.hash;
               const hasModalOpen = document.querySelector('#bookModalDialog:not(.hidden)');
               if (!hasModalOpen) {
-                window.location.reload();
-                return;
-              }
-              const updated = await adminState.syncBooksFromAPI();
-              if (updated && this.currentTab === 'books') {
-                this.switchTab('books');
+                const updated = await adminState.syncBooksFromAPI();
+                if (updated && (this.currentTab === 'books' || this.currentTab === 'dashboard')) {
+                  this.switchTab(this.currentTab);
+                }
               }
               return;
             }
