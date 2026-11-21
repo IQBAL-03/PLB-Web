@@ -16,13 +16,15 @@ export const bookModalView = {
   renderContent(book, isBorrowed, selectedVolumeNum = 1) {
     if (!this.content || !book) return;
 
-    let activeCover = book.coverImg;
+    let activeCover = book.coverImg || 'img/placeholder-book.svg';
     let activeVolume = null;
 
     if (book.hasVolumes && book.volumes && book.volumes.length > 0) {
       activeVolume = book.volumes.find((v) => v.volumeNumber === Number(selectedVolumeNum)) || book.volumes[0];
       if (activeVolume && activeVolume.coverImg) {
         activeCover = activeVolume.coverImg;
+      } else if (!book.coverImg) {
+        activeCover = 'img/placeholder-book.svg';
       }
     }
 
@@ -64,6 +66,16 @@ export const bookModalView = {
             ${borrowBadge}
             ${languageBadge}
           </div>
+
+          ${
+            book.genres && book.genres.length > 0
+              ? `
+            <div class="flex flex-wrap gap-1 mb-2">
+              ${book.genres.map((g) => `<span class="inline-block bg-stone-100 text-stone-700 border border-stone-200 text-[11px] px-2.5 py-0.5 rounded-full font-medium">${escapeHtml(g)}</span>`).join('')}
+            </div>
+          `
+              : ''
+          }
 
           <h2 class="font-serif text-xl sm:text-2xl font-bold text-stone-900 leading-tight mb-1">
             ${escapeHtml(book.title)}
@@ -122,7 +134,7 @@ export const bookModalView = {
 
           <div class="mb-4">
             <h3 class="text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Sinopsis</h3>
-            <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">${escapeHtml(book.synopsis)}</p>
+            <p id="bookModalMainSynopsis" class="text-xs sm:text-sm text-stone-600 leading-relaxed">${escapeHtml((activeVolume && activeVolume.description) || book.synopsis)}</p>
           </div>
 
           ${
@@ -173,8 +185,8 @@ export const bookModalView = {
     if (!vol) return;
 
     const coverImg = $('#bookModalCoverImg');
-    if (coverImg && vol.coverImg) {
-      coverImg.src = vol.coverImg;
+    if (coverImg) {
+      coverImg.src = vol.coverImg || book.coverImg || 'img/placeholder-book.svg';
     }
 
     const volumeCoverBadge = $('#volumeCoverBadge');
@@ -185,6 +197,11 @@ export const bookModalView = {
     const volumeDesc = $('#volumeDesc');
     if (volumeDesc) {
       volumeDesc.textContent = vol.description || '';
+    }
+
+    const mainSynopsis = $('#bookModalMainSynopsis');
+    if (mainSynopsis) {
+      mainSynopsis.textContent = vol.description || book.synopsis || '';
     }
 
     const activeVolumeLabel = $('#activeVolumeLabel');

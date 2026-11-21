@@ -3,6 +3,7 @@
  */
 
 import { escapeHtml } from '../../utils/dom.js';
+import { booksCardView } from './books-card.view.js';
 
 export const booksView = {
   render(container, books, categories) {
@@ -48,7 +49,7 @@ export const booksView = {
       <div id="bookModalDialog" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
         <div class="fixed inset-0 bg-stone-950/70 backdrop-blur-xs" data-close-book-modal="true"></div>
         <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
-          <div class="relative bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-stone-200 max-h-[90vh] overflow-y-auto">
+          <div class="relative bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-stone-200 max-h-[90vh] overflow-y-auto">
             <button type="button" id="closeBookModalBtn" class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-800 text-2xl font-bold leading-none cursor-pointer">&times;</button>
             <h3 id="bookModalTitle" class="font-serif text-xl font-bold text-stone-900 mb-1">Tambah Buku &amp; Sampul Baru</h3>
             <p class="text-xs text-stone-500 mb-5">Lengkapi identitas katalog, nomor rak fisik, serta tautan foto kover buku.</p>
@@ -59,7 +60,7 @@ export const booksView = {
               <!-- Cover Image Input & Live Preview -->
               <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 flex flex-col sm:flex-row items-center gap-4">
                 <div class="w-24 aspect-[3/4] bg-stone-200 rounded-lg overflow-hidden border border-stone-300 shrink-0 flex items-center justify-center relative">
-                  <img id="bookModalCoverPreview" src="cover-sementara/look-back.png" alt="Pratinjau Sampul" class="w-full h-full object-contain" />
+                  <img id="bookModalCoverPreview" src="img/placeholder-book.svg" alt="Pratinjau Sampul" class="w-full h-full object-contain" onerror="this.src='img/placeholder-book.svg'" />
                   <div id="bookModalCoverUploading" class="absolute inset-0 bg-stone-900/70 hidden flex flex-col items-center justify-center text-white text-[10px] font-bold p-1 text-center">
                     <svg class="animate-spin w-4 h-4 mb-1 text-amber-300" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                     <span>Mengunggah...</span>
@@ -67,7 +68,7 @@ export const booksView = {
                 </div>
                 <div class="w-full space-y-2">
                   <span class="block text-xs font-bold text-stone-700 uppercase">Foto Sampul Buku</span>
-                  <input type="hidden" id="bookCoverInput" value="cover-sementara/look-back.png" />
+                  <input type="hidden" id="bookCoverInput" value="" />
                   <input type="hidden" id="bookCloudinaryIdInput" value="" />
                   <input type="file" id="bookCoverFileInput" accept="image/png,image/jpeg,image/webp" class="hidden" />
                   <div class="flex flex-wrap items-center gap-2">
@@ -110,6 +111,24 @@ export const booksView = {
                 </div>
               </div>
 
+              <!-- Genre Tagging System (Maksimal 10) -->
+              <div class="border border-stone-200 rounded-xl p-3.5 bg-stone-50/80 space-y-2">
+                <div class="flex items-center justify-between">
+                  <label for="bookGenreInput" class="block text-xs font-bold text-stone-700 uppercase">Genre Buku (Maksimal 10)</label>
+                  <span id="genreCountLabel" class="text-[11px] font-semibold text-stone-500">0 / 10 genre</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="text" id="bookGenreInput" placeholder="Ketik genre lalu tekan Enter atau Tambah..."
+                    class="flex-1 text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none bg-white" />
+                  <button type="button" id="addGenreBtn" class="px-3.5 py-2 rounded-lg bg-stone-800 hover:bg-stone-900 text-white text-xs font-semibold transition-colors cursor-pointer shrink-0 shadow-2xs">
+                    + Tambah
+                  </button>
+                </div>
+                <div id="bookGenreChipsContainer" class="flex flex-wrap gap-1.5 min-h-[28px] pt-1">
+                  <!-- Genre chips rendered here -->
+                </div>
+              </div>
+
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label for="bookLanguageInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Bahasa</label>
@@ -137,6 +156,26 @@ export const booksView = {
                 <textarea id="bookSynopsisInput" rows="2" class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Deskripsi buku..."></textarea>
               </div>
 
+              <!-- Multi-Volume / Series Section -->
+              <div class="border border-stone-200 rounded-xl p-3.5 bg-stone-50/80 space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="bookHasVolumesCheckbox" class="w-4 h-4 rounded text-rose-900 focus:ring-rose-800 border-stone-300" />
+                    <span class="text-xs font-bold text-stone-800 uppercase">Buku Ini Memiliki Seri / Multi-Volume</span>
+                  </label>
+                  <button type="button" id="addNewVolumeItemBtn" class="hidden px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-900 text-white text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1 shadow-2xs">
+                    <span>+ Tambah Volume</span>
+                  </button>
+                </div>
+
+                <div id="bookVolumesSection" class="hidden space-y-3 pt-3 border-t border-stone-200">
+                  <p class="text-xs text-stone-500">Tambahkan daftar volume atau nomor seri lanjutan untuk buku ini. Anda dapat mengunggah foto sampul khusus dan menulis sinopsis berbeda pada setiap volume.</p>
+                  <div id="bookVolumesList" class="space-y-4 max-h-[520px] overflow-y-auto pr-1">
+                    <!-- Dynamic volume item rows -->
+                  </div>
+                </div>
+              </div>
+
               <button type="submit" class="w-full bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-lg transition-colors cursor-pointer shadow-xs">
                 Simpan Informasi &amp; Sampul Buku
               </button>
@@ -148,91 +187,6 @@ export const booksView = {
   },
 
   renderCards(books) {
-    if (books.length === 0) {
-      return `
-        <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-dashed border-stone-300 p-8">
-          <p class="font-serif text-base font-bold text-stone-700 mb-1">Tidak Ada Koleksi Buku Ditemukan</p>
-          <p class="text-xs text-stone-500">Coba gunakan kata kunci pencarian atau kategori lain.</p>
-        </div>
-      `;
-    }
-
-    return books
-      .map((b) => {
-        const langBadge =
-          b.language === 'Bahasa Inggris'
-            ? '<span class="text-[10px] font-bold text-indigo-900 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">Inggris</span>'
-            : '<span class="text-[10px] font-bold text-stone-700 bg-stone-100 border border-stone-200 px-1.5 py-0.5 rounded">Indonesia</span>';
-
-        return `
-          <div class="bg-white rounded-2xl border border-stone-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
-            <div>
-              <!-- Cover Image Area with Zoomable Modal Trigger -->
-              <div class="aspect-[3/4] bg-stone-100/70 p-3 flex items-center justify-center relative overflow-hidden border-b border-stone-100 cursor-zoom-in group/cover"
-                data-action="preview-cover"
-                data-cover-src="${b.coverImg || 'cover-sementara/look-back.png'}"
-                data-book-title="${escapeHtml(b.title)} - Karya ${escapeHtml(b.author)}">
-                <img src="${b.coverImg || 'cover-sementara/look-back.png'}" alt="${escapeHtml(b.title)}"
-                  class="max-h-full max-w-full w-auto h-auto object-contain rounded shadow-xs group-hover:scale-102 transition-transform duration-200"
-                  loading="lazy" />
-                <div class="absolute inset-0 bg-stone-950/35 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
-                  <span class="bg-stone-900/85 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md backdrop-blur-xs flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
-                    <span>Perbesar Foto</span>
-                  </span>
-                </div>
-                <div class="absolute top-2.5 left-2.5">
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-900 border border-rose-200 shadow-xs">
-                    ${escapeHtml(b.category)}
-                  </span>
-                </div>
-                <div class="absolute top-2.5 right-2.5">
-                  ${langBadge}
-                </div>
-                ${b.hasVolumes ? '<div class="absolute bottom-2.5 right-2.5 bg-stone-900/85 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">7 Vol</div>' : ''}
-              </div>
-
-              <!-- Card Content -->
-              <div class="p-4 space-y-2">
-                <div class="flex items-center justify-between text-[11px] text-stone-400 font-mono">
-                  <span>ID: ${escapeHtml(b.id)}</span>
-                  <span>${escapeHtml(b.shelf)}</span>
-                </div>
-                <h3 class="font-serif font-bold text-stone-900 text-sm leading-snug line-clamp-1 group-hover:text-rose-900 transition-colors">
-                  ${escapeHtml(b.title)}
-                </h3>
-                <p class="text-xs text-stone-500 line-clamp-1 font-medium">${escapeHtml(b.author)}</p>
-
-                <div class="flex items-center justify-between pt-2 border-t border-stone-100 text-xs">
-                  <span class="text-stone-500 text-[11px]">Harga Pasar:</span>
-                  <span class="font-bold font-mono text-stone-900">${b.price ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(b.price) : '-'}</span>
-                </div>
-
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-stone-500 text-[11px]">Sisa Fisik:</span>
-                  <span class="font-bold ${b.stock > 0 ? 'text-emerald-800' : 'text-rose-800'}">${b.stock} Eksemplar</span>
-                </div>
-
-                <div class="text-[10px] text-stone-400 font-mono truncate" title="${escapeHtml(b.coverImg || '')}">
-                  File: ${escapeHtml(b.coverImg || '-')}
-                </div>
-              </div>
-            </div>
-
-            <!-- Card Actions -->
-            <div class="p-3 bg-stone-50/70 border-t border-stone-100 flex items-center justify-between gap-2">
-              <button type="button" data-book-action="edit" data-id="${b.id}"
-                class="flex-1 py-1.5 px-3 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs border border-stone-300 transition-colors cursor-pointer text-center">
-                Edit Sampul &amp; Data
-              </button>
-              <button type="button" data-book-action="delete" data-id="${b.id}"
-                class="py-1.5 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 font-semibold text-xs border border-rose-200 transition-colors cursor-pointer text-center">
-                Hapus
-              </button>
-            </div>
-          </div>
-        `;
-      })
-      .join('');
+    return booksCardView.render(books);
   },
 };

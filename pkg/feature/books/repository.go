@@ -3,6 +3,7 @@ package books
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -28,7 +29,7 @@ func (r *Repository) List(query, category string) ([]model.Book, error) {
 	sb.WriteString(`
 		SELECT id, title, author, category, language, price, year, shelf, stock,
 		       rating, reviews_count, badge, synopsis, cover_img, cloudinary_public_id,
-		       is_popular, is_spotlight, has_volumes, created_at, updated_at
+		       is_popular, is_spotlight, has_volumes, volumes_json, genres_json, created_at, updated_at
 		FROM books
 		WHERE 1=1
 	`)
@@ -55,13 +56,13 @@ func (r *Repository) List(query, category string) ([]model.Book, error) {
 	var list []model.Book
 	for rows.Next() {
 		var b model.Book
-		var synopsis, cloudID sql.NullString
+		var synopsis, cloudID, volJSON, genJSON sql.NullString
 		var isPop, isSpot, hasVol int
 
 		err := rows.Scan(
 			&b.ID, &b.Title, &b.Author, &b.Category, &b.Language, &b.Price, &b.Year, &b.Shelf, &b.Stock,
 			&b.Rating, &b.ReviewsCount, &b.Badge, &synopsis, &b.CoverImg, &cloudID,
-			&isPop, &isSpot, &hasVol, &b.CreatedAt, &b.UpdatedAt,
+			&isPop, &isSpot, &hasVol, &volJSON, &genJSON, &b.CreatedAt, &b.UpdatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("scan baris buku: %w", err)
@@ -72,6 +73,21 @@ func (r *Repository) List(query, category string) ([]model.Book, error) {
 		b.IsPopular = isPop == 1
 		b.IsSpotlight = isSpot == 1
 		b.HasVolumes = hasVol == 1
+		if volJSON.Valid && volJSON.String != "" {
+			var vols []model.Volume
+			if err := json.Unmarshal([]byte(volJSON.String), &vols); err == nil {
+				b.Volumes = vols
+				if len(vols) > 0 {
+					b.HasVolumes = true
+				}
+			}
+		}
+		if genJSON.Valid && genJSON.String != "" {
+			var genres []string
+			if err := json.Unmarshal([]byte(genJSON.String), &genres); err == nil {
+				b.Genres = genres
+			}
+		}
 
 		list = append(list, b)
 	}
@@ -84,17 +100,35 @@ func (r *Repository) List(query, category string) ([]model.Book, error) {
 
 // Create inserts a new book record into the TiDB books table.
 func (r *Repository) Create(b model.Book) error {
+	var volJSONStr sql.NullString
+	if b.HasVolumes && len(b.Volumes) > 0 {
+		if data, err := json.Marshal(b.Volumes); err == nil {
+			volJSONStr = sql.NullString{String: string(data), Valid: true}
+		}
+	}
+
+	var genJSONStr sql.NullString
+	if len(b.Genres) > 0 {
+		capped := b.Genres
+		if len(capped) > 10 {
+			capped = capped[:10]
+		}
+		if data, err := json.Marshal(capped); err == nil {
+			genJSONStr = sql.NullString{String: string(data), Valid: true}
+		}
+	}
+
 	query := `
 		INSERT INTO books (
 			id, title, author, category, language, price, year, shelf, stock,
 			rating, reviews_count, badge, synopsis, cover_img, cloudinary_public_id,
-			is_popular, is_spotlight, has_volumes
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			is_popular, is_spotlight, has_volumes, volumes_json, genres_json
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	_, err := r.db.Exec(query,
 		b.ID, b.Title, b.Author, b.Category, b.Language, b.Price, b.Year, b.Shelf, b.Stock,
 		b.Rating, b.ReviewsCount, b.Badge, b.Synopsis, b.CoverImg, b.CloudinaryPublicID,
-		boolToInt(b.IsPopular), boolToInt(b.IsSpotlight), boolToInt(b.HasVolumes),
+		boolToInt(b.IsPopular), boolToInt(b.IsSpotlight), boolToInt(b.HasVolumes), volJSONStr, genJSONStr,
 	)
 	if err != nil {
 		return fmt.Errorf("insert buku: %w", err)
@@ -104,17 +138,35 @@ func (r *Repository) Create(b model.Book) error {
 
 // Update modifies an existing book title and its metadata.
 func (r *Repository) Update(id string, b model.Book) error {
+	var volJSONStr sql.NullString
+	if b.HasVolumes && len(b.Volumes) > 0 {
+		if data, err := json.Marshal(b.Volumes); err == nil {
+			volJSONStr = sql.NullString{String: string(data), Valid: true}
+		}
+	}
+
+	var genJSONStr sql.NullString
+	if len(b.Genres) > 0 {
+		capped := b.Genres
+		if len(capped) > 10 {
+			capped = capped[:10]
+		}
+		if data, err := json.Marshal(capped); err == nil {
+			genJSONStr = sql.NullString{String: string(data), Valid: true}
+		}
+	}
+
 	query := `
 		UPDATE books
 		SET title = ?, author = ?, category = ?, language = ?, price = ?,
 		    year = ?, shelf = ?, stock = ?, synopsis = ?, cover_img = ?,
-		    cloudinary_public_id = ?
+		    cloudinary_public_id = ?, has_volumes = ?, volumes_json = ?, genres_json = ?
 		WHERE id = ?
 	`
 	_, err := r.db.Exec(query,
 		b.Title, b.Author, b.Category, b.Language, b.Price,
 		b.Year, b.Shelf, b.Stock, b.Synopsis, b.CoverImg,
-		b.CloudinaryPublicID, id,
+		b.CloudinaryPublicID, boolToInt(b.HasVolumes), volJSONStr, genJSONStr, id,
 	)
 	if err != nil {
 		return fmt.Errorf("update buku %s: %w", id, err)

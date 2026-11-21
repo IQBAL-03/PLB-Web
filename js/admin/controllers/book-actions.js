@@ -7,9 +7,13 @@ import { showToast } from '../../utils/toast.js';
 import { adminState } from '../admin-state.js';
 import { booksView } from '../views/books-view.js';
 import { imagePreviewModal } from '../../features/modal/image-preview.modal.js';
+import { bookVolumeHelper } from './book-volume-helper.js';
+import { bookGenreHelper } from './book-genre-helper.js';
 
 export const bookActions = {
   bind(switchTabFn) {
+    bookVolumeHelper.bind();
+    bookGenreHelper.bind();
     document.addEventListener('click', (e) => {
       // Full photo popup preview on card cover click
       const previewBtn = e.target.closest('[data-action="preview-cover"]');
@@ -35,11 +39,16 @@ export const bookActions = {
           form.reset();
           $('#bookFormOriginalId').value = '';
           $('#bookPriceInput').value = '';
-          $('#bookCoverInput').value = 'cover-sementara/look-back.png';
+          $('#bookCoverInput').value = '';
           $('#bookCloudinaryIdInput').value = '';
-          $('#bookModalCoverPreview').src = 'cover-sementara/look-back.png';
-          $('#bookCoverFileName').textContent = 'Format: PNG, JPG, WEBP (Maks 2MB)';
+          $('#bookModalCoverPreview').src = 'img/placeholder-book.svg';
+          $('#bookCoverFileName').textContent = 'Belum ada foto yang dipilih (Maks 2MB)';
           $('#bookModalTitle').textContent = 'Tambah Koleksi & Sampul Buku Baru';
+          bookGenreHelper.setGenres([]);
+          if ($('#bookHasVolumesCheckbox')) $('#bookHasVolumesCheckbox').checked = false;
+          if ($('#bookVolumesSection')) $('#bookVolumesSection').classList.add('hidden');
+          if ($('#addNewVolumeItemBtn')) $('#addNewVolumeItemBtn').classList.add('hidden');
+          if ($('#bookVolumesList')) $('#bookVolumesList').innerHTML = '';
           modal.classList.remove('hidden');
         }
         return;
@@ -58,7 +67,7 @@ export const bookActions = {
         const id = editBtn.dataset.id;
         const book = adminState.books.find((b) => b.id === id);
         if (book) {
-          const cover = book.coverImg || 'cover-sementara/look-back.png';
+          const cover = book.coverImg || '';
           $('#bookFormOriginalId').value = book.id;
           $('#bookIdInput').value = book.id;
           $('#bookTitleInput').value = book.title;
@@ -71,9 +80,19 @@ export const bookActions = {
           $('#bookSynopsisInput').value = book.synopsis || '';
           $('#bookCoverInput').value = cover;
           $('#bookCloudinaryIdInput').value = '';
-          $('#bookModalCoverPreview').src = cover;
-          $('#bookCoverFileName').textContent = cover.startsWith('http') ? 'Tersimpan di Cloudinary' : 'Format: PNG, JPG, WEBP (Maks 2MB)';
+          $('#bookModalCoverPreview').src = cover || 'img/placeholder-book.svg';
+          $('#bookCoverFileName').textContent = cover ? (cover.startsWith('http') ? 'Tersimpan di Cloudinary' : cover) : 'Belum ada foto (Maks 2MB)';
           $('#bookModalTitle').textContent = `Edit Buku & Sampul (${book.id})`;
+          bookGenreHelper.setGenres(book.genres || []);
+          const hasVols = Boolean(book.hasVolumes && book.volumes && book.volumes.length > 0);
+          if ($('#bookHasVolumesCheckbox')) $('#bookHasVolumesCheckbox').checked = hasVols;
+          if ($('#bookVolumesSection')) $('#bookVolumesSection').classList.toggle('hidden', !hasVols);
+          if ($('#addNewVolumeItemBtn')) $('#addNewVolumeItemBtn').classList.toggle('hidden', !hasVols);
+          if (hasVols) {
+            bookVolumeHelper.populate(book.volumes, cover);
+          } else if ($('#bookVolumesList')) {
+            $('#bookVolumesList').innerHTML = '';
+          }
           $('#bookModalDialog').classList.remove('hidden');
         }
         return;
@@ -166,13 +185,17 @@ export const bookActions = {
         const stock = Number($('#bookStockInput').value) || 0;
         const shelf = $('#bookShelfInput').value.trim();
         const synopsis = $('#bookSynopsisInput').value.trim();
-        const coverImg = $('#bookCoverInput').value.trim() || 'cover-sementara/look-back.png';
+        const coverImg = $('#bookCoverInput').value.trim() || '';
+        const hasVolumes = $('#bookHasVolumesCheckbox') ? $('#bookHasVolumesCheckbox').checked : false;
+        const volumes = hasVolumes ? bookVolumeHelper.collect() : [];
+        const genres = bookGenreHelper.getGenres();
 
         const payload = {
           id,
           title,
           author,
           category,
+          genres,
           language,
           price,
           stock,
@@ -180,6 +203,8 @@ export const bookActions = {
           synopsis,
           rating: 4.9,
           coverImg,
+          hasVolumes: hasVolumes && volumes.length > 0,
+          volumes: volumes,
         };
 
         if (origId) {

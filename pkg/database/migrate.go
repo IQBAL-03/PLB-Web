@@ -51,6 +51,8 @@ func Migrate(conn *sql.DB) error {
 			is_popular           TINYINT(1)   NOT NULL DEFAULT 0,
 			is_spotlight         TINYINT(1)   NOT NULL DEFAULT 0,
 			has_volumes          TINYINT(1)   NOT NULL DEFAULT 0,
+			volumes_json         TEXT,
+			genres_json          TEXT,
 			created_at           DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 			updated_at           DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
 		)
@@ -58,6 +60,9 @@ func Migrate(conn *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("migrasi tabel books: %w", err)
 	}
+
+	addColumnIfNotExists(conn, "books", "volumes_json", "TEXT")
+	addColumnIfNotExists(conn, "books", "genres_json", "TEXT")
 
 	// 3. Members Table (Students & School Staff)
 	_, err = conn.Exec(`

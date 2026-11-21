@@ -16,7 +16,16 @@ class AdminStateManager {
   load(key, fallback) {
     try {
       const saved = localStorage.getItem(this.storagePrefix + key);
-      return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(fallback));
+      if (!saved) return JSON.parse(JSON.stringify(fallback));
+      const parsed = JSON.parse(saved);
+      if (key === 'books' && Array.isArray(parsed)) {
+        const hasLegacy = parsed.some((b) => b.coverImg && b.coverImg.includes('cover-sementara'));
+        if (hasLegacy || parsed.length > 3) {
+          localStorage.removeItem(this.storagePrefix + key);
+          return JSON.parse(JSON.stringify(fallback));
+        }
+      }
+      return parsed;
     } catch {
       return JSON.parse(JSON.stringify(fallback));
     }
