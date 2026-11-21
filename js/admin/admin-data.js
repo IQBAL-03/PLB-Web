@@ -1,5 +1,6 @@
 /**
  * @file Mock data store and transactions repository for the SISPERPUS admin panel.
+ * Includes authentic Indonesian & global market retail prices for each book title.
  */
 
 export const initialAdminMetrics = {
@@ -11,6 +12,25 @@ export const initialAdminMetrics = {
   unpaidFinesCount: 4,
 };
 
+export const BOOK_PRICES = {
+  M001: 55000,
+  M002: 55000,
+  M003: 245000,
+  B001: 125000,
+  B002: 135000,
+  B003: 89000,
+  B004: 145000,
+  B005: 135000,
+  B006: 110000,
+  B007: 108000,
+  B008: 350000,
+  B009: 95000,
+  B010: 115000,
+  B011: 85000,
+  B012: 120000,
+  B013: 280000,
+};
+
 export const initialTransactions = [
   {
     id: 'TRX-2026-089',
@@ -20,6 +40,7 @@ export const initialTransactions = [
     bookId: 'M003',
     bookTitle: 'Goodnight Punpun',
     volumeNumber: 3,
+    price: 245000,
     loanDate: '2026-11-14',
     dueDate: '2026-11-21',
     returnDate: null,
@@ -35,6 +56,7 @@ export const initialTransactions = [
     bookId: 'M001',
     bookTitle: 'Look Back',
     volumeNumber: null,
+    price: 55000,
     loanDate: '2026-11-12',
     dueDate: '2026-11-19',
     returnDate: null,
@@ -50,6 +72,7 @@ export const initialTransactions = [
     bookId: 'M002',
     bookTitle: 'Goodbye, Eri',
     volumeNumber: null,
+    price: 55000,
     loanDate: '2026-11-10',
     dueDate: '2026-11-17',
     returnDate: '2026-11-17',
@@ -62,9 +85,10 @@ export const initialTransactions = [
     nis: '202610334',
     studentName: 'Nadia Amelia Az-Zahra',
     classRoom: 'X-MIPA-4',
-    bookId: 'B001',
+    bookId: 'B002',
     bookTitle: 'Bumi Manusia',
     volumeNumber: null,
+    price: 135000,
     loanDate: '2026-11-09',
     dueDate: '2026-11-16',
     returnDate: null,
@@ -80,6 +104,7 @@ export const initialTransactions = [
     bookId: 'M003',
     bookTitle: 'Goodnight Punpun',
     volumeNumber: 1,
+    price: 245000,
     loanDate: '2026-11-15',
     dueDate: '2026-11-22',
     returnDate: null,
@@ -92,9 +117,10 @@ export const initialTransactions = [
     nis: '202610667',
     studentName: 'Siti Nurhaliza',
     classRoom: 'X-IPS-1',
-    bookId: 'B005',
-    bookTitle: 'Cosmos: Gagasan Manusia Menjelajahi Semesta',
+    bookId: 'B004',
+    bookTitle: 'Cosmos: Gagasan Masa Depan',
     volumeNumber: null,
+    price: 145000,
     loanDate: '2026-11-08',
     dueDate: '2026-11-15',
     returnDate: '2026-11-14',
@@ -110,6 +136,7 @@ export const initialTransactions = [
     bookId: 'M003',
     bookTitle: 'Goodnight Punpun',
     volumeNumber: 7,
+    price: 245000,
     loanDate: '2026-11-06',
     dueDate: '2026-11-13',
     returnDate: null,

@@ -25,3 +25,21 @@
     font-family: var(--font-serif);
   }
 }
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print, header, nav, #toastContainer, button:not(.printable-btn) {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

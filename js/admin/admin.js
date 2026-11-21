@@ -2,11 +2,13 @@
  * @file Bootstrap entry point for the SISPERPUS administrative dashboard.
  */
 
-import { adminDashboardController } from './admin-dashboard.controller.js';
+import { adminAppController } from './admin-app.controller.js';
+import { imagePreviewModal } from '../features/modal/image-preview.modal.js';
 import { showToast } from '../utils/toast.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  adminDashboardController.init();
+  adminAppController.init();
+  imagePreviewModal.init();
 
   const logoutBtn = document.getElementById('adminLogoutBtn');
   if (logoutBtn) {
