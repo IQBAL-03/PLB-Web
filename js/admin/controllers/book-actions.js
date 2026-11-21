@@ -20,6 +20,13 @@ export const bookActions = {
         return;
       }
 
+      // Trigger cover photo upload file chooser
+      if (e.target.closest('#triggerCoverUploadBtn')) {
+        const fileInput = $('#bookCoverFileInput');
+        if (fileInput) fileInput.click();
+        return;
+      }
+
       // Open add modal
       if (e.target.closest('#openAddBookBtn')) {
         const modal = $('#bookModalDialog');
@@ -29,7 +36,9 @@ export const bookActions = {
           $('#bookFormOriginalId').value = '';
           $('#bookPriceInput').value = '';
           $('#bookCoverInput').value = 'cover-sementara/look-back.png';
+          $('#bookCloudinaryIdInput').value = '';
           $('#bookModalCoverPreview').src = 'cover-sementara/look-back.png';
+          $('#bookCoverFileName').textContent = 'Format: PNG, JPG, WEBP (Maks 2MB)';
           $('#bookModalTitle').textContent = 'Tambah Koleksi & Sampul Buku Baru';
           modal.classList.remove('hidden');
         }
@@ -61,7 +70,9 @@ export const bookActions = {
           $('#bookShelfInput').value = book.shelf;
           $('#bookSynopsisInput').value = book.synopsis || '';
           $('#bookCoverInput').value = cover;
+          $('#bookCloudinaryIdInput').value = '';
           $('#bookModalCoverPreview').src = cover;
+          $('#bookCoverFileName').textContent = cover.startsWith('http') ? 'Tersimpan di Cloudinary' : 'Format: PNG, JPG, WEBP (Maks 2MB)';
           $('#bookModalTitle').textContent = `Edit Buku & Sampul (${book.id})`;
           $('#bookModalDialog').classList.remove('hidden');
         }
@@ -72,16 +83,77 @@ export const bookActions = {
       const delBtn = e.target.closest('[data-book-action="delete"]');
       if (delBtn) {
         const id = delBtn.dataset.id;
-        if (confirm(`Yakin ingin menghapus buku ${id} dari katalog?`)) {
+        if (confirm(`Yakin ingin menghapus buku ${id} dari katalog TiDB?`)) {
           adminState.deleteBook(id);
           switchTabFn('books');
-          showToast(`Buku ${id} berhasil dihapus dari sistem.`, 'success');
+          showToast(`Buku ${id} berhasil dihapus dari sistem dan TiDB.`, 'success');
+        }
+      }
+    });
+
+    // Cover photo file upload to Cloudinary (max 2 MB, images only)
+    document.addEventListener('change', async (e) => {
+      if (e.target.id === 'bookCoverFileInput') {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const MAX_BYTES = 2 * 1024 * 1024;
+        if (file.size > MAX_BYTES) {
+          showToast('Ukuran foto melebihi batas maksimal 2 MB.', 'error');
+          e.target.value = '';
+          return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+          showToast('Hanya berkas foto (PNG, JPG, WEBP) yang diizinkan.', 'error');
+          e.target.value = '';
+          return;
+        }
+
+        const preview = $('#bookModalCoverPreview');
+        if (preview) preview.src = URL.createObjectURL(file);
+
+        const nameLabel = $('#bookCoverFileName');
+        if (nameLabel) nameLabel.textContent = file.name;
+
+        const overlay = $('#bookModalCoverUploading');
+        if (overlay) overlay.classList.remove('hidden');
+
+        const triggerBtn = $('#triggerCoverUploadBtn');
+        if (triggerBtn) triggerBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('cover', file);
+
+        try {
+          const res = await fetch('/api/upload/cover', {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.error || data.message || 'Gagal mengunggah foto ke Cloudinary.');
+          }
+
+          const coverInput = $('#bookCoverInput');
+          if (coverInput) coverInput.value = data.url;
+
+          const clIdInput = $('#bookCloudinaryIdInput');
+          if (clIdInput) clIdInput.value = data.public_id || '';
+
+          if (preview) preview.src = data.url;
+          showToast('Foto sampul berhasil diunggah ke Cloudinary.', 'success');
+        } catch (err) {
+          showToast(err.message || 'Terjadi kesalahan saat mengunggah foto.', 'error');
+        } finally {
+          if (overlay) overlay.classList.add('hidden');
+          if (triggerBtn) triggerBtn.disabled = false;
         }
       }
     });
 
     // Form submission
-    document.addEventListener('submit', (e) => {
+    document.addEventListener('submit', async (e) => {
       if (e.target.id === 'bookForm') {
         e.preventDefault();
         const origId = $('#bookFormOriginalId').value;
@@ -111,11 +183,11 @@ export const bookActions = {
         };
 
         if (origId) {
-          adminState.updateBook(origId, payload);
-          showToast(`Katalog buku "${title}" dan sampul berhasil diperbarui.`, 'success');
+          await adminState.updateBook(origId, payload);
+          showToast(`Katalog buku "${title}" berhasil diperbarui di TiDB.`, 'success');
         } else {
-          adminState.addBook(payload);
-          showToast(`Buku baru "${title}" berhasil ditambahkan ke katalog.`, 'success');
+          await adminState.addBook(payload);
+          showToast(`Buku baru "${title}" berhasil ditambahkan ke TiDB.`, 'success');
         }
         $('#bookModalDialog').classList.add('hidden');
         switchTabFn('books');

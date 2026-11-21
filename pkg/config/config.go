@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -54,8 +53,6 @@ type Config struct {
 	TiDBDatabase           string
 	JWTSecret              string
 	AllowedOrigin          string
-	MoistureThreshold      float64
-	DefaultDeviceID        string
 	SMTPHost               string
 	SMTPPort               string
 	SMTPUser               string
@@ -92,13 +89,6 @@ func Load() Config {
 		origin = "*"
 	}
 
-	threshold := 50.0
-	if envT := os.Getenv("MOISTURE_THRESHOLD"); envT != "" {
-		if t, err := strconv.ParseFloat(envT, 64); err == nil {
-			threshold = t
-		}
-	}
-
 	smtpPort := os.Getenv("SMTP_PORT")
 	if smtpPort == "" {
 		smtpPort = "587"
@@ -117,8 +107,6 @@ func Load() Config {
 		TiDBDatabase:           dbName,
 		JWTSecret:              jwtSec,
 		AllowedOrigin:          origin,
-		MoistureThreshold:      threshold,
-		DefaultDeviceID:        "DEV-PLB-001",
 		SMTPHost:               os.Getenv("SMTP_HOST"),
 		SMTPPort:               smtpPort,
 		SMTPUser:               os.Getenv("SMTP_USER"),

@@ -21,9 +21,7 @@ client_secret*.json
 *.pem
 *.cert
 
-# Local Notes and Hardware Documents
-iot.io
-planning.md
+# Local Notes and Configuration
 Agent.md
 AGENTS.md
 .agents/

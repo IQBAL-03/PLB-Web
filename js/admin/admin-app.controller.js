@@ -18,12 +18,16 @@ export const adminAppController = {
   reportStartDate: '2026-11-01',
   reportEndDate: '2026-11-21',
 
-  init() {
+  async init() {
     this.bindNavigation();
     this.bindDashboardAndReport();
     memberActions.bind((tab) => this.switchTab(tab));
     bookActions.bind((tab) => this.switchTab(tab));
     this.switchTab('dashboard');
+    const synced = await adminState.syncBooksFromAPI();
+    if (synced && this.currentTab === 'books') {
+      this.switchTab('books');
+    }
   },
 
   switchTab(tabName) {

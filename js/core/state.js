@@ -7,12 +7,32 @@ import { eventBus } from './events.js';
 
 class State {
   constructor() {
-    this.books = [...books];
+    const local = localStorage.getItem('sisperpus_admin_books');
+    this.books = local ? JSON.parse(local) : [...books];
     this.categories = [...categories];
     this.activeCategory = 'Semua Koleksi';
     this.searchQuery = '';
     this.selectedBook = null;
     this.borrowedBookIds = new Set(JSON.parse(localStorage.getItem('sisperpus_borrowed') || '[]'));
+    this.syncBooks();
+  }
+
+  async syncBooks() {
+    try {
+      const res = await fetch('/api/books');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
+          this.books = data.books;
+          eventBus.emit('catalog:filter-changed', {
+            category: this.activeCategory,
+            query: this.searchQuery,
+          });
+        }
+      }
+    } catch {
+      // Offline fallback
+    }
   }
 
   setCategory(category) {

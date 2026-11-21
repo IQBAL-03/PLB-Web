@@ -19,6 +19,47 @@ func NewRepository(db *sql.DB) *Repository {
 	return &Repository{db: db}
 }
 
+// GetUserByUsernameOrEmail finds a user record by username or email.
+func (r *Repository) GetUserByUsernameOrEmail(identifier string) (*model.User, error) {
+	clean := strings.TrimSpace(identifier)
+	var u model.User
+	var isVerifiedInt int
+	var usernameSql, emailSql, roleSql sql.NullString
+
+	err := r.db.QueryRow(`
+		SELECT id, username, name, email, password_hash, role, auth_provider, is_verified, created_at
+		FROM users
+		WHERE username = ? OR email = ?
+		LIMIT 1
+	`, clean, strings.ToLower(clean)).Scan(
+		&u.ID,
+		&usernameSql,
+		&u.Name,
+		&emailSql,
+		&u.PasswordHash,
+		&roleSql,
+		&u.AuthProvider,
+		&isVerifiedInt,
+		&u.CreatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	u.Username = usernameSql.String
+	u.Email = emailSql.String
+	u.Role = roleSql.String
+	if u.Role == "" {
+		u.Role = "admin"
+	}
+	u.IsVerified = isVerifiedInt == 1
+	return &u, nil
+}
+
 // GetUserByEmail finds a user record by email address.
 func (r *Repository) GetUserByEmail(email string) (*model.User, error) {
 	cleanEmail := strings.ToLower(strings.TrimSpace(email))

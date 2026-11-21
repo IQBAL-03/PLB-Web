@@ -112,24 +112,68 @@ class AdminStateManager {
     });
   }
 
-  addBook(book) {
-    this.books.unshift(book);
-    this.save('books', this.books);
+  async syncBooksFromAPI() {
+    try {
+      const res = await fetch('/api/books');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
+          this.books = data.books;
+          this.save('books', this.books);
+          return true;
+        }
+      }
+    } catch {
+      // Offline fallback
+    }
+    return false;
   }
 
-  updateBook(id, updated) {
+  async addBook(book) {
+    this.books.unshift(book);
+    this.save('books', this.books);
+    try {
+      await fetch('/api/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(book),
+      });
+    } catch {
+      // Keep local state
+    }
+  }
+
+  async updateBook(id, updated) {
     const idx = this.books.findIndex((b) => b.id === id);
     if (idx !== -1) {
       this.books[idx] = { ...this.books[idx], ...updated };
       this.save('books', this.books);
+      try {
+        await fetch(`/api/books/update?id=${encodeURIComponent(id)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.books[idx]),
+        });
+      } catch {
+        // Keep local state
+      }
       return this.books[idx];
     }
     return null;
   }
 
-  deleteBook(id) {
+  async deleteBook(id) {
     this.books = this.books.filter((b) => b.id !== id);
     this.save('books', this.books);
+    try {
+      await fetch(`/api/books/delete?id=${encodeURIComponent(id)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+    } catch {
+      // Keep local state
+    }
   }
 
   // --- Reports by Date Range ---

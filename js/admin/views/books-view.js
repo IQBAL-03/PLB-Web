@@ -58,15 +58,26 @@ export const booksView = {
 
               <!-- Cover Image Input & Live Preview -->
               <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 flex flex-col sm:flex-row items-center gap-4">
-                <div class="w-24 aspect-[3/4] bg-stone-200 rounded-lg overflow-hidden border border-stone-300 shrink-0 flex items-center justify-center">
+                <div class="w-24 aspect-[3/4] bg-stone-200 rounded-lg overflow-hidden border border-stone-300 shrink-0 flex items-center justify-center relative">
                   <img id="bookModalCoverPreview" src="cover-sementara/look-back.png" alt="Pratinjau Sampul" class="w-full h-full object-contain" />
+                  <div id="bookModalCoverUploading" class="absolute inset-0 bg-stone-900/70 hidden flex flex-col items-center justify-center text-white text-[10px] font-bold p-1 text-center">
+                    <svg class="animate-spin w-4 h-4 mb-1 text-amber-300" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                    <span>Mengunggah...</span>
+                  </div>
                 </div>
-                <div class="w-full">
-                  <label for="bookCoverInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Path / URL Sampul Kover</label>
-                  <input type="text" id="bookCoverInput" value="cover-sementara/look-back.png" required
-                    class="w-full text-xs font-mono px-3 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none bg-white"
-                    placeholder="cover-sementara/look-back.png" />
-                  <p class="text-[11px] text-stone-500 mt-1">Gunakan berkas dari <code>cover-sementara/</code> atau URL gambar eksternal.</p>
+                <div class="w-full space-y-2">
+                  <span class="block text-xs font-bold text-stone-700 uppercase">Foto Sampul Buku</span>
+                  <input type="hidden" id="bookCoverInput" value="cover-sementara/look-back.png" />
+                  <input type="hidden" id="bookCloudinaryIdInput" value="" />
+                  <input type="file" id="bookCoverFileInput" accept="image/png,image/jpeg,image/webp" class="hidden" />
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="triggerCoverUploadBtn" class="px-3.5 py-2 rounded-lg bg-stone-800 hover:bg-stone-900 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1.5">
+                      <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                      <span>Pilih Foto Sampul (Maks 2MB)</span>
+                    </button>
+                    <span id="bookCoverFileName" class="text-xs text-stone-600 truncate max-w-[200px]">Format: PNG, JPG, WEBP</span>
+                  </div>
+                  <p class="text-[11px] text-stone-500">Hanya foto yang disimpan di cloud (Cloudinary), seluruh data katalog lainnya disimpan di basis data TiDB.</p>
                 </div>
               </div>
 

@@ -1,4 +1,4 @@
-// Package api exposes the Vercel Serverless Function entry point.
+// Package api exposes the Vercel Serverless Function entry point for SISPERPUS.
 package api
 
 import (
@@ -7,10 +7,8 @@ import (
 	"sisperpus/pkg/config"
 	"sisperpus/pkg/database"
 	"sisperpus/pkg/feature/auth"
-	"sisperpus/pkg/feature/control"
-	"sisperpus/pkg/feature/device"
-	"sisperpus/pkg/feature/history"
-	"sisperpus/pkg/feature/telemetry"
+	"sisperpus/pkg/feature/books"
+	"sisperpus/pkg/feature/upload"
 	"sisperpus/pkg/middleware"
 	"sisperpus/pkg/response"
 )
@@ -25,18 +23,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Repositories
+	// Repositories & Services
 	authRepo := auth.NewRepository(db)
-	deviceRepo := device.NewRepository(db)
-	historyRepo := history.NewRepository(db)
-	controlRepo := control.NewRepository(db)
+	booksRepo := books.NewRepository(db)
+	uploadSvc := upload.NewService(cfg)
 
 	// Handlers
 	authH := auth.NewHandler(cfg, authRepo)
-	deviceH := device.NewHandler(cfg, deviceRepo)
-	historyH := history.NewHandler(cfg, historyRepo)
-	controlH := control.NewHandler(cfg, controlRepo, historyRepo)
-	telemetryH := telemetry.NewHandler(db, cfg, controlRepo, historyRepo)
+	booksH := books.NewHandler(cfg, booksRepo)
+	uploadH := upload.NewHandler(cfg, uploadSvc)
 
 	mux := http.NewServeMux()
 
@@ -44,34 +39,45 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return middleware.Chain(cfg, h)
 	}
 
-	// Auth Endpoints
+	// Authentication Endpoints
+	mux.HandleFunc("/api/auth/login", wrap(authH.Login))
 	mux.HandleFunc("/api/auth/register", wrap(authH.Register))
 	mux.HandleFunc("/api/auth/register/request-otp", wrap(authH.RegisterRequestOTP))
 	mux.HandleFunc("/api/auth/register/verify-otp", wrap(authH.RegisterVerifyOTP))
-	mux.HandleFunc("/api/auth/login", wrap(authH.Login))
-	mux.HandleFunc("/api/auth/google", wrap(authH.Google))
 	mux.HandleFunc("/api/auth/otp/verify", wrap(authH.VerifyOTP))
 	mux.HandleFunc("/api/auth/otp/resend", wrap(authH.ResendOTP))
 	mux.HandleFunc("/api/auth/me", wrap(authH.Me))
 
-	// Device Endpoints
-	mux.HandleFunc("/api/devices", wrap(deviceH.List))
-	mux.HandleFunc("/api/devices/claim", wrap(deviceH.Claim))
-	mux.HandleFunc("/api/devices/unpair", wrap(deviceH.Unpair))
+	// Book Catalog & TiDB Persistence Endpoints
+	mux.HandleFunc("/api/books", wrap(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			booksH.List(w, r)
+		case http.MethodPost:
+			booksH.Create(w, r)
+		case http.MethodPut:
+			booksH.Update(w, r)
+		case http.MethodDelete:
+			booksH.Delete(w, r)
+		default:
+			response.Error(w, http.StatusMethodNotAllowed, "Metode tidak diizinkan")
+		}
+	}))
+	mux.HandleFunc("/api/books/update", wrap(booksH.Update))
+	mux.HandleFunc("/api/books/delete", wrap(booksH.Delete))
 
-	// Control & Status Endpoints
-	mux.HandleFunc("/api/status", wrap(controlH.Status))
-	mux.HandleFunc("/api/pump/on", wrap(controlH.PumpOn))
-	mux.HandleFunc("/api/pump/off", wrap(controlH.PumpOff))
-	mux.HandleFunc("/api/mode", wrap(controlH.Mode))
+	// Cloudinary Upload Endpoints (Cover Buku & Berkas)
+	mux.HandleFunc("/api/upload/cover", wrap(uploadH.UploadCover))
+	mux.HandleFunc("/api/upload", wrap(uploadH.UploadCover))
 
-	// History Endpoints
-	mux.HandleFunc("/api/history", wrap(historyH.List))
-	mux.HandleFunc("/api/history/clear", wrap(historyH.Clear))
-
-	// Telemetry & Health Endpoints
-	mux.HandleFunc("/api/webhook", wrap(telemetryH.Webhook))
-	mux.HandleFunc("/api/ping", wrap(telemetryH.Ping))
+	// Health Check Endpoint
+	mux.HandleFunc("/api/health", wrap(func(w http.ResponseWriter, r *http.Request) {
+		response.JSON(w, http.StatusOK, map[string]any{
+			"status":  "ok",
+			"system":  "SISPERPUS Digital Library API",
+			"version": "1.0.0",
+		})
+	}))
 
 	mux.ServeHTTP(w, r)
 }

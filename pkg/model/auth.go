@@ -4,9 +4,11 @@ package model
 // User represents an account holder in the system.
 type User struct {
 	ID           int    `json:"id"`
+	Username     string `json:"username"`
 	Name         string `json:"name"`
 	Email        string `json:"email"`
 	PasswordHash string `json:"-"`
+	Role         string `json:"role"`
 	AuthProvider string `json:"auth_provider"`
 	IsVerified   bool   `json:"is_verified"`
 	CreatedAt    string `json:"created_at"`
@@ -37,10 +39,12 @@ type OTPRecord struct {
 
 // UserClaims represents the payload embedded into signed JWT tokens.
 type UserClaims struct {
-	UserID int    `json:"uid"`
-	Email  string `json:"email"`
-	Name   string `json:"name"`
-	Exp    int64  `json:"exp"`
+	UserID   int    `json:"uid"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Role     string `json:"role"`
+	Exp      int64  `json:"exp"`
 }
 
 // RegisterReq defines user registration payload.
@@ -60,12 +64,13 @@ type VerifyRegisterOTPReq struct {
 	Code     string `json:"code"`
 }
 
-// LoginReq defines credentials for email/password authentication.
+// LoginReq defines credentials for username/email and password authentication.
 type LoginReq struct {
-	Email       string `json:"email"`
+	Username    string `json:"username,omitempty"`
+	Email       string `json:"email,omitempty"`
 	Password    string `json:"password"`
-	DeviceToken string `json:"device_token"`
-	DeviceName  string `json:"device_name"`
+	DeviceToken string `json:"device_token,omitempty"`
+	DeviceName  string `json:"device_name,omitempty"`
 }
 
 // GoogleAuthReq defines authentication data coming from Google OAuth.
