@@ -57,6 +57,11 @@ func Get(cfg config.Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("db migrate: %w", err)
 	}
 
+	if err := Seed(conn); err != nil {
+		_ = conn.Close()
+		return nil, fmt.Errorf("db seed: %w", err)
+	}
+
 	db = conn
 	return db, nil
 }

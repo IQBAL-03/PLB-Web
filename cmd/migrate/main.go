@@ -1,87 +1,72 @@
-// Command line tool to manage PlantCare IoT database migrations.
-// Usage:
-//   go run cmd/migrate/main.go         # Run standard migration
-//   go run cmd/migrate/main.go -fresh  # Drop all tables, re-create schema and seed data
+// Package main provides a standalone CLI tool to run database schema migrations and seeders for SISPERPUS.
 package main
 
 import (
-	"bufio"
 	"database/sql"
 	"flag"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
 	"plantcare-iot/pkg/config"
 	"plantcare-iot/pkg/database"
 )
 
-// loadEnvFile reads key-value pairs from .env into process environment variables.
-func loadEnvFile(path string) {
-	file, err := os.Open(path)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) == 2 {
-			k := strings.TrimSpace(parts[0])
-			v := strings.TrimSpace(parts[1])
-			v = strings.Trim(v, `"'`)
-			if os.Getenv(k) == "" {
-				_ = os.Setenv(k, v)
-			}
-		}
-	}
-}
-
 func main() {
-	fresh := flag.Bool("fresh", false, "Drop all existing tables and re-create schema with initial seeds")
+	freshFlag := flag.Bool("fresh", false, "Drop existing tables and run fresh migration with seed data")
 	flag.Parse()
 
-	loadEnvFile(".env")
 	cfg := config.Load()
-
 	if cfg.TiDBHost == "" || cfg.TiDBUser == "" {
-		log.Fatalf("Error: TiDB configuration is missing. Ensure .env file exists or set environment variables.")
+		log.Fatal("Kredensial TiDB belum dikonfigurasi di file .env (TIDB_HOST dan TIDB_USER wajib diisi).")
 	}
 
-	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?tls=true&charset=utf8mb4&parseTime=true&loc=UTC&timeout=15s",
-		cfg.TiDBUser, cfg.TiDBPassword, cfg.TiDBHost, cfg.TiDBPort, cfg.TiDBDatabase,
-	)
-
-	conn, err := sql.Open("mysql", dsn)
+	fmt.Println("[MIGRATE] Menghubungkan ke basis data TiDB...")
+	db, err := database.Get(cfg)
 	if err != nil {
-		log.Fatalf("Error opening database connection: %v", err)
+		log.Fatalf("[MIGRATE ERROR] Gagal terhubung ke TiDB: %v", err)
 	}
-	defer conn.Close()
+	defer db.Close()
 
-	if err := conn.Ping(); err != nil {
-		log.Fatalf("Error connecting to TiDB Cloud: %v", err)
+	if *freshFlag {
+		fmt.Println("[MIGRATE] Menjalankan RESET (Drop & Re-create tabel perpustakaan)...")
+		if err := database.Reset(db); err != nil {
+			log.Fatalf("[MIGRATE ERROR] Gagal mereset tabel: %v", err)
+		}
+		if err := database.Seed(db); err != nil {
+			log.Fatalf("[MIGRATE ERROR] Gagal menjalankan seeder setelah reset: %v", err)
+		}
+		fmt.Println("[MIGRATE SUKSES] Tabel berhasil digenerate ulang dan diisi seeder.")
+		printSummary(db)
+		return
 	}
 
-	if *fresh {
-		log.Println("[MIGRATE] Menghapus seluruh tabel dan membangun ulang schema (migrate:fresh)...")
-		if err := database.Reset(conn); err != nil {
-			log.Fatalf("Error resetting database: %v", err)
-		}
-		log.Println("[MIGRATE] Berhasil: Seluruh tabel telah direset dan data bawaan (seed) berhasil dimasukkan.")
-	} else {
-		log.Println("[MIGRATE] Menjalankan migrasi standar...")
-		if err := database.Migrate(conn); err != nil {
-			log.Fatalf("Error migrating database: %v", err)
-		}
-		log.Println("[MIGRATE] Berhasil: Skema database telah diperbarui.")
+	fmt.Println("[MIGRATE] Menjalankan migrasi skema tabel SISPERPUS...")
+	if err := database.Migrate(db); err != nil {
+		log.Fatalf("[MIGRATE ERROR] Gagal migrasi: %v", err)
 	}
+
+	fmt.Println("[MIGRATE] Menjalankan seeder akun Admin dan katalog awal...")
+	if err := database.Seed(db); err != nil {
+		log.Fatalf("[MIGRATE ERROR] Gagal seeding: %v", err)
+	}
+
+	fmt.Println("[MIGRATE SUKSES] Skema tabel dan seeder berhasil dieksekusi.")
+	printSummary(db)
 }
 
+func printSummary(db *sql.DB) {
+	fmt.Println("--------------------------------------------------")
+	fmt.Println("STATUS TABEL TI-DB:")
+
+	var userCount, bookCount, memberCount, trxCount int
+	_ = db.QueryRow("SELECT COUNT(*) FROM users").Scan(&userCount)
+	_ = db.QueryRow("SELECT COUNT(*) FROM books").Scan(&bookCount)
+	_ = db.QueryRow("SELECT COUNT(*) FROM members").Scan(&memberCount)
+	_ = db.QueryRow("SELECT COUNT(*) FROM transactions").Scan(&trxCount)
+
+	fmt.Printf(" - users       : %d baris (Akun 'Admin' role 'admin' siap)\n", userCount)
+	fmt.Printf(" - books       : %d judul buku terdaftar\n", bookCount)
+	fmt.Printf(" - members     : %d data siswa terdaftar\n", memberCount)
+	fmt.Printf(" - transactions: %d riwayat sirkulasi terdaftar\n", trxCount)
+	fmt.Println("--------------------------------------------------")
+}

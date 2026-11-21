@@ -2,12 +2,39 @@
 package config
 
 import (
+	"bufio"
 	"crypto/rand"
 	"encoding/hex"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
+
+// loadEnvFile reads a local .env file if present and populates unset environment variables.
+func loadEnvFile() {
+	f, err := os.Open(".env")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			k := strings.TrimSpace(parts[0])
+			v := strings.Trim(strings.TrimSpace(parts[1]), "\"")
+			if os.Getenv(k) == "" {
+				_ = os.Setenv(k, v)
+			}
+		}
+	}
+}
 
 // generateEphemeralSecret creates a cryptographically secure 256-bit random string.
 func generateEphemeralSecret(numBytes int) string {
@@ -20,24 +47,30 @@ func generateEphemeralSecret(numBytes int) string {
 
 // Config holds runtime configuration settings loaded from environment variables.
 type Config struct {
-	TiDBHost          string
-	TiDBPort          string
-	TiDBUser          string
-	TiDBPassword      string
-	TiDBDatabase      string
-	JWTSecret         string
-	AllowedOrigin     string
-	MoistureThreshold float64
-	DefaultDeviceID   string
-	SMTPHost          string
-	SMTPPort          string
-	SMTPUser          string
-	SMTPPass          string
-	SMTPFrom          string
+	TiDBHost               string
+	TiDBPort               string
+	TiDBUser               string
+	TiDBPassword           string
+	TiDBDatabase           string
+	JWTSecret              string
+	AllowedOrigin          string
+	MoistureThreshold      float64
+	DefaultDeviceID        string
+	SMTPHost               string
+	SMTPPort               string
+	SMTPUser               string
+	SMTPPass               string
+	SMTPFrom               string
+	CloudinaryCloudName    string
+	CloudinaryAPIKey       string
+	CloudinaryAPISecret    string
+	CloudinaryUploadPreset string
 }
 
 // Load reads and parses configuration values from system environment variables.
 func Load() Config {
+	loadEnvFile()
+
 	port := os.Getenv("TIDB_PORT")
 	if port == "" {
 		port = "4000"
@@ -77,20 +110,24 @@ func Load() Config {
 	}
 
 	return Config{
-		TiDBHost:          os.Getenv("TIDB_HOST"),
-		TiDBPort:          port,
-		TiDBUser:          os.Getenv("TIDB_USER"),
-		TiDBPassword:      os.Getenv("TIDB_PASSWORD"),
-		TiDBDatabase:      dbName,
-		JWTSecret:         jwtSec,
-		AllowedOrigin:     origin,
-		MoistureThreshold: threshold,
-		DefaultDeviceID:   "DEV-PLB-001",
-		SMTPHost:          os.Getenv("SMTP_HOST"),
-		SMTPPort:          smtpPort,
-		SMTPUser:          os.Getenv("SMTP_USER"),
-		SMTPPass:          os.Getenv("SMTP_PASS"),
-		SMTPFrom:          smtpFrom,
+		TiDBHost:               os.Getenv("TIDB_HOST"),
+		TiDBPort:               port,
+		TiDBUser:               os.Getenv("TIDB_USER"),
+		TiDBPassword:           os.Getenv("TIDB_PASSWORD"),
+		TiDBDatabase:           dbName,
+		JWTSecret:              jwtSec,
+		AllowedOrigin:          origin,
+		MoistureThreshold:      threshold,
+		DefaultDeviceID:        "DEV-PLB-001",
+		SMTPHost:               os.Getenv("SMTP_HOST"),
+		SMTPPort:               smtpPort,
+		SMTPUser:               os.Getenv("SMTP_USER"),
+		SMTPPass:               os.Getenv("SMTP_PASS"),
+		SMTPFrom:               smtpFrom,
+		CloudinaryCloudName:    os.Getenv("CLOUDINARY_CLOUD_NAME"),
+		CloudinaryAPIKey:       os.Getenv("CLOUDINARY_API_KEY"),
+		CloudinaryAPISecret:    os.Getenv("CLOUDINARY_API_SECRET"),
+		CloudinaryUploadPreset: os.Getenv("CLOUDINARY_UPLOAD_PRESET"),
 	}
 }
 

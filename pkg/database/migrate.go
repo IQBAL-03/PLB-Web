@@ -1,3 +1,4 @@
+// Package database handles connection pooling, schema migration, and data seeding for TiDB.
 package database
 
 import (
@@ -5,172 +6,111 @@ import (
 	"fmt"
 )
 
-// Migrate checks and initializes tables and columns required by PlantCare IoT.
+// Migrate checks and initializes tables required by the SISPERPUS digital library system.
 func Migrate(conn *sql.DB) error {
-	// 1. Users Table
+	// 1. Users Table (Admin & Library Staff)
 	_, err := conn.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
 			id            INT AUTO_INCREMENT PRIMARY KEY,
+			username      VARCHAR(50)  DEFAULT NULL,
 			name          VARCHAR(100) NOT NULL,
-			email         VARCHAR(150) NOT NULL UNIQUE,
+			email         VARCHAR(150) DEFAULT NULL,
 			password_hash VARCHAR(255) NOT NULL,
+			role          VARCHAR(20)  NOT NULL DEFAULT 'admin',
 			auth_provider VARCHAR(20)  NOT NULL DEFAULT 'local',
 			is_verified   TINYINT(1)   NOT NULL DEFAULT 1,
 			created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
 		)
 	`)
 	if err != nil {
-		return err
+		return fmt.Errorf("migrasi tabel users: %w", err)
 	}
-	addColumnIfNotExists(conn, "users", "auth_provider", "VARCHAR(20) NOT NULL DEFAULT 'local'")
-	addColumnIfNotExists(conn, "users", "is_verified", "TINYINT(1) NOT NULL DEFAULT 1")
 
-	// 2. Devices Table
+	addColumnIfNotExists(conn, "users", "username", "VARCHAR(50) DEFAULT NULL")
+	addColumnIfNotExists(conn, "users", "role", "VARCHAR(20) NOT NULL DEFAULT 'admin'")
+	addUniqueIndexIfNotExists(conn, "users", "uq_user_username", "username")
+
+	// 2. Books Table (Catalog & Cover Storage)
 	_, err = conn.Exec(`
-		CREATE TABLE IF NOT EXISTS devices (
-			device_id     VARCHAR(50)  PRIMARY KEY,
-			pairing_code  VARCHAR(20)  NOT NULL DEFAULT '8821',
-			user_id       INT          DEFAULT NULL,
-			name          VARCHAR(100) NOT NULL DEFAULT 'Unit Tanaman',
-			blynk_token   VARCHAR(64)  NOT NULL DEFAULT '',
-			created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-			INDEX idx_user (user_id)
+		CREATE TABLE IF NOT EXISTS books (
+			id                   VARCHAR(50)  PRIMARY KEY,
+			title                VARCHAR(255) NOT NULL,
+			author               VARCHAR(255) NOT NULL,
+			category             VARCHAR(100) NOT NULL,
+			language             VARCHAR(50)  NOT NULL DEFAULT 'Bahasa Indonesia',
+			price                INT          NOT NULL DEFAULT 0,
+			year                 VARCHAR(10)  NOT NULL DEFAULT '',
+			shelf                VARCHAR(100) NOT NULL DEFAULT '',
+			stock                INT          NOT NULL DEFAULT 0,
+			rating               DOUBLE       NOT NULL DEFAULT 4.9,
+			reviews_count        INT          NOT NULL DEFAULT 0,
+			badge                VARCHAR(100) NOT NULL DEFAULT '',
+			synopsis             TEXT,
+			cover_img            VARCHAR(500) NOT NULL DEFAULT '',
+			cloudinary_public_id VARCHAR(255) NOT NULL DEFAULT '',
+			is_popular           TINYINT(1)   NOT NULL DEFAULT 0,
+			is_spotlight         TINYINT(1)   NOT NULL DEFAULT 0,
+			has_volumes          TINYINT(1)   NOT NULL DEFAULT 0,
+			created_at           DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+			updated_at           DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
 		)
 	`)
 	if err != nil {
-		return err
+		return fmt.Errorf("migrasi tabel books: %w", err)
 	}
 
-	// Default device for immediate plug-and-play & simulation units
-	_, _ = conn.Exec(`
-		INSERT IGNORE INTO devices (device_id, pairing_code, name, blynk_token)
-		VALUES 
-			('DEV-PLB-001', '8821', 'Unit Tanaman Utama (Fisik)', 'dKpUYSW9CoruTAYJMQa82CBf-VyH4h42'),
-			('DEV-PLB-002', '9932', 'Unit Simulasi 2 (Bonsai)', ''),
-			('DEV-PLB-003', '7714', 'Unit Simulasi 3 (Cabai)', '')
-	`)
-
-	// 3. System Status Table
+	// 3. Members Table (Students & School Staff)
 	_, err = conn.Exec(`
-		CREATE TABLE IF NOT EXISTS system_status (
-			id          INT          NOT NULL DEFAULT 1,
-			device_id   VARCHAR(50)  NOT NULL DEFAULT 'DEV-PLB-001',
-			pump_on     TINYINT(1)   NOT NULL DEFAULT 0,
-			moisture    DOUBLE       DEFAULT NULL,
-			has_data    TINYINT(1)   NOT NULL DEFAULT 0,
-			mode        VARCHAR(10)  NOT NULL DEFAULT 'auto',
-			threshold   DOUBLE       NOT NULL DEFAULT 50,
-			updated_at  DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-			PRIMARY KEY (id),
-			UNIQUE KEY uq_dev (device_id)
-		)
-	`)
-	if err != nil {
-		return err
-	}
-
-	// Schema upgrades for existing installations
-	addColumnIfNotExists(conn, "system_status", "device_id", "VARCHAR(50) NOT NULL DEFAULT 'DEV-PLB-001'")
-	addColumnIfNotExists(conn, "system_status", "has_data", "TINYINT(1) NOT NULL DEFAULT 0")
-	addUniqueIndexIfNotExists(conn, "system_status", "uq_dev", "device_id")
-
-	// Allow NULL for moisture column
-	_, _ = conn.Exec("ALTER TABLE system_status MODIFY COLUMN moisture DOUBLE DEFAULT NULL")
-
-	// Insert initial row with zero/null defaults if missing
-	_, _ = conn.Exec(`
-		INSERT IGNORE INTO system_status (id, device_id, pump_on, moisture, has_data, mode, threshold)
-		VALUES (1, 'DEV-PLB-001', 0, NULL, 0, 'auto', 50)
-	`)
-
-	// Reset default unit to standby state awaiting live IoT telemetry
-	_, _ = conn.Exec(`
-		UPDATE system_status
-		SET pump_on = 0, moisture = NULL, has_data = 0
-		WHERE has_data = 0
-	`)
-
-	// 4. Pump History Table
-	_, err = conn.Exec(`
-		CREATE TABLE IF NOT EXISTS pump_history (
-			id         INT AUTO_INCREMENT PRIMARY KEY,
-			device_id  VARCHAR(50)  NOT NULL DEFAULT 'DEV-PLB-001',
-			timestamp  DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-			action     VARCHAR(10)  NOT NULL,
-			mode       VARCHAR(10)  NOT NULL,
-			moisture   DOUBLE       NOT NULL DEFAULT 0,
-			duration   VARCHAR(20)  NOT NULL DEFAULT '—',
-			INDEX idx_dev (device_id, id DESC)
-		)
-	`)
-	if err != nil {
-		return err
-	}
-
-	addColumnIfNotExists(conn, "pump_history", "device_id", "VARCHAR(50) NOT NULL DEFAULT 'DEV-PLB-001'")
-
-	// 5. Trusted Devices Table
-	_, err = conn.Exec(`
-		CREATE TABLE IF NOT EXISTS trusted_devices (
-			id           INT AUTO_INCREMENT PRIMARY KEY,
-			user_id      INT          NOT NULL,
-			device_token VARCHAR(64)  NOT NULL,
-			device_name  VARCHAR(150) NOT NULL DEFAULT 'Browser',
+		CREATE TABLE IF NOT EXISTS members (
+			nis          VARCHAR(50)  PRIMARY KEY,
+			name         VARCHAR(150) NOT NULL,
+			class_room   VARCHAR(50)  NOT NULL,
+			active_loans INT          NOT NULL DEFAULT 0,
+			status       VARCHAR(20)  NOT NULL DEFAULT 'Aktif',
 			created_at   DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-			last_used_at DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-			UNIQUE KEY uq_user_dev (user_id, device_token),
-			INDEX idx_user_dev (user_id)
+			updated_at   DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
 		)
 	`)
 	if err != nil {
-		return err
+		return fmt.Errorf("migrasi tabel members: %w", err)
 	}
 
-	// 6. OTP Codes Table for Email Authentication
+	// 4. Transactions Table (Circulation, Due Dates, and Fines)
 	_, err = conn.Exec(`
-		CREATE TABLE IF NOT EXISTS otp_codes (
-			id          INT AUTO_INCREMENT PRIMARY KEY,
-			email       VARCHAR(150) NOT NULL,
-			code        VARCHAR(10)  NOT NULL DEFAULT '',
-			code_hash   VARCHAR(64)  NOT NULL DEFAULT '',
-			purpose     VARCHAR(30)  NOT NULL DEFAULT 'login',
-			metadata    TEXT         DEFAULT NULL,
-			attempts    INT          NOT NULL DEFAULT 0,
-			expires_at  DATETIME(3)  NOT NULL,
-			is_used     TINYINT(1)   NOT NULL DEFAULT 0,
-			created_at  DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-			INDEX idx_email_purp (email, purpose, is_used)
+		CREATE TABLE IF NOT EXISTS transactions (
+			id            VARCHAR(50)  PRIMARY KEY,
+			nis           VARCHAR(50)  NOT NULL,
+			student_name  VARCHAR(150) NOT NULL,
+			class_room    VARCHAR(50)  NOT NULL,
+			book_id       VARCHAR(50)  NOT NULL,
+			book_title    VARCHAR(255) NOT NULL,
+			volume_number INT          DEFAULT NULL,
+			price         INT          NOT NULL DEFAULT 0,
+			loan_date     DATE         NOT NULL,
+			due_date      DATE         NOT NULL,
+			return_date   DATE         DEFAULT NULL,
+			status        VARCHAR(30)  NOT NULL DEFAULT 'Dipinjam',
+			fine          INT          NOT NULL DEFAULT 0,
+			fine_paid     TINYINT(1)   NOT NULL DEFAULT 1,
+			created_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+			updated_at    DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+			INDEX idx_trx_dates (loan_date, due_date),
+			INDEX idx_trx_nis (nis)
 		)
 	`)
 	if err != nil {
-		return err
+		return fmt.Errorf("migrasi tabel transactions: %w", err)
 	}
-
-	addColumnIfNotExists(conn, "otp_codes", "code_hash", "VARCHAR(64) NOT NULL DEFAULT ''")
-	addColumnIfNotExists(conn, "otp_codes", "purpose", "VARCHAR(30) NOT NULL DEFAULT 'login'")
-	addColumnIfNotExists(conn, "otp_codes", "metadata", "TEXT DEFAULT NULL")
-	addColumnIfNotExists(conn, "otp_codes", "attempts", "INT NOT NULL DEFAULT 0")
-
-	// Ensure simulation units have rows in system_status
-	_, _ = conn.Exec(`
-		INSERT IGNORE INTO system_status (device_id, pump_on, moisture, has_data, mode, threshold)
-		VALUES 
-			('DEV-PLB-002', 0, NULL, 0, 'auto', 50),
-			('DEV-PLB-003', 0, NULL, 0, 'auto', 50)
-	`)
 
 	return nil
 }
 
-// Reset drops all application tables and executes a fresh migration with seed data.
+// Reset drops library application tables and executes a fresh migration with seeding.
 func Reset(conn *sql.DB) error {
 	tables := []string{
-		"otp_codes",
-		"trusted_devices",
-		"pump_history",
-		"system_status",
-		"devices",
-		"users",
+		"transactions",
+		"members",
+		"books",
 	}
 
 	for _, table := range tables {
