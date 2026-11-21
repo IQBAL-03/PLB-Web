@@ -44,6 +44,16 @@ export const adminAppController = {
         this.switchTab('books');
       }
     });
+
+    // Background auto-polling every 20 seconds for multi-device sync
+    setInterval(async () => {
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        const updated = await adminState.syncBooksFromAPI();
+        if (updated && this.currentTab === 'books') {
+          this.switchTab('books');
+        }
+      }
+    }, 20000);
   },
 
   switchTab(tabName) {

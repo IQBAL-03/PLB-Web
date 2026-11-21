@@ -129,9 +129,12 @@ class AdminStateManager {
       if (res.ok) {
         const data = await res.json();
         if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
-          this.books = data.books;
-          this.save('books', this.books);
-          return true;
+          const hasChanged = JSON.stringify(this.books) !== JSON.stringify(data.books);
+          if (hasChanged || this.books.length === 0) {
+            this.books = data.books;
+            this.save('books', this.books);
+            return true;
+          }
         }
       }
     } catch {
