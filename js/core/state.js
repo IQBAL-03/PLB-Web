@@ -47,14 +47,47 @@ class State {
   setupAutoSync() {
     let lastVersion = null;
 
-    const checkGolangVersion = async () => {
+    const checkUpdates = async () => {
       try {
-        const res = await fetch(`/api/sync/version?t=${Date.now()}`, { cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.ok && data.hash) {
-            if (lastVersion !== null && lastVersion !== data.hash) {
-              lastVersion = data.hash;
+        let versionHash = null;
+
+        // 1. Try high-performance Golang sync version endpoint
+        try {
+          const resVer = await fetch(`/api/sync/version?t=${Date.now()}`, { cache: 'no-store' });
+          if (resVer.ok) {
+            const dataVer = await resVer.json();
+            if (dataVer && dataVer.ok && dataVer.hash) {
+              versionHash = dataVer.hash;
+            }
+          }
+        } catch {
+          // Version endpoint fallback
+        }
+
+        // If Golang hash received
+        if (versionHash) {
+          if (lastVersion !== null && lastVersion !== versionHash) {
+            lastVersion = versionHash;
+            const hasActiveModal = document.querySelector('#borrowModalDialog:not(.hidden), #bookModalDialog:not(.hidden)');
+            if (!hasActiveModal) {
+              window.location.reload();
+              return;
+            }
+            await this.syncBooks();
+            return;
+          }
+          lastVersion = versionHash;
+          return;
+        }
+
+        // 2. Direct book-diff fallback with cache busting
+        const resBooks = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
+        if (resBooks.ok) {
+          const data = await resBooks.json();
+          if (data && data.ok && Array.isArray(data.books)) {
+            const fallbackHash = data.books.map((b) => `${b.id}:${b.updatedAt || ''}:${b.stock}:${b.coverImg || ''}`).join('|');
+            if (lastVersion !== null && lastVersion !== fallbackHash) {
+              lastVersion = fallbackHash;
               const hasActiveModal = document.querySelector('#borrowModalDialog:not(.hidden), #bookModalDialog:not(.hidden)');
               if (!hasActiveModal) {
                 window.location.reload();
@@ -63,33 +96,33 @@ class State {
               await this.syncBooks();
               return;
             }
-            lastVersion = data.hash;
+            lastVersion = fallbackHash;
           }
         }
       } catch {
-        // Fallback to direct book sync
+        // Network fallback
       }
     };
 
-    checkGolangVersion();
+    checkUpdates();
 
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-          checkGolangVersion();
+          checkUpdates();
         }
       });
     }
     if (typeof window !== 'undefined') {
-      window.addEventListener('focus', () => checkGolangVersion());
+      window.addEventListener('focus', () => checkUpdates());
     }
 
-    // High-frequency Golang version check every 4 seconds
+    // High-frequency check every 3 seconds for immediate auto-reload
     setInterval(() => {
       if (typeof document === 'undefined' || document.visibilityState === 'visible') {
-        checkGolangVersion();
+        checkUpdates();
       }
-    }, 4000);
+    }, 3000);
   }
 
   async syncBooks() {

@@ -65,6 +65,7 @@ export const bookActions = {
       const editBtn = e.target.closest('[data-book-action="edit"]');
       if (editBtn) {
         const id = editBtn.dataset.id;
+        await adminState.syncBooksFromAPI();
         const book = adminState.books.find((b) => b.id === id);
         if (book) {
           const cover = book.coverImg || '';
@@ -191,6 +192,16 @@ export const bookActions = {
         const genres = bookGenreHelper.getGenres();
 
         const origBook = origId ? adminState.books.find((b) => b.id === origId) : null;
+        if (hasVolumes && origBook && Array.isArray(origBook.volumes)) {
+          volumes.forEach((vol) => {
+            if (!vol.coverImg) {
+              const prevVol = origBook.volumes.find((pv) => pv.volumeNumber === vol.volumeNumber);
+              if (prevVol && prevVol.coverImg) {
+                vol.coverImg = prevVol.coverImg;
+              }
+            }
+          });
+        }
         const rating = origBook && origBook.rating ? Number(origBook.rating) : (id === 'M003' ? 5 : 4.9);
         const isPopular = origBook ? Boolean(origBook.isPopular) : true;
         const isSpotlight = origBook ? Boolean(origBook.isSpotlight) : false;
