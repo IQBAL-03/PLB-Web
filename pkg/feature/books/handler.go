@@ -3,6 +3,7 @@ package books
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -146,5 +147,26 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"ok":      true,
 		"message": "Buku berhasil dihapus dari basis data TiDB.",
+	})
+}
+
+// SyncVersion provides a lightweight change-detection endpoint for frontend auto-reload.
+func (h *Handler) SyncVersion(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		response.Error(w, http.StatusMethodNotAllowed, "Metode harus GET")
+		return
+	}
+
+	version, count, err := h.repo.GetSyncVersion()
+	if err != nil {
+		response.DBError(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, map[string]interface{}{
+		"ok":      true,
+		"version": version,
+		"count":   count,
+		"hash":    fmt.Sprintf("%d-%d", version, count),
 	})
 }

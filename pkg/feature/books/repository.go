@@ -187,6 +187,21 @@ func (r *Repository) Delete(id string) error {
 	return nil
 }
 
+// GetSyncVersion calculates the current change version hash for live auto-reload.
+func (r *Repository) GetSyncVersion() (int64, int, error) {
+	var maxUnix sql.NullInt64
+	var count int
+	query := `
+		SELECT COALESCE(MAX(UNIX_TIMESTAMP(updated_at)), 0), COUNT(*)
+		FROM books
+	`
+	err := r.db.QueryRow(query).Scan(&maxUnix, &count)
+	if err != nil {
+		return 0, 0, fmt.Errorf("query sync version: %w", err)
+	}
+	return maxUnix.Int64, count, nil
+}
+
 func boolToInt(val bool) int {
 	if val {
 		return 1

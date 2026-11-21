@@ -45,26 +45,56 @@ class State {
   }
 
   setupAutoSync() {
+    let lastVersion = null;
+
+    const checkGolangVersion = async () => {
+      try {
+        const res = await fetch(`/api/sync/version?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.ok && data.hash) {
+            if (lastVersion !== null && lastVersion !== data.hash) {
+              lastVersion = data.hash;
+              const hasActiveModal = document.querySelector('#borrowModalDialog:not(.hidden), #bookModalDialog:not(.hidden)');
+              if (!hasActiveModal) {
+                window.location.reload();
+                return;
+              }
+              await this.syncBooks();
+              return;
+            }
+            lastVersion = data.hash;
+          }
+        }
+      } catch {
+        // Fallback to direct book sync
+      }
+    };
+
+    checkGolangVersion();
+
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-          this.syncBooks();
+          checkGolangVersion();
         }
       });
     }
     if (typeof window !== 'undefined') {
-      window.addEventListener('focus', () => this.syncBooks());
+      window.addEventListener('focus', () => checkGolangVersion());
     }
+
+    // High-frequency Golang version check every 4 seconds
     setInterval(() => {
       if (typeof document === 'undefined' || document.visibilityState === 'visible') {
-        this.syncBooks();
+        checkGolangVersion();
       }
-    }, 20000);
+    }, 4000);
   }
 
   async syncBooks() {
     try {
-      const res = await fetch('/api/books');
+      const res = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {

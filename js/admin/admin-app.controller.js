@@ -29,31 +29,50 @@ export const adminAppController = {
       this.switchTab('books');
     }
 
-    // Auto-sync admin catalog when window/tab is focused or visible
-    document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'visible') {
-        const updated = await adminState.syncBooksFromAPI();
-        if (updated && this.currentTab === 'books') {
-          this.switchTab('books');
+    // Golang live change detection and auto-reload for admin
+    let lastAdminVersion = null;
+    const checkAdminSync = async () => {
+      try {
+        const res = await fetch(`/api/sync/version?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.ok && data.hash) {
+            if (lastAdminVersion !== null && lastAdminVersion !== data.hash) {
+              lastAdminVersion = data.hash;
+              const hasModalOpen = document.querySelector('#bookModalDialog:not(.hidden)');
+              if (!hasModalOpen) {
+                window.location.reload();
+                return;
+              }
+              const updated = await adminState.syncBooksFromAPI();
+              if (updated && this.currentTab === 'books') {
+                this.switchTab('books');
+              }
+              return;
+            }
+            lastAdminVersion = data.hash;
+          }
         }
+      } catch {
+        // Fallback
       }
-    });
-    window.addEventListener('focus', async () => {
-      const updated = await adminState.syncBooksFromAPI();
-      if (updated && this.currentTab === 'books') {
-        this.switchTab('books');
-      }
-    });
+    };
 
-    // Background auto-polling every 20 seconds for multi-device sync
-    setInterval(async () => {
-      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
-        const updated = await adminState.syncBooksFromAPI();
-        if (updated && this.currentTab === 'books') {
-          this.switchTab('books');
-        }
+    checkAdminSync();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        checkAdminSync();
       }
-    }, 20000);
+    });
+    window.addEventListener('focus', () => checkAdminSync());
+
+    // High-frequency polling every 4 seconds
+    setInterval(() => {
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        checkAdminSync();
+      }
+    }, 4000);
   },
 
   switchTab(tabName) {

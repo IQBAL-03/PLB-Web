@@ -66,6 +66,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}))
 	mux.HandleFunc("/api/books/update", wrap(booksH.Update))
 	mux.HandleFunc("/api/books/delete", wrap(booksH.Delete))
+	mux.HandleFunc("/api/sync/version", wrap(booksH.SyncVersion))
 
 	// Cloudinary Upload Endpoints (Cover Buku & Berkas)
 	mux.HandleFunc("/api/upload/cover", wrap(uploadH.UploadCover))
