@@ -59,7 +59,7 @@ export const mangaBooks = [
     reviewsCount: 0,
     badge: 'Serial Multi-Volume',
     synopsis: 'Eksplorasi psikologis masa pendewasaan Onodera Punpun yang digambarkan dalam bentuk burung sederhana, menghadapi dinamika keluarga, cinta masa kecil, dan realitas kehidupan modern.',
-    coverImg: '',
+    coverImg: 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795281315/sisperpus/covers/euarfxor2hvjg0tlmwhx.jpg',
     isPopular: true,
     hasVolumes: true,
     volumes: [

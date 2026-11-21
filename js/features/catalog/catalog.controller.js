@@ -15,6 +15,7 @@ export const catalogController = {
 
     eventBus.on('catalog:filter-changed', () => this.updateCatalogGrid());
     eventBus.on('book:borrowed', () => this.render());
+    eventBus.on('books:synced', () => this.render());
   },
 
   render() {
@@ -25,7 +26,8 @@ export const catalogController = {
 
     const popularGrid = $('#popularBooksGrid');
     if (popularGrid) {
-      const popularBooks = state.books.filter((b) => b.isPopular);
+      const popular = state.books.filter((b) => b.isPopular);
+      const popularBooks = popular.length > 0 ? popular : state.books;
       catalogView.renderGrid(popularGrid, popularBooks, (id) => state.isBookBorrowed(id));
     }
 

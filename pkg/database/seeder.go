@@ -44,10 +44,8 @@ func SeedAdmin(conn *sql.DB) error {
 	return nil
 }
 
-// SeedBooks seeds only the 3 requested titles (Look Back, Eri, Punpun) without photos.
+// SeedBooks seeds only the 3 requested titles (Look Back, Eri, Punpun) with proper ratings and chapters.
 func SeedBooks(conn *sql.DB) error {
-	_, _ = conn.Exec("DELETE FROM books")
-
 	punpunVolumes := []model.Volume{
 		{VolumeNumber: 1, VolumeTitle: "Volume 1 (Chapter 1-23)", Stock: 3, CoverImg: "", Description: "Masa kanak-kanak Punpun dan pertemuannya pertama kali dengan Aiko Tanaka di sekolah dasar."},
 		{VolumeNumber: 2, VolumeTitle: "Volume 2 (Chapter 24-44)", Stock: 2, CoverImg: "", Description: "Masa liburan musim panas dan perubahan situasi keluarga yang mengubah masa kecil Punpun."},
@@ -60,80 +58,102 @@ func SeedBooks(conn *sql.DB) error {
 	punpunVolJSON, _ := json.Marshal(punpunVolumes)
 
 	books := []struct {
-		ID         string
-		Title      string
-		Author     string
-		Category   string
-		Genres     []string
-		Language   string
-		Price      int
-		Year       string
-		Shelf      string
-		Stock      int
-		Badge      string
-		Synopsis   string
-		CoverImg   string
-		HasVolumes int
-		VolJSON    string
+		ID           string
+		Title        string
+		Author       string
+		Category     string
+		Genres       []string
+		Language     string
+		Price        int
+		Year         string
+		Shelf        string
+		Stock        int
+		Rating       float64
+		ReviewsCount int
+		IsPopular    int
+		Badge        string
+		Synopsis     string
+		CoverImg     string
+		HasVolumes   int
+		VolJSON      string
 	}{
 		{
-			ID:         "M001",
-			Title:      "Look Back",
-			Author:     "Tatsuki Fujimoto",
-			Category:   "Komik & Manga",
-			Genres:     []string{"Drama", "Slice of Life", "Manga", "Seni"},
-			Language:   "Bahasa Indonesia",
-			Price:      55000,
-			Year:       "2021",
-			Shelf:      "Rak M-01 (Manga & Komik Edukasi)",
-			Stock:      5,
-			Badge:      "Manga Pilihan",
-			Synopsis:   "Kisah one-shot emosional tentang dua siswi sekolah dasar, Fujino dan Kyomoto, yang disatukan oleh kecintaan mendalam menggambar manga.",
-			CoverImg:   "",
-			HasVolumes: 0,
-			VolJSON:    "",
+			ID:           "M001",
+			Title:        "Look Back",
+			Author:       "Tatsuki Fujimoto",
+			Category:     "Komik & Manga",
+			Genres:       []string{"Drama", "Slice of Life", "Manga", "Seni"},
+			Language:     "Bahasa Indonesia",
+			Price:        55000,
+			Year:         "2021",
+			Shelf:        "Rak M-01 (Manga & Komik Edukasi)",
+			Stock:        5,
+			Rating:       4.9,
+			ReviewsCount: 0,
+			IsPopular:    1,
+			Badge:        "Manga Pilihan",
+			Synopsis:     "Kisah one-shot emosional tentang dua siswi sekolah dasar, Fujino dan Kyomoto, yang disatukan oleh kecintaan mendalam menggambar manga.",
+			CoverImg:     "",
+			HasVolumes:   0,
+			VolJSON:      "",
 		},
 		{
-			ID:         "M002",
-			Title:      "Goodbye, Eri",
-			Author:     "Tatsuki Fujimoto",
-			Category:   "Komik & Manga",
-			Genres:     []string{"Drama", "Misteri", "Sinematik", "Manga"},
-			Language:   "Bahasa Indonesia",
-			Price:      55000,
-			Year:       "2022",
-			Shelf:      "Rak M-01 (Manga & Komik Edukasi)",
-			Stock:      4,
-			Badge:      "Sinematik Populer",
-			Synopsis:   "Yuta merekam hari-hari terakhir ibunya sebagai tugas film sekolah. Setelah karyanya dikritik, ia bertemu gadis misterius bernama Eri.",
-			CoverImg:   "",
-			HasVolumes: 0,
-			VolJSON:    "",
+			ID:           "M002",
+			Title:        "Goodbye, Eri",
+			Author:       "Tatsuki Fujimoto",
+			Category:     "Komik & Manga",
+			Genres:       []string{"Drama", "Misteri", "Sinematik", "Manga"},
+			Language:     "Bahasa Indonesia",
+			Price:        55000,
+			Year:         "2022",
+			Shelf:        "Rak M-01 (Manga & Komik Edukasi)",
+			Stock:        4,
+			Rating:       4.9,
+			ReviewsCount: 0,
+			IsPopular:    1,
+			Badge:        "Sinematik Populer",
+			Synopsis:     "Yuta merekam hari-hari terakhir ibunya sebagai tugas film sekolah. Setelah karyanya dikritik, ia bertemu gadis misterius bernama Eri.",
+			CoverImg:     "",
+			HasVolumes:   0,
+			VolJSON:      "",
 		},
 		{
-			ID:         "M003",
-			Title:      "Goodnight Punpun",
-			Author:     "Inio Asano",
-			Category:   "Komik & Manga",
-			Genres:     []string{"Psikologis", "Drama", "Coming of Age", "Seinen", "Manga"},
-			Language:   "Bahasa Inggris",
-			Price:      245000,
-			Year:       "2007",
-			Shelf:      "Rak M-02 (Koleksi Khusus / Remaja)",
-			Stock:      7,
-			Badge:      "Serial Multi-Volume",
-			Synopsis:   "Eksplorasi psikologis masa pendewasaan Onodera Punpun yang digambarkan dalam bentuk burung sederhana, menghadapi dinamika kehidupan modern.",
-			CoverImg:   "",
-			HasVolumes: 1,
-			VolJSON:    string(punpunVolJSON),
+			ID:           "M003",
+			Title:        "Goodnight Punpun",
+			Author:       "Inio Asano",
+			Category:     "Komik & Manga",
+			Genres:       []string{"Psikologis", "Drama", "Coming of Age", "Seinen", "Manga"},
+			Language:     "Bahasa Inggris",
+			Price:        245000,
+			Year:         "2007",
+			Shelf:        "Rak M-02 (Koleksi Khusus / Remaja)",
+			Stock:        7,
+			Rating:       5.0,
+			ReviewsCount: 0,
+			IsPopular:    1,
+			Badge:        "Serial Multi-Volume",
+			Synopsis:     "Eksplorasi psikologis masa pendewasaan Onodera Punpun yang digambarkan dalam bentuk burung sederhana, menghadapi dinamika kehidupan modern.",
+			CoverImg:     "",
+			HasVolumes:   1,
+			VolJSON:      string(punpunVolJSON),
 		},
 	}
 
 	query := `
 		INSERT INTO books (
 			id, title, author, category, language, price, year, shelf, stock,
+			rating, reviews_count, is_popular, is_spotlight,
 			badge, synopsis, cover_img, has_volumes, volumes_json, genres_json
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE
+			rating = VALUES(rating),
+			reviews_count = VALUES(reviews_count),
+			is_popular = VALUES(is_popular),
+			badge = VALUES(badge),
+			synopsis = VALUES(synopsis),
+			has_volumes = VALUES(has_volumes),
+			volumes_json = VALUES(volumes_json),
+			genres_json = VALUES(genres_json)
 	`
 	stmt, err := conn.Prepare(query)
 	if err != nil {
@@ -149,6 +169,7 @@ func SeedBooks(conn *sql.DB) error {
 		}
 		_, err := stmt.Exec(
 			b.ID, b.Title, b.Author, b.Category, b.Language, b.Price, b.Year, b.Shelf, b.Stock,
+			b.Rating, b.ReviewsCount, b.IsPopular,
 			b.Badge, b.Synopsis, b.CoverImg, b.HasVolumes, volVal, string(genJSON),
 		)
 		if err != nil {

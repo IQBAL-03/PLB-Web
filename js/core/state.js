@@ -17,7 +17,20 @@ class State {
       // Storage access fallback
     }
 
-    this.books = [...books].map((b) => ({
+    let initialBooks = [...books];
+    try {
+      const saved = localStorage.getItem('sisperpus_admin_books');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          initialBooks = parsed;
+        }
+      }
+    } catch {
+      // Storage access fallback
+    }
+
+    this.books = initialBooks.map((b) => ({
       ...b,
       reviewsCount: 0,
       reviews_count: 0,
@@ -41,6 +54,11 @@ class State {
             reviewsCount: 0,
             reviews_count: 0,
           }));
+          try {
+            localStorage.setItem('sisperpus_admin_books', JSON.stringify(this.books));
+          } catch {
+            // Storage quota fallback
+          }
           eventBus.emit('catalog:filter-changed', {
             category: this.activeCategory,
             query: this.searchQuery,
