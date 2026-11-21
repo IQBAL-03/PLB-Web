@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	"plantcare-iot/pkg/model"
+	"sisperpus/pkg/model"
 )
 
 // Repository manages pump state and operational mode data.

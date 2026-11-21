@@ -39,7 +39,7 @@ export const historyController = {
     } catch (err) {
       historyView.setSkeletonVisible(false);
       historyView.renderRows([], state.historyFilter);
-      console.error('[PlantCare] History fetch error:', err);
+      console.error('[SISPERPUS] History fetch error:', err);
     }
   },
 
@@ -52,7 +52,7 @@ export const historyController = {
       await this.fetchHistory();
     } catch (err) {
       showToast(`Gagal: ${err.message}`, 'error');
-      console.error('[PlantCare] Clear history error:', err);
+      console.error('[SISPERPUS] Clear history error:', err);
     }
   },
 };

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"plantcare-iot/pkg/config"
-	"plantcare-iot/pkg/feature/history"
-	"plantcare-iot/pkg/middleware"
-	"plantcare-iot/pkg/model"
-	"plantcare-iot/pkg/response"
+	"sisperpus/pkg/config"
+	"sisperpus/pkg/feature/history"
+	"sisperpus/pkg/middleware"
+	"sisperpus/pkg/model"
+	"sisperpus/pkg/response"
 )
 
 // Handler manages HTTP endpoints for actuators and status queries.

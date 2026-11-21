@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"plantcare-iot/pkg/middleware"
-	"plantcare-iot/pkg/response"
+	"sisperpus/pkg/middleware"
+	"sisperpus/pkg/response"
 )
 
 // Me returns the active authenticated user info extracted from Bearer token.

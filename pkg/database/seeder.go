@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"plantcare-iot/pkg/crypto"
+	"sisperpus/pkg/crypto"
 )
 
 // Seed populates initial administrative user, book catalog, members, and transactions.

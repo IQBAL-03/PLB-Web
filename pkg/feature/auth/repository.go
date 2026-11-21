@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"plantcare-iot/pkg/model"
+	"sisperpus/pkg/model"
 )
 
 // Repository manages user authentication and device trust records in the database.

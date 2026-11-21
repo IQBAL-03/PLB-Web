@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	"plantcare-iot/pkg/model"
+	"sisperpus/pkg/model"
 )
 
 // Repository handles database operations for pump history.

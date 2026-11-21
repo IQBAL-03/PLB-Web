@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"plantcare-iot/pkg/crypto"
-	"plantcare-iot/pkg/mailer"
-	"plantcare-iot/pkg/model"
-	"plantcare-iot/pkg/response"
+	"sisperpus/pkg/crypto"
+	"sisperpus/pkg/mailer"
+	"sisperpus/pkg/model"
+	"sisperpus/pkg/response"
 )
 
 // VerifyOTP validates the OTP code, consumes it, and finalizes registration or trusts the device.
@@ -133,7 +133,7 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		token, _ := crypto.CreateJWT(uid, email, name, h.cfg.JWTSecret)
 		response.JSON(w, http.StatusOK, map[string]any{
 			"ok":      true,
-			"message": "Pendaftaran berhasil diverifikasi! Selamat datang di PlantCare IoT.",
+			"message": "Pendaftaran berhasil diverifikasi! Selamat datang di SISPERPUS.",
 			"token":   token,
 			"user": map[string]any{
 				"id":    uid,

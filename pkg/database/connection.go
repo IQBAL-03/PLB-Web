@@ -8,7 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"plantcare-iot/pkg/config"
+	"sisperpus/pkg/config"
 )
 
 var (

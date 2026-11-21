@@ -29,7 +29,7 @@ export function initGoogleOAuth(onTokenReceived) {
         }
       },
       error_callback: (nonOAuthError) => {
-        console.warn('[PlantCare] Google OAuth:', nonOAuthError);
+        console.warn('[SISPERPUS] Google OAuth:', nonOAuthError);
         if (nonOAuthError && (nonOAuthError.type === 'popup_closed' || nonOAuthError.type === 'popup_closed_by_user')) {
           return;
         }
@@ -41,7 +41,7 @@ export function initGoogleOAuth(onTokenReceived) {
       },
     });
   } catch (err) {
-    console.warn('[PlantCare] Google OAuth init error:', err);
+    console.warn('[SISPERPUS] Google OAuth init error:', err);
   }
 }
 

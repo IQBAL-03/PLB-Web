@@ -2,7 +2,7 @@
 package auth
 
 import (
-	"plantcare-iot/pkg/config"
+	"sisperpus/pkg/config"
 )
 
 // Handler coordinates authentication requests across login, registration, and OTP verification.

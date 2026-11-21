@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"plantcare-iot/pkg/crypto"
-	"plantcare-iot/pkg/mailer"
-	"plantcare-iot/pkg/model"
-	"plantcare-iot/pkg/response"
+	"sisperpus/pkg/crypto"
+	"sisperpus/pkg/mailer"
+	"sisperpus/pkg/model"
+	"sisperpus/pkg/response"
 )
 
 // Login handles password authentication and checks for unrecognized/new devices.

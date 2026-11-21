@@ -1,4 +1,4 @@
-module plantcare-iot
+module sisperpus
 
 go 1.23
 

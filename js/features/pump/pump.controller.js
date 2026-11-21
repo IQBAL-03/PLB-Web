@@ -54,7 +54,7 @@ export const pumpController = {
       eventBus.emit('telemetry:refreshRequired');
     } catch (err) {
       showToast(`Gagal: ${err.message}`, 'error');
-      console.error('[PlantCare] Pump control error:', err);
+      console.error('[SISPERPUS] Pump control error:', err);
     } finally {
       pumpView.setPumpLoading(on, false);
     }
@@ -71,7 +71,7 @@ export const pumpController = {
       eventBus.emit('telemetry:refreshRequired');
     } catch (err) {
       showToast(`Gagal: ${err.message}`, 'error');
-      console.error('[PlantCare] Mode change error:', err);
+      console.error('[SISPERPUS] Mode change error:', err);
     } finally {
       setTimeout(() => {
         if (pumpView.elements.modeSwitch) {

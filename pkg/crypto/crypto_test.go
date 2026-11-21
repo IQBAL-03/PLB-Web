@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"plantcare-iot/pkg/crypto"
+	"sisperpus/pkg/crypto"
 )
 
 func TestHashPassword(t *testing.T) {

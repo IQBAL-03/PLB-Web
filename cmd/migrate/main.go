@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 
-	"plantcare-iot/pkg/config"
-	"plantcare-iot/pkg/database"
+	"sisperpus/pkg/config"
+	"sisperpus/pkg/database"
 )
 
 func main() {

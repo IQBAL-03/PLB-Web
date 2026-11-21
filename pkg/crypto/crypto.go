@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"plantcare-iot/pkg/model"
+	"sisperpus/pkg/model"
 )
 
 const defaultSalt = "plb_salt_2026"

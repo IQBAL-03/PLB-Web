@@ -2,7 +2,7 @@
  * @file Device identification and browser fingerprint helper.
  */
 
-const DEVICE_STORAGE_KEY = 'plantcare_device_token';
+const DEVICE_STORAGE_KEY = 'sisperpus_device_token';
 
 /**
  * Returns or generates a persistent unique device token stored in localStorage.

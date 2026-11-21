@@ -7,7 +7,7 @@ import (
 	"net/smtp"
 	"strings"
 
-	"plantcare-iot/pkg/config"
+	"sisperpus/pkg/config"
 )
 
 // GenerateOTP generates a secure 6-digit numeric OTP string.
@@ -31,7 +31,7 @@ func SendOTP(cfg config.Config, toEmail, otpCode string) error {
 	auth := smtp.PlainAuth("", strings.TrimSpace(cfg.SMTPUser), cleanPass, strings.TrimSpace(cfg.SMTPHost))
 	addr := fmt.Sprintf("%s:%s", strings.TrimSpace(cfg.SMTPHost), strings.TrimSpace(cfg.SMTPPort))
 
-	subject := "Subject: Kode Verifikasi Akun PlantCare IoT\r\n"
+	subject := "Subject: Kode Verifikasi Akun SISPERPUS\r\n"
 	fromHeader := fmt.Sprintf("From: %s\r\n", cfg.SMTPFrom)
 	toHeader := fmt.Sprintf("To: %s\r\n", toEmail)
 	mimeHeader := "MIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n"
@@ -55,11 +55,11 @@ func SendOTP(cfg config.Config, toEmail, otpCode string) error {
 <body>
   <div class="container">
     <div class="header">
-      <h1 class="brand">PlantCare IoT</h1>
+      <h1 class="brand">SISPERPUS</h1>
       <p class="tagline">Sistem Penyiraman Tanaman Otomatis</p>
     </div>
     <p>Halo,</p>
-    <p>Gunakan kode OTP berikut untuk masuk atau memverifikasi akun PlantCare IoT Anda:</p>
+    <p>Gunakan kode OTP berikut untuk masuk atau memverifikasi akun SISPERPUS Anda:</p>
     <div class="code-box">
       <div class="code">%s</div>
     </div>
@@ -68,7 +68,7 @@ func SendOTP(cfg config.Config, toEmail, otpCode string) error {
       Jangan bagikan kode ini kepada siapa pun demi keamanan perangkat Anda.
     </p>
     <div class="footer">
-      PlantCare IoT - Project Lintas Bidang Informatika PPLG
+      SISPERPUS - Project Lintas Bidang Informatika PPLG
     </div>
   </div>
 </body>

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"plantcare-iot/pkg/config"
-	"plantcare-iot/pkg/feature/control"
-	"plantcare-iot/pkg/feature/history"
-	"plantcare-iot/pkg/model"
-	"plantcare-iot/pkg/response"
+	"sisperpus/pkg/config"
+	"sisperpus/pkg/feature/control"
+	"sisperpus/pkg/feature/history"
+	"sisperpus/pkg/model"
+	"sisperpus/pkg/response"
 )
 
 // Handler manages webhook inputs from hardware devices and connectivity ping.

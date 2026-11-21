@@ -61,7 +61,7 @@ export const deviceController = {
 
       deviceView.renderSelector(state.devices, state.currentDeviceId);
     } catch (err) {
-      console.warn('[PlantCare] Could not fetch devices:', err);
+      console.warn('[SISPERPUS] Could not fetch devices:', err);
     }
   },
 

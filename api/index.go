@@ -4,15 +4,15 @@ package api
 import (
 	"net/http"
 
-	"plantcare-iot/pkg/config"
-	"plantcare-iot/pkg/database"
-	"plantcare-iot/pkg/feature/auth"
-	"plantcare-iot/pkg/feature/control"
-	"plantcare-iot/pkg/feature/device"
-	"plantcare-iot/pkg/feature/history"
-	"plantcare-iot/pkg/feature/telemetry"
-	"plantcare-iot/pkg/middleware"
-	"plantcare-iot/pkg/response"
+	"sisperpus/pkg/config"
+	"sisperpus/pkg/database"
+	"sisperpus/pkg/feature/auth"
+	"sisperpus/pkg/feature/control"
+	"sisperpus/pkg/feature/device"
+	"sisperpus/pkg/feature/history"
+	"sisperpus/pkg/feature/telemetry"
+	"sisperpus/pkg/middleware"
+	"sisperpus/pkg/response"
 )
 
 // Handler serves incoming HTTP requests for Vercel Serverless runtime.

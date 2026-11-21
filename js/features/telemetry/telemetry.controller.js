@@ -82,7 +82,7 @@ export const telemetryController = {
       }
     } catch (err) {
       telemetryView.setConnected(false);
-      console.error('[PlantCare] Status fetch error:', err);
+      console.error('[SISPERPUS] Status fetch error:', err);
     }
   },
 

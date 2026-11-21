@@ -40,7 +40,7 @@ export const simulatorController = {
       eventBus.emit('telemetry:refreshRequired');
     } catch (err) {
       showToast(`Gagal: ${err.message}`, 'error');
-      console.error('[PlantCare] Test send error:', err);
+      console.error('[SISPERPUS] Test send error:', err);
     } finally {
       simulatorView.setLoading(false);
     }
