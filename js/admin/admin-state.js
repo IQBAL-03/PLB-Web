@@ -25,6 +25,9 @@ class AdminStateManager {
           return JSON.parse(JSON.stringify(fallback));
         }
       }
+      if (key === 'books' && Array.isArray(parsed)) {
+        return parsed.map((b) => ({ ...b, reviewsCount: 0 }));
+      }
       return parsed;
     } catch {
       return JSON.parse(JSON.stringify(fallback));

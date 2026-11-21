@@ -8,7 +8,12 @@ import { eventBus } from './events.js';
 class State {
   constructor() {
     const local = localStorage.getItem('sisperpus_admin_books');
-    this.books = local ? JSON.parse(local) : [...books];
+    const initialList = local ? JSON.parse(local) : [...books];
+    this.books = initialList.map((b) => ({
+      ...b,
+      reviewsCount: 0,
+      reviews_count: 0,
+    }));
     this.categories = [...categories];
     this.activeCategory = 'Semua Koleksi';
     this.searchQuery = '';
@@ -23,11 +28,16 @@ class State {
       if (res.ok) {
         const data = await res.json();
         if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
-          this.books = data.books;
+          this.books = data.books.map((b) => ({
+            ...b,
+            reviewsCount: 0,
+            reviews_count: 0,
+          }));
           eventBus.emit('catalog:filter-changed', {
             category: this.activeCategory,
             query: this.searchQuery,
           });
+          eventBus.emit('books:synced', this.books);
         }
       }
     } catch {

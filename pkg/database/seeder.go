@@ -49,13 +49,13 @@ func SeedBooks(conn *sql.DB) error {
 	_, _ = conn.Exec("DELETE FROM books")
 
 	punpunVolumes := []model.Volume{
-		{VolumeNumber: 1, VolumeTitle: "Volume 1 (Chapter 1-11)", Stock: 3, CoverImg: "", Description: "Masa kanak-kanak Punpun dan pertemuannya pertama kali dengan Aiko Tanaka di sekolah dasar."},
-		{VolumeNumber: 2, VolumeTitle: "Volume 2 (Chapter 12-23)", Stock: 2, CoverImg: "", Description: "Masa liburan musim panas dan perubahan situasi keluarga yang mengubah masa kecil Punpun."},
-		{VolumeNumber: 3, VolumeTitle: "Volume 3 (Chapter 24-34)", Stock: 2, CoverImg: "", Description: "Awal masa SMP dan pencarian jati diri Punpun di tengah lingkungan sekolah yang baru."},
-		{VolumeNumber: 4, VolumeTitle: "Volume 4 (Chapter 35-46)", Stock: 2, CoverImg: "", Description: "Kisah paman Yuichi dan pergulatan batin para remaja menjelang kelulusan sekolah menengah."},
-		{VolumeNumber: 5, VolumeTitle: "Volume 5 (Chapter 47-58)", Stock: 1, CoverImg: "", Description: "Masa SMA dan pertemuan tak terduga dengan kenangan masa lalu yang membekas."},
-		{VolumeNumber: 6, VolumeTitle: "Volume 6 (Chapter 59-71)", Stock: 2, CoverImg: "", Description: "Punpun mulai hidup mandiri di Tokyo dan menghadapi tantangan berat dunia kerja pemuda."},
-		{VolumeNumber: 7, VolumeTitle: "Volume 7 (Chapter 72-84 Final)", Stock: 2, CoverImg: "", Description: "Puncak dramatis dan konklusi perjalanan hidup Punpun dalam menemukan kedamaian batin."},
+		{VolumeNumber: 1, VolumeTitle: "Volume 1 (Chapter 1-23)", Stock: 3, CoverImg: "", Description: "Masa kanak-kanak Punpun dan pertemuannya pertama kali dengan Aiko Tanaka di sekolah dasar."},
+		{VolumeNumber: 2, VolumeTitle: "Volume 2 (Chapter 24-44)", Stock: 2, CoverImg: "", Description: "Masa liburan musim panas dan perubahan situasi keluarga yang mengubah masa kecil Punpun."},
+		{VolumeNumber: 3, VolumeTitle: "Volume 3 (Chapter 45-64)", Stock: 2, CoverImg: "", Description: "Awal masa SMP dan pencarian jati diri Punpun di tengah lingkungan sekolah yang baru."},
+		{VolumeNumber: 4, VolumeTitle: "Volume 4 (Chapter 65-84)", Stock: 2, CoverImg: "", Description: "Kisah paman Yuichi dan pergulatan batin para remaja menjelang kelulusan sekolah menengah."},
+		{VolumeNumber: 5, VolumeTitle: "Volume 5 (Chapter 85-106)", Stock: 1, CoverImg: "", Description: "Masa SMA dan pertemuan tak terduga dengan kenangan masa lalu yang membekas."},
+		{VolumeNumber: 6, VolumeTitle: "Volume 6 (Chapter 107-133)", Stock: 2, CoverImg: "", Description: "Punpun mulai hidup mandiri di Tokyo dan menghadapi tantangan berat dunia kerja pemuda."},
+		{VolumeNumber: 7, VolumeTitle: "Volume 7 (Chapter 134-147 Final)", Stock: 2, CoverImg: "", Description: "Puncak dramatis dan konklusi perjalanan hidup Punpun dalam menemukan kedamaian batin."},
 	}
 	punpunVolJSON, _ := json.Marshal(punpunVolumes)
 

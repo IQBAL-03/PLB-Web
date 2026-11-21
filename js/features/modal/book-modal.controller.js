@@ -91,6 +91,32 @@ export const bookModalController = {
         if (!currentBook) return;
 
         state.borrowBook(currentBook.id);
+
+        // Record circulation transaction for statistics and admin sync
+        try {
+          const now = new Date();
+          const dueDate = new Date();
+          dueDate.setDate(now.getDate() + 7);
+          const raw = localStorage.getItem('sisperpus_admin_transactions');
+          const txs = raw ? JSON.parse(raw) : [];
+          txs.unshift({
+            id: `TRX-${Date.now().toString().slice(-6)}`,
+            studentName: name,
+            nis: nis,
+            bookId: currentBook.id,
+            bookTitle: currentBook.title + (currentBook.hasVolumes && selectedVol ? ` (Vol. ${selectedVol})` : ''),
+            borrowDate: now.toISOString().split('T')[0],
+            dueDate: dueDate.toISOString().split('T')[0],
+            returnDate: null,
+            status: 'Dipinjam',
+            fine: 0,
+            finePaid: false,
+          });
+          localStorage.setItem('sisperpus_admin_transactions', JSON.stringify(txs));
+        } catch {
+          // Storage quota fallback
+        }
+
         bookModalView.close();
 
         const volSuffix = currentBook.hasVolumes && selectedVol ? ` (Volume ${selectedVol})` : '';

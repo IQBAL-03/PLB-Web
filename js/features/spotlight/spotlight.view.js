@@ -4,13 +4,29 @@
 
 import { $, escapeHtml } from '../../utils/dom.js';
 import { state } from '../../core/state.js';
+import { eventBus } from '../../core/events.js';
+import { resolveWeeklySpotlight } from './spotlight.service.js';
 
 export const spotlightView = {
-  render(container) {
-    if (!container) return;
-    const spotlightBook = state.books.find((b) => b.isSpotlight) || state.books[0];
-    if (!spotlightBook) return;
+  container: null,
 
+  init(container) {
+    this.container = container || $('#spotlightContainer');
+    this.render(this.container);
+
+    eventBus.on('books:synced', () => this.render(this.container));
+    eventBus.on('book:borrowed', () => this.render(this.container));
+  },
+
+  render(container) {
+    const target = container || this.container || $('#spotlightContainer');
+    if (!target) return;
+    this.container = target;
+
+    const spotlightInfo = resolveWeeklySpotlight(state.books);
+    if (!spotlightInfo || !spotlightInfo.book) return;
+
+    const spotlightBook = spotlightInfo.book;
     const isBorrowed = state.isBookBorrowed(spotlightBook.id);
     const borrowBtnText = isBorrowed ? 'Buku Sedang Anda Pinjam' : 'Pinjam Buku Ini Sekarang';
     const borrowBtnClass = isBorrowed
@@ -19,7 +35,7 @@ export const spotlightView = {
 
     const hasCover = Boolean(spotlightBook.coverImg && spotlightBook.coverImg.trim());
 
-    container.innerHTML = `
+    target.innerHTML = `
       <div class="bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 rounded-2xl p-6 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden border border-rose-800/40">
         <div class="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -42,18 +58,23 @@ export const spotlightView = {
           }
 
           <div class="${hasCover ? 'md:col-span-7 lg:col-span-8' : 'md:col-span-12'} flex flex-col justify-center">
-            <div class="inline-flex items-center gap-2 mb-3">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
               <span class="bg-amber-400/20 text-amber-200 border border-amber-400/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
-                Buku Sorotan Pekan Ini
+                ${escapeHtml(spotlightInfo.reasonBadge)}
               </span>
+              <span class="text-rose-200 text-xs">${spotlightInfo.weekLabel}</span>
+              <span class="text-stone-400 text-xs">&bull;</span>
               <span class="text-rose-200 text-xs">${escapeHtml(spotlightBook.category)}</span>
             </div>
 
             <h2 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-2 text-white">
               ${escapeHtml(spotlightBook.title)}
             </h2>
-            <p class="text-amber-200/90 text-sm sm:text-base font-medium mb-4">
+            <p class="text-amber-200/90 text-sm sm:text-base font-medium mb-1">
               Karya ${escapeHtml(spotlightBook.author)} &middot; Tahun ${spotlightBook.year}
+            </p>
+            <p class="text-amber-300/80 text-xs font-medium mb-4">
+              ${spotlightInfo.reasonDetail}
             </p>
 
             <p class="text-rose-100/90 text-xs sm:text-sm leading-relaxed mb-6 max-w-2xl">

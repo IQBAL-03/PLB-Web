@@ -12,7 +12,7 @@ import { showToast } from './utils/toast.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   navigation.init();
-  spotlightView.render($('#spotlightContainer'));
+  spotlightView.init($('#spotlightContainer'));
   catalogController.init();
   bookModalController.init();
   imagePreviewModal.init();
