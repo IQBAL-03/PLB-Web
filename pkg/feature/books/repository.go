@@ -189,7 +189,7 @@ func (r *Repository) Delete(id string) error {
 
 // GetSyncVersion calculates the current change version hash for live auto-reload.
 func (r *Repository) GetSyncVersion() (int64, int, error) {
-	var maxUnix sql.NullInt64
+	var maxUnix sql.NullFloat64
 	var count int
 	query := `
 		SELECT COALESCE(MAX(UNIX_TIMESTAMP(updated_at)), 0), COUNT(*)
@@ -199,7 +199,7 @@ func (r *Repository) GetSyncVersion() (int64, int, error) {
 	if err != nil {
 		return 0, 0, fmt.Errorf("query sync version: %w", err)
 	}
-	return maxUnix.Int64, count, nil
+	return int64(maxUnix.Float64 * 1000), count, nil
 }
 
 func boolToInt(val bool) int {
