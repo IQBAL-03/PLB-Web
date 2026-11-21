@@ -7,9 +7,17 @@ import { eventBus } from './events.js';
 
 class State {
   constructor() {
-    const local = localStorage.getItem('sisperpus_admin_books');
-    const initialList = local ? JSON.parse(local) : [...books];
-    this.books = initialList.map((b) => ({
+    // Purge any stale local drafts that contain outdated volume chapters
+    try {
+      const saved = localStorage.getItem('sisperpus_admin_books');
+      if (saved && saved.includes('72-84')) {
+        localStorage.removeItem('sisperpus_admin_books');
+      }
+    } catch {
+      // Storage access fallback
+    }
+
+    this.books = [...books].map((b) => ({
       ...b,
       reviewsCount: 0,
       reviews_count: 0,

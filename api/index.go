@@ -3,6 +3,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 
 	"sisperpus/pkg/config"
 	"sisperpus/pkg/database"
@@ -70,14 +71,30 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	mux.HandleFunc("/api/upload/cover", wrap(uploadH.UploadCover))
 	mux.HandleFunc("/api/upload", wrap(uploadH.UploadCover))
 
-	// Health Check Endpoint
-	mux.HandleFunc("/api/health", wrap(func(w http.ResponseWriter, r *http.Request) {
+	// Root & Health Check Endpoints
+	rootHandler := wrap(func(w http.ResponseWriter, r *http.Request) {
 		response.JSON(w, http.StatusOK, map[string]any{
 			"status":  "ok",
 			"system":  "SISPERPUS Digital Library API",
 			"version": "1.0.0",
 		})
-	}))
+	})
+	mux.HandleFunc("/api", rootHandler)
+	mux.HandleFunc("/api/", rootHandler)
+	mux.HandleFunc("/api/health", rootHandler)
+
+	// If request path was rewritten by Vercel to /api, recover the original path
+	origPath := r.URL.Path
+	if r.URL.Path == "/api" || r.URL.Path == "/api/" {
+		if matched := r.Header.Get("x-matched-path"); matched != "" && matched != "/api" {
+			r.URL.Path = matched
+		} else if orig := r.Header.Get("x-forwarded-uri"); orig != "" && orig != "/api" {
+			r.URL.Path = strings.Split(orig, "?")[0]
+		} else if r.RequestURI != "" && r.RequestURI != "/api" && r.RequestURI != "/api/" {
+			r.URL.Path = strings.Split(r.RequestURI, "?")[0]
+		}
+	}
 
 	mux.ServeHTTP(w, r)
+	r.URL.Path = origPath
 }

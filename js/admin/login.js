@@ -51,7 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({ username, password }),
         });
 
-        const data = await response.json();
+        let data = {};
+        try {
+          data = await response.json();
+        } catch {
+          data = {};
+        }
 
         if (!response.ok || !data.ok) {
           showToast(data.message || 'Username atau password yang Anda masukkan salah.', 'error');

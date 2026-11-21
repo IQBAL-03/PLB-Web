@@ -20,12 +20,11 @@ class AdminStateManager {
       const parsed = JSON.parse(saved);
       if (key === 'books' && Array.isArray(parsed)) {
         const hasLegacy = parsed.some((b) => b.coverImg && b.coverImg.includes('cover-sementara'));
-        if (hasLegacy || parsed.length > 3) {
+        const hasOldChapters = parsed.some((b) => b.id === 'M003' && b.volumes && b.volumes.some((v) => v.volumeTitle && v.volumeTitle.includes('72-84')));
+        if (hasLegacy || parsed.length > 3 || hasOldChapters) {
           localStorage.removeItem(this.storagePrefix + key);
           return JSON.parse(JSON.stringify(fallback));
         }
-      }
-      if (key === 'books' && Array.isArray(parsed)) {
         return parsed.map((b) => ({ ...b, reviewsCount: 0 }));
       }
       return parsed;

@@ -16,8 +16,8 @@
       "destination": "/admin.html"
     },
     {
-      "source": "/api/:match*",
-      "destination": "/api/index.go"
+      "source": "/api/(.*)",
+      "destination": "/api"
     }
   ],
   "headers": [
