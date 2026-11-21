@@ -112,8 +112,12 @@ export const catalogController = {
         const bookId = spotlightCover.dataset.bookId;
         const book = state.books.find((b) => b.id === bookId);
         if (book) {
-          const caption = `${book.title} - Karya ${book.author}`;
-          imagePreviewModal.open(book.coverImg, caption);
+          if (book.coverImg && book.coverImg.trim()) {
+            const caption = `${book.title} - Karya ${book.author}`;
+            imagePreviewModal.open(book.coverImg, caption);
+          } else {
+            state.setSelectedBook(bookId);
+          }
         }
         return;
       }
@@ -124,8 +128,12 @@ export const catalogController = {
         const bookId = card.dataset.bookId;
         const book = state.books.find((b) => b.id === bookId);
         if (book) {
-          const caption = `${book.title} - Karya ${book.author} (${book.language || 'Bahasa Indonesia'})`;
-          imagePreviewModal.open(book.coverImg, caption);
+          if (book.coverImg && book.coverImg.trim()) {
+            const caption = `${book.title} - Karya ${book.author} (${book.language || 'Bahasa Indonesia'})`;
+            imagePreviewModal.open(book.coverImg, caption);
+          } else {
+            state.setSelectedBook(bookId);
+          }
         }
       }
     });

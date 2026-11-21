@@ -8,6 +8,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="css/tailwind.css" />
+  <script>
+    (function () {
+      try {
+        var token = localStorage.getItem('sisperpus_token');
+        var user = JSON.parse(localStorage.getItem('sisperpus_user') || 'null');
+        if (!token || !user || user.role !== 'admin') {
+          window.location.replace('login.html');
+        }
+      } catch (e) {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
 </head>
 <body class="bg-[#FBF9F5] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-900 selection:text-white">
 
@@ -48,8 +61,8 @@
           </a>
           <div class="flex items-center gap-2 pl-2 border-l border-stone-200">
             <div class="hidden sm:flex flex-col text-right">
-              <span class="text-xs font-bold text-stone-900 leading-none">Siti Rahmawati, S.Ptk</span>
-              <span class="text-[10px] text-stone-500">Pustakawan Sekolah</span>
+              <span id="adminCurrentUserName" class="text-xs font-bold text-stone-900 leading-none">Administrator</span>
+              <span class="text-[10px] text-stone-500">Petugas Perpustakaan</span>
             </div>
             <button type="button" id="adminLogoutBtn" class="p-2 text-stone-500 hover:text-rose-900 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer" title="Keluar dari Panel">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>

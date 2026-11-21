@@ -49,10 +49,11 @@ export const catalogView = {
       ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
       : 'bg-rose-900 hover:bg-rose-950 text-white shadow-sm cursor-pointer';
 
-    return `
-      <article class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col h-full group cursor-pointer" data-book-id="${book.id}">
+    const hasCover = Boolean(book.coverImg && book.coverImg.trim());
+    const coverSection = hasCover
+      ? `
         <div class="relative aspect-[3/4] bg-stone-100 overflow-hidden cursor-zoom-in group/cover">
-          <img src="${book.coverImg}" alt="Sampul buku ${escapeHtml(book.title)}"
+          <img src="${escapeHtml(book.coverImg)}" alt="Sampul buku ${escapeHtml(book.title)}"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy" />
           <div class="absolute inset-0 bg-stone-950/30 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
@@ -70,6 +71,21 @@ export const catalogView = {
             Skor ${book.rating}
           </div>
         </div>
+      `
+      : `
+        <div class="px-4 pt-4 flex items-center justify-between gap-2 border-b border-stone-100 pb-2.5">
+          <span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border ${badgeColor}">
+            ${escapeHtml(book.badge || book.category)}
+          </span>
+          <span class="text-stone-700 bg-stone-100 border border-stone-200 text-[11px] font-medium px-2 py-0.5 rounded">
+            Skor ${book.rating}
+          </span>
+        </div>
+      `;
+
+    return `
+      <article class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col h-full group cursor-pointer" data-book-id="${book.id}">
+        ${coverSection}
 
         <div class="p-4 flex flex-col flex-grow justify-between">
           <div>

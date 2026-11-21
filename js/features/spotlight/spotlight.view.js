@@ -17,23 +17,31 @@ export const spotlightView = {
       ? 'bg-stone-300 text-stone-600 cursor-not-allowed'
       : 'bg-rose-900 hover:bg-rose-950 text-white shadow-md cursor-pointer';
 
+    const hasCover = Boolean(spotlightBook.coverImg && spotlightBook.coverImg.trim());
+
     container.innerHTML = `
       <div class="bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 rounded-2xl p-6 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden border border-rose-800/40">
         <div class="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative z-10">
+          ${
+            hasCover
+              ? `
           <div class="md:col-span-5 lg:col-span-4 flex justify-center">
             <div class="relative group cursor-pointer cursor-zoom-in" data-action="preview-spotlight-cover" data-book-id="${spotlightBook.id}" title="Klik untuk memperbesar kover">
               <div class="w-48 sm:w-56 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl border-2 border-amber-200/30 transform group-hover:-translate-y-1 transition-transform duration-300">
-                <img src="${spotlightBook.coverImg}" alt="${escapeHtml(spotlightBook.title)}" class="w-full h-full object-cover" />
+                <img src="${escapeHtml(spotlightBook.coverImg)}" alt="${escapeHtml(spotlightBook.title)}" class="w-full h-full object-cover" />
               </div>
               <div class="absolute -bottom-3 -right-3 bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
                 Skor ${spotlightBook.rating}
               </div>
             </div>
           </div>
+          `
+              : ''
+          }
 
-          <div class="md:col-span-7 lg:col-span-8 flex flex-col justify-center">
+          <div class="${hasCover ? 'md:col-span-7 lg:col-span-8' : 'md:col-span-12'} flex flex-col justify-center">
             <div class="inline-flex items-center gap-2 mb-3">
               <span class="bg-amber-400/20 text-amber-200 border border-amber-400/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
                 Buku Sorotan Pekan Ini

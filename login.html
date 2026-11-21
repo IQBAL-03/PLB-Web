@@ -42,19 +42,31 @@
       <form id="adminLoginForm" class="space-y-4">
         <div>
           <label for="adminUsername" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">NIP / Username Petugas</label>
-          <input type="text" id="adminUsername" value="admin.perpustakaan" required
+          <input type="text" id="adminUsername" value="" required autofocus
             class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800 transition-shadow bg-stone-50/50"
-            placeholder="Contoh: 198904122015052001" />
+            placeholder="Contoh: Admin" />
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label for="adminPassword" class="block text-xs font-bold text-stone-700 uppercase tracking-wider">Kata Sandi</label>
-            <span class="text-[11px] text-stone-400">Default: admin123</span>
+          <label for="adminPassword" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Kata Sandi</label>
+          <div class="relative">
+            <input type="password" id="adminPassword" value="" required
+              class="w-full text-xs sm:text-sm px-3.5 py-2.5 pr-10 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800 transition-shadow bg-stone-50/50"
+              placeholder="Masukkan kata sandi akun" autocomplete="current-password" />
+            <button type="button" id="togglePasswordBtn"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-700 focus:outline-none cursor-pointer"
+              aria-label="Tampilkan atau sembunyikan kata sandi" title="Tampilkan/Sembunyikan kata sandi">
+              <!-- Eye Icon (Show) -->
+              <svg id="eyeIconOpen" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <!-- Eye Slash Icon (Hide) -->
+              <svg id="eyeIconClosed" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+              </svg>
+            </button>
           </div>
-          <input type="password" id="adminPassword" value="admin123" required
-            class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800 transition-shadow bg-stone-50/50"
-            placeholder="Masukkan kata sandi akun" />
         </div>
 
         <div class="flex items-center justify-between text-xs text-stone-600 pt-1">
@@ -64,15 +76,10 @@
           </label>
         </div>
 
-        <div class="pt-2 space-y-2.5">
+        <div class="pt-2">
           <button type="submit" id="submitLoginBtn"
             class="w-full bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-lg transition-colors cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-800">
             Masuk ke Panel Admin
-          </button>
-
-          <button type="button" id="bypassLoginBtn"
-            class="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs py-2 px-4 rounded-lg border border-stone-300 transition-colors cursor-pointer focus:outline-none">
-            Masuk Langsung (Mode Pratinjau Frontend)
           </button>
         </div>
       </form>
