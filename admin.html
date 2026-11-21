@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Admin - SISPERPUS</title>
+  <meta name="description" content="Panel Manajemen dan Rekapitulasi Perpustakaan Sekolah SISPERPUS." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/tailwind.css" />
+</head>
+<body class="bg-[#FBF9F5] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-900 selection:text-white">
+
+  <!-- Admin Top Navbar -->
+  <header class="sticky top-0 z-40 bg-white border-b border-stone-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-6">
+          <a href="admin.html" class="flex items-center gap-2.5 focus:outline-none rounded-lg p-1">
+            <div class="w-9 h-9 rounded-lg bg-rose-900 text-amber-200 flex items-center justify-center font-serif font-black text-lg shadow-xs">S</div>
+            <div class="flex flex-col">
+              <span class="font-serif font-bold text-base text-stone-900 tracking-tight leading-none">SISPERPUS</span>
+              <span class="text-[10px] text-rose-800 font-bold uppercase tracking-wider">Panel Admin</span>
+            </div>
+          </a>
+          <nav class="hidden md:flex items-center gap-4 text-xs font-semibold text-stone-600">
+            <a href="admin.html" class="text-rose-900 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg">Dashboard</a>
+            <button type="button" id="navMembersBtn" class="hover:text-stone-900 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer">Daftar Anggota</button>
+            <a href="index.html#katalog" class="hover:text-stone-900 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors">Daftar Buku</a>
+            <button type="button" id="navReportBtn" class="hover:text-stone-900 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer">Buat Laporan</button>
+          </nav>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a href="index.html" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors">
+            <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            <span>Katalog Siswa</span>
+          </a>
+          <div class="flex items-center gap-2 pl-2 border-l border-stone-200">
+            <div class="hidden sm:flex flex-col text-right">
+              <span class="text-xs font-bold text-stone-900 leading-none">Siti Rahmawati, S.Ptk</span>
+              <span class="text-[10px] text-stone-500">Pustakawan Sekolah</span>
+            </div>
+            <button type="button" id="adminLogoutBtn" class="p-2 text-stone-500 hover:text-rose-900 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer" title="Keluar dari Panel">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Top Action Banner -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-stone-200 shadow-xs">
+      <div>
+        <h1 class="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mb-1">Manajemen &amp; Sirkulasi Buku</h1>
+        <p class="text-xs sm:text-sm text-stone-500">Pantau peredaran buku, riwayat peminjaman siswa, pengembalian, dan denda secara real-time.</p>
+      </div>
+      <div class="flex items-center gap-2.5 shrink-0">
+        <button type="button" id="tableExportBtn" class="px-4 py-2.5 rounded-lg border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs sm:text-sm font-semibold transition-colors cursor-pointer">
+          Unduh Laporan
+        </button>
+        <button type="button" id="openNewLoanModalBtn" class="px-4 py-2.5 rounded-lg bg-rose-900 hover:bg-rose-950 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer shadow-xs">
+          + Catat Peminjaman
+        </button>
+      </div>
+    </div>
+
+    <!-- 4 KPI Metrics Cards -->
+    <section id="kpiCardsContainer"></section>
+
+    <!-- Transactions Section -->
+    <section class="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
+      <div class="p-5 sm:p-6 border-b border-stone-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="font-serif text-lg sm:text-xl font-bold text-stone-900">Riwayat Transaksi Peminjaman</h2>
+          <span id="tableResultCount" class="text-xs text-stone-500">Memuat transaksi...</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div class="relative w-full sm:w-64">
+            <input type="text" id="adminSearchInput" placeholder="Cari NIS, nama, atau buku..."
+              class="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 bg-stone-50/50" />
+            <svg class="w-4 h-4 text-stone-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+
+          <div class="flex items-center gap-1.5" id="txFilters">
+            <button type="button" data-tx-filter="Semua" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-900 text-white transition-colors cursor-pointer shadow-xs">Semua</button>
+            <button type="button" data-tx-filter="Dipinjam" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer">Dipinjam</button>
+            <button type="button" data-tx-filter="Terlambat" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer">Terlambat</button>
+            <button type="button" data-tx-filter="Kembali" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer">Kembali</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-stone-100/75 border-b border-stone-200 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
+              <th class="py-3 px-4">No. Transaksi</th>
+              <th class="py-3 px-4">Siswa / NIS</th>
+              <th class="py-3 px-4">Buku &amp; Volume</th>
+              <th class="py-3 px-4">Jadwal Pinjam</th>
+              <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4 text-right">Denda</th>
+              <th class="py-3 px-4 text-center">Aksi Cepat</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTableBody" class="divide-y divide-stone-100"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Catat Peminjaman Baru -->
+  <div id="newLoanModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="newLoanModalTitle">
+    <div class="fixed inset-0 bg-stone-950/70 backdrop-blur-xs" data-close-modal="true"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+      <div class="relative bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-stone-200">
+        <button type="button" id="closeNewLoanModalBtn" class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-800 text-2xl font-bold leading-none cursor-pointer">&times;</button>
+        <h3 id="newLoanModalTitle" class="font-serif text-xl font-bold text-stone-900 mb-1">Catat Peminjaman Baru</h3>
+        <p class="text-xs text-stone-500 mb-5">Masukkan informasi peminjam dan buku yang akan dipinjam siswa.</p>
+
+        <form id="newLoanForm" class="space-y-4">
+          <div>
+            <label for="newLoanNis" class="block text-xs font-bold text-stone-700 uppercase mb-1">NIS Siswa</label>
+            <input type="text" id="newLoanNis" required class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Contoh: 202610482" />
+          </div>
+          <div>
+            <label for="newLoanName" class="block text-xs font-bold text-stone-700 uppercase mb-1">Nama Lengkap Siswa</label>
+            <input type="text" id="newLoanName" required class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Nama peminjam" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="newLoanClass" class="block text-xs font-bold text-stone-700 uppercase mb-1">Kelas</label>
+              <input type="text" id="newLoanClass" class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Contoh: X-MIPA-1" />
+            </div>
+            <div>
+              <label for="newLoanVolume" class="block text-xs font-bold text-stone-700 uppercase mb-1">Volume (Jika Manga)</label>
+              <input type="number" id="newLoanVolume" min="1" max="50" class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Opsional (misal: 3)" />
+            </div>
+          </div>
+          <div>
+            <label for="newLoanBookTitle" class="block text-xs font-bold text-stone-700 uppercase mb-1">Judul Buku</label>
+            <input type="text" id="newLoanBookTitle" required class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Judul buku / komik" />
+          </div>
+          <button type="submit" class="w-full bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-lg transition-colors cursor-pointer shadow-xs">
+            Simpan Peminjaman (Batas 7 Hari)
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Daftar Anggota / Siswa -->
+  <div id="membersModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="membersModalTitle">
+    <div class="fixed inset-0 bg-stone-950/70 backdrop-blur-xs" data-close-modal="true"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+      <div class="relative bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-stone-200">
+        <button type="button" id="closeMembersModalBtn" class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-800 text-2xl font-bold leading-none cursor-pointer">&times;</button>
+        <h3 id="membersModalTitle" class="font-serif text-xl font-bold text-stone-900 mb-1">Daftar Anggota &amp; Siswa Terdaftar</h3>
+        <p class="text-xs text-stone-500 mb-4">Daftar anggota perpustakaan yang memiliki akses kartu peminjaman mandiri.</p>
+        
+        <div class="overflow-x-auto border border-stone-200 rounded-xl">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-stone-50 border-b border-stone-200 font-bold text-stone-600">
+              <tr>
+                <th class="py-2.5 px-3">NIS</th>
+                <th class="py-2.5 px-3">Nama Siswa</th>
+                <th class="py-2.5 px-3">Kelas</th>
+                <th class="py-2.5 px-3 text-center">Pinjaman Aktif</th>
+                <th class="py-2.5 px-3 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100">
+              <tr><td class="py-2 px-3 font-mono">202610482</td><td class="py-2 px-3 font-semibold">Ahmad Fauzi Rahman</td><td class="py-2 px-3">X-MIPA-1</td><td class="py-2 px-3 text-center font-bold">1</td><td class="py-2 px-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Aktif</span></td></tr>
+              <tr><td class="py-2 px-3 font-mono">202610219</td><td class="py-2 px-3 font-semibold">Dewi Lestari Putri</td><td class="py-2 px-3">XI-IPS-2</td><td class="py-2 px-3 text-center font-bold">1</td><td class="py-2 px-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Ada Denda</span></td></tr>
+              <tr><td class="py-2 px-3 font-mono">202610115</td><td class="py-2 px-3 font-semibold">Bima Satria Yudha</td><td class="py-2 px-3">XII-MIPA-3</td><td class="py-2 px-3 text-center font-bold">0</td><td class="py-2 px-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Aktif</span></td></tr>
+              <tr><td class="py-2 px-3 font-mono">202610334</td><td class="py-2 px-3 font-semibold">Nadia Amelia Az-Zahra</td><td class="py-2 px-3">X-MIPA-4</td><td class="py-2 px-3 text-center font-bold">1</td><td class="py-2 px-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Ada Denda</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Buat Laporan -->
+  <div id="reportModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+    <div class="fixed inset-0 bg-stone-950/70 backdrop-blur-xs" data-close-modal="true"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+      <div class="relative bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-stone-200">
+        <button type="button" id="closeReportModalBtn" class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-800 text-2xl font-bold leading-none cursor-pointer">&times;</button>
+        <h3 id="reportModalTitle" class="font-serif text-xl font-bold text-stone-900 mb-1">Cetak &amp; Rekapitulasi Laporan</h3>
+        <p class="text-xs text-stone-500 mb-4">Buat dokumen laporan sirkulasi buku perpustakaan sekolah.</p>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 uppercase mb-1">Pilih Periode Laporan</label>
+            <select id="reportPeriodSelect" class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none bg-stone-50">
+              <option value="month">Bulan Berjalan (November 2026)</option>
+              <option value="semester">Semester Ganjil 2026/2027</option>
+              <option value="year">Tahun Ajaran Penuh 2026</option>
+            </select>
+          </div>
+          <div class="bg-stone-50 p-3 rounded-xl border border-stone-200 text-xs text-stone-600 space-y-1">
+            <div class="flex justify-between"><span>Format Ekspor:</span><span class="font-semibold text-stone-900">PDF &amp; Spreadsheet (.xlsx)</span></div>
+            <div class="flex justify-between"><span>Total Koleksi Dilaporkan:</span><span class="font-semibold text-stone-900">1.284 Eksemplar</span></div>
+            <div class="flex justify-between"><span>Total Transaksi Periode:</span><span class="font-semibold text-stone-900">198 Transaksi</span></div>
+          </div>
+          <button type="button" id="confirmExportReportBtn" class="w-full bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-lg transition-colors cursor-pointer shadow-xs">
+            Unduh Laporan Resmi (.PDF)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4" aria-live="polite"></div>
+
+  <script type="module" src="js/admin/admin.js"></script>
+</body>
+</html>

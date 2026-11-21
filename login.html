@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Petugas Perpustakaan - SISPERPUS</title>
+  <meta name="description" content="Masuk ke Panel Administrasi Perpustakaan Sekolah SISPERPUS." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/tailwind.css" />
+</head>
+<body class="bg-[#FBF9F5] text-stone-800 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-rose-900 selection:text-white">
+
+  <!-- Top Simple Header -->
+  <header class="py-4 px-6 border-b border-stone-200 bg-white">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-rose-800 rounded-lg p-1">
+        <div class="w-9 h-9 rounded-lg bg-rose-900 text-amber-200 flex items-center justify-center font-serif font-black text-lg shadow-xs">S</div>
+        <div class="flex flex-col">
+          <span class="font-serif font-bold text-base text-stone-900 tracking-tight leading-none">SISPERPUS</span>
+          <span class="text-[10px] text-stone-500 font-medium tracking-wider uppercase">Perpustakaan Sekolah</span>
+        </div>
+      </a>
+      <a href="index.html" class="text-xs font-semibold text-stone-600 hover:text-rose-900 transition-colors inline-flex items-center gap-1">
+        <span>&larr;</span>
+        <span>Katalog Publik Siswa</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Login Form Container -->
+  <main class="flex-grow flex items-center justify-center p-4 sm:p-6 my-8">
+    <div class="w-full max-w-md bg-white rounded-2xl border border-stone-200 shadow-xl p-6 sm:p-8">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-rose-50 text-rose-900 border border-rose-200 mb-3 shadow-xs">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <h1 class="font-serif text-2xl font-bold text-stone-900 mb-1">Masuk Panel Petugas</h1>
+        <p class="text-xs sm:text-sm text-stone-500">Sistem Informasi Perpustakaan Sekolah Terpadu</p>
+      </div>
+
+      <form id="adminLoginForm" class="space-y-4">
+        <div>
+          <label for="adminUsername" class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">NIP / Username Petugas</label>
+          <input type="text" id="adminUsername" value="admin.perpustakaan" required
+            class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800 transition-shadow bg-stone-50/50"
+            placeholder="Contoh: 198904122015052001" />
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="adminPassword" class="block text-xs font-bold text-stone-700 uppercase tracking-wider">Kata Sandi</label>
+            <span class="text-[11px] text-stone-400">Default: admin123</span>
+          </div>
+          <input type="password" id="adminPassword" value="admin123" required
+            class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800 transition-shadow bg-stone-50/50"
+            placeholder="Masukkan kata sandi akun" />
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-stone-600 pt-1">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="rememberMe" checked class="rounded border-stone-300 text-rose-900 focus:ring-rose-800" />
+            <span>Ingat sesi petugas ini</span>
+          </label>
+        </div>
+
+        <div class="pt-2 space-y-2.5">
+          <button type="submit" id="submitLoginBtn"
+            class="w-full bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-lg transition-colors cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-800">
+            Masuk ke Panel Admin
+          </button>
+
+          <button type="button" id="bypassLoginBtn"
+            class="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs py-2 px-4 rounded-lg border border-stone-300 transition-colors cursor-pointer focus:outline-none">
+            Masuk Langsung (Mode Pratinjau Frontend)
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-stone-200 text-center">
+        <p class="text-[11px] text-stone-500">
+          Akses khusus petugas perpustakaan sekolah. Lupa kata sandi? Hubungi administrator IT sekolah.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-4 px-6 border-t border-stone-200 text-center text-[11px] text-stone-500 bg-white">
+    &copy; 2026 SISPERPUS &middot; Sistem Informasi Perpustakaan Sekolah Terpadu
+  </footer>
+
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4" aria-live="polite"></div>
+
+  <script type="module" src="js/admin/login.js"></script>
+</body>
+</html>
