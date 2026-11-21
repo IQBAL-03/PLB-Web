@@ -190,6 +190,21 @@ export const bookActions = {
         const volumes = hasVolumes ? bookVolumeHelper.collect() : [];
         const genres = bookGenreHelper.getGenres();
 
+        const origBook = origId ? adminState.books.find((b) => b.id === origId) : null;
+        const rating = origBook && origBook.rating ? Number(origBook.rating) : (id === 'M003' ? 5 : 4.9);
+        const isPopular = origBook ? Boolean(origBook.isPopular) : true;
+        const isSpotlight = origBook ? Boolean(origBook.isSpotlight) : false;
+        const reviewsCount = origBook ? (origBook.reviewsCount || 0) : 0;
+        const badge = origBook && origBook.badge ? origBook.badge : 'Koleksi Pilihan';
+
+        let finalCover = coverImg;
+        if (!finalCover && origBook && origBook.coverImg) {
+          finalCover = origBook.coverImg;
+        }
+
+        const clInput = $('#bookCloudinaryIdInput');
+        const clId = clInput && clInput.value.trim() ? clInput.value.trim() : (origBook && origBook.cloudinary_public_id ? origBook.cloudinary_public_id : '');
+
         const payload = {
           id,
           title,
@@ -201,8 +216,13 @@ export const bookActions = {
           stock,
           shelf,
           synopsis,
-          rating: 4.9,
-          coverImg,
+          rating,
+          reviews_count: reviewsCount,
+          badge,
+          isPopular,
+          isSpotlight,
+          coverImg: finalCover,
+          cloudinary_public_id: clId,
           hasVolumes: hasVolumes && volumes.length > 0,
           volumes: volumes,
         };

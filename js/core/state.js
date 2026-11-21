@@ -41,6 +41,25 @@ class State {
     this.selectedBook = null;
     this.borrowedBookIds = new Set(JSON.parse(localStorage.getItem('sisperpus_borrowed') || '[]'));
     this.syncBooks();
+    this.setupAutoSync();
+  }
+
+  setupAutoSync() {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.syncBooks();
+        }
+      });
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', () => this.syncBooks());
+    }
+    setInterval(() => {
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        this.syncBooks();
+      }
+    }, 20000);
   }
 
   async syncBooks() {
@@ -49,21 +68,26 @@ class State {
       if (res.ok) {
         const data = await res.json();
         if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
-          this.books = data.books.map((b) => ({
+          const newBooks = data.books.map((b) => ({
             ...b,
             reviewsCount: 0,
             reviews_count: 0,
           }));
-          try {
-            localStorage.setItem('sisperpus_admin_books', JSON.stringify(this.books));
-          } catch {
-            // Storage quota fallback
+
+          const hasChanged = JSON.stringify(this.books) !== JSON.stringify(newBooks);
+          if (hasChanged || this.books.length === 0) {
+            this.books = newBooks;
+            try {
+              localStorage.setItem('sisperpus_admin_books', JSON.stringify(this.books));
+            } catch {
+              // Storage quota fallback
+            }
+            eventBus.emit('catalog:filter-changed', {
+              category: this.activeCategory,
+              query: this.searchQuery,
+            });
+            eventBus.emit('books:synced', this.books);
           }
-          eventBus.emit('catalog:filter-changed', {
-            category: this.activeCategory,
-            query: this.searchQuery,
-          });
-          eventBus.emit('books:synced', this.books);
         }
       }
     } catch {

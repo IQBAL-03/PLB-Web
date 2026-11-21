@@ -159,14 +159,18 @@ func (r *Repository) Update(id string, b model.Book) error {
 	query := `
 		UPDATE books
 		SET title = ?, author = ?, category = ?, language = ?, price = ?,
-		    year = ?, shelf = ?, stock = ?, synopsis = ?, cover_img = ?,
-		    cloudinary_public_id = ?, has_volumes = ?, volumes_json = ?, genres_json = ?
+		    year = ?, shelf = ?, stock = ?, synopsis = ?,
+		    cover_img = IF(? != '', ?, cover_img),
+		    cloudinary_public_id = IF(? != '', ?, cloudinary_public_id),
+		    has_volumes = ?, volumes_json = ?, genres_json = ?
 		WHERE id = ?
 	`
 	_, err := r.db.Exec(query,
 		b.Title, b.Author, b.Category, b.Language, b.Price,
-		b.Year, b.Shelf, b.Stock, b.Synopsis, b.CoverImg,
-		b.CloudinaryPublicID, boolToInt(b.HasVolumes), volJSONStr, genJSONStr, id,
+		b.Year, b.Shelf, b.Stock, b.Synopsis,
+		b.CoverImg, b.CoverImg,
+		b.CloudinaryPublicID, b.CloudinaryPublicID,
+		boolToInt(b.HasVolumes), volJSONStr, genJSONStr, id,
 	)
 	if err != nil {
 		return fmt.Errorf("update buku %s: %w", id, err)

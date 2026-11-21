@@ -28,6 +28,22 @@ export const adminAppController = {
     if (synced && this.currentTab === 'books') {
       this.switchTab('books');
     }
+
+    // Auto-sync admin catalog when window/tab is focused or visible
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') {
+        const updated = await adminState.syncBooksFromAPI();
+        if (updated && this.currentTab === 'books') {
+          this.switchTab('books');
+        }
+      }
+    });
+    window.addEventListener('focus', async () => {
+      const updated = await adminState.syncBooksFromAPI();
+      if (updated && this.currentTab === 'books') {
+        this.switchTab('books');
+      }
+    });
   },
 
   switchTab(tabName) {
