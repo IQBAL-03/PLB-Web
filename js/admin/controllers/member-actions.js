@@ -28,6 +28,17 @@ export const memberActions = {
         return;
       }
 
+      const verifyBtn = e.target.closest('[data-member-action="verify"]');
+      if (verifyBtn) {
+        const nis = verifyBtn.dataset.nis;
+        const updated = adminState.updateMember(nis, { status: 'Aktif' });
+        if (updated) {
+          switchTabFn('members');
+          showToast(`Anggota ${updated.name} (NIS: ${nis}) berhasil diverifikasi menjadi Aktif.`, 'success');
+        }
+        return;
+      }
+
       const editBtn = e.target.closest('[data-member-action="edit"]');
       if (editBtn) {
         const nis = editBtn.dataset.nis;

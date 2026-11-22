@@ -19,4 +19,26 @@ export const BOOK_PRICES = {
 
 export const initialTransactions = [];
 
-export const initialMembers = [];
+export const initialMembers = [
+  {
+    nis: '20261001',
+    name: 'Ahmad Pratama',
+    classRoom: 'XII-PPLG-1',
+    activeLoans: 0,
+    status: 'Aktif',
+  },
+  {
+    nis: '20261002',
+    name: 'Budi Santoso',
+    classRoom: 'XII-PPLG-2',
+    activeLoans: 0,
+    status: 'Menunggu Verifikasi',
+  },
+  {
+    nis: '20261003',
+    name: 'Siti Rahmawati',
+    classRoom: 'XI-PPLG-1',
+    activeLoans: 2,
+    status: 'Aktif',
+  },
+];
