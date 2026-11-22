@@ -24,10 +24,12 @@ export const adminAppController = {
     memberActions.bind((tab) => this.switchTab(tab));
     bookActions.bind((tab) => this.switchTab(tab));
     this.switchTab('dashboard');
-    const synced = await adminState.syncBooksFromAPI();
-    if (synced && this.currentTab === 'books') {
-      this.switchTab('books');
-    }
+    await Promise.all([
+      adminState.syncBooksFromAPI(),
+      adminState.syncMembersFromAPI(),
+      adminState.syncTransactionsFromAPI(),
+    ]);
+    this.switchTab(this.currentTab);
 
     // Golang live change detection and silent sync for admin (no disruptive page reload)
     let lastAdminVersion = null;

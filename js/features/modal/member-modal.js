@@ -331,6 +331,18 @@ export const memberModal = {
         members.unshift(newMember);
         saveMembersList(members);
 
+        // Sync to TiDB database via API if available
+        fetch('/api/members', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nis,
+            name,
+            class_room: classRoom,
+            status: 'Menunggu Verifikasi',
+          }),
+        }).catch(() => {});
+
         showToast(`Pendaftaran atas nama ${name} berhasil! Menunggu verifikasi admin perpustakaan.`, 'success', 6000);
 
         // Reset form

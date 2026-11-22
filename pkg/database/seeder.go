@@ -23,6 +23,9 @@ func Seed(conn *sql.DB) error {
 	if err := SeedTransactions(conn); err != nil {
 		return err
 	}
+	if err := SeedReviews(conn); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -180,14 +183,44 @@ func SeedBooks(conn *sql.DB) error {
 	return nil
 }
 
-// SeedMembers empties student registration records so user can register their own.
+// SeedMembers guarantees the presence of starter student accounts if none exist.
 func SeedMembers(conn *sql.DB) error {
-	_, err := conn.Exec("DELETE FROM members")
+	var count int
+	_ = conn.QueryRow("SELECT COUNT(*) FROM members").Scan(&count)
+	if count > 0 {
+		return nil
+	}
+
+	query := `
+		INSERT INTO members (nis, name, class_room, active_loans, status) VALUES
+		('20261001', 'Ahmad Pratama', 'XII-PPLG-1', 0, 'Aktif'),
+		('20261002', 'Budi Santoso', 'XII-PPLG-2', 0, 'Menunggu Verifikasi'),
+		('20261003', 'Siti Rahmawati', 'XI-PPLG-1', 2, 'Aktif')
+		ON DUPLICATE KEY UPDATE name=VALUES(name)
+	`
+	_, err := conn.Exec(query)
 	return err
 }
 
-// SeedTransactions empties loan records so user can start fresh.
+// SeedTransactions guarantees the table is ready.
 func SeedTransactions(conn *sql.DB) error {
-	_, err := conn.Exec("DELETE FROM transactions")
-	return err
+	return nil
+}
+
+// SeedReviews populates starter book reviews and ratings.
+func SeedReviews(conn *sql.DB) error {
+	var count int
+	_ = conn.QueryRow("SELECT COUNT(*) FROM book_reviews").Scan(&count)
+	if count > 0 {
+		return nil
+	}
+
+	query := `
+		INSERT INTO book_reviews (id, book_id, nis, student_name, rating, review_text) VALUES
+		('REV-001', 'M001', '20261001', 'Ahmad Pratama', 5, 'Kisah one-shot yang luar biasa menyentuh dan sangat menginspirasi!'),
+		('REV-002', 'M002', '20261003', 'Siti Rahmawati', 5, 'Sinematografi manga yang sangat unik dari Tatsuki Fujimoto.')
+		ON DUPLICATE KEY UPDATE review_text=VALUES(review_text)
+	`
+	_, _ = conn.Exec(query)
+	return nil
 }
