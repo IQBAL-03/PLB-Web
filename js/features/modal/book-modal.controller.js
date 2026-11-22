@@ -8,6 +8,7 @@ import { eventBus } from '../../core/events.js';
 import { showToast } from '../../utils/toast.js';
 import { bookModalView } from './book-modal.view.js';
 import { imagePreviewModal } from './image-preview.modal.js';
+import { memberModal } from './member-modal.js';
 import { initialMembers } from '../../admin/admin-data.js';
 
 function getMembersList() {
@@ -67,6 +68,15 @@ export const bookModalController = {
         }
       }
 
+      // Handle quick register link click inside borrow modal
+      const quickRegBtn = e.target.closest('#btnQuickRegisterFromBorrow');
+      if (quickRegBtn) {
+        const nis = quickRegBtn.dataset.nis || '';
+        bookModalView.close();
+        memberModal.open('register', nis);
+        return;
+      }
+
       // Handle cover preview click inside detail modal
       const coverBtn = e.target.closest('#openCoverPreviewBtn');
       if (coverBtn) {
@@ -103,8 +113,11 @@ export const bookModalController = {
 
         if (!member) {
           if (nis.length >= 3) {
-            statusEl.className = 'mt-1.5 text-xs text-rose-600 flex items-center gap-1 font-medium';
-            statusEl.innerHTML = '<span>✕ NIS belum terdaftar sebagai anggota perpustakaan.</span>';
+            statusEl.className = 'mt-1.5 text-xs text-rose-600 flex items-center justify-between font-medium';
+            statusEl.innerHTML = `
+              <span>✕ NIS belum terdaftar.</span>
+              <button type="button" id="btnQuickRegisterFromBorrow" data-nis="${escapeHtml(nis)}" class="underline font-bold text-rose-800 hover:text-rose-950 cursor-pointer">Daftar Sekarang &rarr;</button>
+            `;
           } else {
             statusEl.className = 'mt-1.5 text-xs hidden';
             statusEl.innerHTML = '';

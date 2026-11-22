@@ -8,6 +8,7 @@ import { spotlightView } from './features/spotlight/spotlight.view.js';
 import { catalogController } from './features/catalog/catalog.controller.js';
 import { bookModalController } from './features/modal/book-modal.controller.js';
 import { imagePreviewModal } from './features/modal/image-preview.modal.js';
+import { memberModal } from './features/modal/member-modal.js';
 import { showToast } from './utils/toast.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,20 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
   catalogController.init();
   bookModalController.init();
   imagePreviewModal.init();
+  memberModal.init();
 
   // Guide button click handler
   const guideBtn = $('#libraryGuideBtn');
   if (guideBtn) {
     guideBtn.addEventListener('click', () => {
       showToast('Panduan: Siswa dapat meminjam maksimal 2 buku selama 7 hari kerja menggunakan NIS.', 'info', 6000);
-    });
-  }
-
-  // Member card action trigger
-  const memberBtn = $('#memberCardBtn');
-  if (memberBtn) {
-    memberBtn.addEventListener('click', () => {
-      showToast('Layanan Kartu Anggota Digital terintegrasi dengan NIS siswa perpustakaan.', 'info');
     });
   }
 });

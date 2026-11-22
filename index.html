@@ -61,6 +61,10 @@
           <a href="#katalog" class="hover:text-rose-900 py-1">Katalog Lengkap</a>
           <a href="#segera-hadir" class="hover:text-rose-900 py-1">Segera Hadir</a>
           <a href="#informasi" class="hover:text-rose-900 py-1">Tata Tertib</a>
+          <button type="button" id="mobileMemberCardBtn" class="text-left hover:text-rose-900 py-1 font-semibold text-rose-900 flex items-center justify-between cursor-pointer">
+            <span>Kartu Anggota &amp; Daftar</span>
+            <span class="text-[10px] bg-rose-100 text-rose-900 px-2 py-0.5 rounded-full font-bold">Layanan Siswa</span>
+          </button>
         </nav>
       </div>
       <div class="pt-6 border-t border-stone-200 flex flex-col gap-3">
@@ -269,6 +273,83 @@
         <button type="button" id="closeImagePreviewBtn" class="absolute top-3 right-3 p-1.5 text-stone-400 hover:text-white text-2xl font-bold leading-none cursor-pointer focus:outline-none" aria-label="Tutup pratinjau gambar">&times;</button>
         <img id="imagePreviewImg" src="" alt="Pratinjau Sampul Asli" class="max-h-[75vh] w-auto max-w-full object-contain rounded shadow-md mt-6" />
         <p id="imagePreviewCaption" class="mt-3 text-xs sm:text-sm text-stone-300 font-medium text-center"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member Card & Self-Registration Modal Dialog -->
+  <div id="memberCardModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="memberModalHeading">
+    <div id="memberModalBackdrop" class="fixed inset-0 bg-stone-950/70 backdrop-blur-xs transition-opacity cursor-pointer"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4 sm:p-6">
+      <div class="relative bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-stone-200 max-h-[92vh] overflow-y-auto">
+        <button type="button" id="closeMemberModalBtn" class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-800 text-2xl font-bold leading-none cursor-pointer focus:outline-none" aria-label="Tutup jendela kartu anggota">&times;</button>
+
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-900 border border-rose-200 flex items-center justify-center font-serif font-black text-lg">S</div>
+          <div>
+            <h2 id="memberModalHeading" class="font-serif text-xl sm:text-2xl font-bold text-stone-900 leading-tight">Layanan Anggota Siswa</h2>
+            <p class="text-xs text-stone-500">Cek kartu anggota digital atau ajukan pendaftaran mandiri.</p>
+          </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="flex border-b border-stone-200 mb-5 text-xs sm:text-sm font-semibold">
+          <button type="button" id="tabCheckMemberBtn" class="pb-2.5 px-3 border-b-2 border-rose-900 text-rose-900 font-bold transition-colors cursor-pointer">
+            Cek Kartu &amp; Pinjaman
+          </button>
+          <button type="button" id="tabRegisterMemberBtn" class="pb-2.5 px-3 border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition-colors cursor-pointer">
+            Daftar Anggota Baru
+          </button>
+        </div>
+
+        <!-- Tab 1: Check Card Content -->
+        <div id="panelCheckMember" class="space-y-4">
+          <form id="checkMemberForm" class="flex gap-2">
+            <div class="relative flex-grow">
+              <input type="text" id="checkNisInput" placeholder="Masukkan NIS Anda (Contoh: 20261001)" required
+                class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 bg-stone-50/50" />
+            </div>
+            <button type="submit" class="px-4 py-2.5 rounded-lg bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm transition-colors cursor-pointer shrink-0 shadow-xs">
+              Cari Kartu
+            </button>
+          </form>
+
+          <div id="memberCardResultContainer" class="pt-1">
+            <div class="text-center py-8 px-4 text-stone-400 bg-stone-50 rounded-xl border border-dashed border-stone-200 text-xs">
+              Masukkan Nomor Induk Siswa (NIS) untuk melihat kartu perpustakaan digital &amp; status pinjaman aktif Anda.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Self-Registration Content -->
+        <div id="panelRegisterMember" class="space-y-4 hidden">
+          <form id="selfRegisterForm" class="space-y-3.5">
+            <div>
+              <label for="regNis" class="block text-xs font-bold text-stone-700 uppercase mb-1">Nomor Induk Siswa (NIS)</label>
+              <input type="text" id="regNis" required placeholder="Contoh: 20261005"
+                class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 bg-stone-50/50" />
+            </div>
+            <div>
+              <label for="regName" class="block text-xs font-bold text-stone-700 uppercase mb-1">Nama Lengkap Siswa</label>
+              <input type="text" id="regName" required placeholder="Nama lengkap sesuai data sekolah"
+                class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 bg-stone-50/50" />
+            </div>
+            <div>
+              <label for="regClass" class="block text-xs font-bold text-stone-700 uppercase mb-1">Kelas / Jurusan</label>
+              <input type="text" id="regClass" required placeholder="Contoh: XII-PPLG-1"
+                class="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 bg-stone-50/50" />
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-900 leading-relaxed">
+              <span class="font-bold">Info Verifikasi:</span> Setelah formulir dikirim, status keanggotaan Anda menjadi <strong>Menunggu Verifikasi</strong>. Petugas perpustakaan akan memverifikasi akun Anda sebelum Anda dapat meminjam buku.
+            </div>
+
+            <button type="submit" id="submitRegisterBtn" class="w-full py-2.5 px-4 rounded-lg bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs">
+              Kirim Formulir Pendaftaran
+            </button>
+          </form>
+        </div>
+
       </div>
     </div>
   </div>
