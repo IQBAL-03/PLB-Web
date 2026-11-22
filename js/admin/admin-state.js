@@ -70,6 +70,7 @@ class AdminStateManager {
       tx.status = 'Kembali';
       tx.returnDate = new Date().toISOString().split('T')[0];
       this.save('transactions', this.transactions);
+      fetch(`/api/transactions/return?id=${encodeURIComponent(id)}`, { method: 'POST' }).catch(() => {});
     }
     return tx;
   }
@@ -91,9 +92,71 @@ class AdminStateManager {
     });
   }
 
+  async syncMembersFromAPI() {
+    try {
+      const res = await fetch(`/api/members?t=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.members) && data.members.length > 0) {
+          this.members = data.members.map((m) => ({
+            nis: m.nis,
+            name: m.name,
+            classRoom: m.class_room || m.classRoom,
+            activeLoans: m.active_loans ?? m.activeLoans ?? 0,
+            status: m.status,
+          }));
+          this.save('members', this.members);
+          return true;
+        }
+      }
+    } catch {
+      // Offline fallback
+    }
+    return false;
+  }
+
+  async syncTransactionsFromAPI() {
+    try {
+      const res = await fetch(`/api/transactions?t=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.transactions)) {
+          this.transactions = data.transactions.map((t) => ({
+            id: t.id,
+            studentName: t.student_name || t.studentName,
+            nis: t.nis,
+            bookId: t.book_id || t.bookId,
+            bookTitle: t.book_title || t.bookTitle,
+            loanDate: t.loan_date || t.loanDate,
+            dueDate: t.due_date || t.dueDate,
+            returnDate: t.return_date || t.returnDate,
+            status: t.status,
+            fine: t.fine || 0,
+            finePaid: t.fine_paid ?? t.finePaid ?? true,
+          }));
+          this.save('transactions', this.transactions);
+          return true;
+        }
+      }
+    } catch {
+      // Offline fallback
+    }
+    return false;
+  }
+
   addMember(member) {
     this.members.unshift(member);
     this.save('members', this.members);
+    fetch('/api/members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nis: member.nis,
+        name: member.name,
+        class_room: member.classRoom,
+        status: member.status || 'Aktif',
+      }),
+    }).catch(() => {});
   }
 
   updateMember(nis, updated) {
@@ -101,6 +164,13 @@ class AdminStateManager {
     if (idx !== -1) {
       this.members[idx] = { ...this.members[idx], ...updated };
       this.save('members', this.members);
+      if (updated.status) {
+        fetch('/api/members/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nis, status: updated.status }),
+        }).catch(() => {});
+      }
       return this.members[idx];
     }
     return null;
@@ -109,6 +179,7 @@ class AdminStateManager {
   deleteMember(nis) {
     this.members = this.members.filter((m) => m.nis !== nis);
     this.save('members', this.members);
+    fetch(`/api/members/delete?nis=${encodeURIComponent(nis)}`, { method: 'POST' }).catch(() => {});
   }
 
   // --- Books CRUD ---

@@ -107,12 +107,31 @@ func Migrate(conn *sql.DB) error {
 		return fmt.Errorf("migrasi tabel transactions: %w", err)
 	}
 
+	// 5. Book Reviews Table (Ratings & Reader Testimonials)
+	_, err = conn.Exec(`
+		CREATE TABLE IF NOT EXISTS book_reviews (
+			id           VARCHAR(50)  PRIMARY KEY,
+			book_id      VARCHAR(50)  NOT NULL,
+			nis          VARCHAR(50)  NOT NULL,
+			student_name VARCHAR(150) NOT NULL,
+			rating       INT          NOT NULL DEFAULT 5,
+			review_text  TEXT         NOT NULL,
+			created_at   DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+			INDEX idx_review_book (book_id),
+			INDEX idx_review_nis (nis)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("migrasi tabel book_reviews: %w", err)
+	}
+
 	return nil
 }
 
 // Reset drops library application tables and executes a fresh migration with seeding.
 func Reset(conn *sql.DB) error {
 	tables := []string{
+		"book_reviews",
 		"transactions",
 		"members",
 		"books",

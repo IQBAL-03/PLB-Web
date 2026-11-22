@@ -232,6 +232,20 @@ export const bookModalController = {
         // 7. Tandai buku sedang dipinjam di state pengguna
         state.borrowBook(currentBook.id);
 
+        // Sync to TiDB database via API if available
+        fetch('/api/transactions/borrow', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nis: member.nis,
+            student_name: member.name,
+            class_room: member.classRoom || '',
+            book_id: currentBook.id,
+            book_title: currentBook.title + (currentBook.hasVolumes && selectedVol ? ` (Vol. ${selectedVol})` : ''),
+            volume_number: selectedVol ? Number(selectedVol) : null,
+          }),
+        }).catch(() => {});
+
         // 8. Catat transaksi sirkulasi
         try {
           const now = new Date();

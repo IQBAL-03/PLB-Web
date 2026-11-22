@@ -9,6 +9,9 @@ import (
 	"sisperpus/pkg/database"
 	"sisperpus/pkg/feature/auth"
 	"sisperpus/pkg/feature/books"
+	"sisperpus/pkg/feature/members"
+	"sisperpus/pkg/feature/reviews"
+	"sisperpus/pkg/feature/transactions"
 	"sisperpus/pkg/feature/upload"
 	"sisperpus/pkg/middleware"
 	"sisperpus/pkg/response"
@@ -27,11 +30,17 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// Repositories & Services
 	authRepo := auth.NewRepository(db)
 	booksRepo := books.NewRepository(db)
+	membersRepo := members.NewRepository(db)
+	trxRepo := transactions.NewRepository(db)
+	reviewsRepo := reviews.NewRepository(db)
 	uploadSvc := upload.NewService(cfg)
 
 	// Handlers
 	authH := auth.NewHandler(cfg, authRepo)
 	booksH := books.NewHandler(cfg, booksRepo)
+	membersH := members.NewHandler(cfg, membersRepo)
+	trxH := transactions.NewHandler(cfg, trxRepo)
+	reviewsH := reviews.NewHandler(cfg, reviewsRepo)
 	uploadH := upload.NewHandler(cfg, uploadSvc)
 
 	mux := http.NewServeMux()
@@ -67,6 +76,50 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	mux.HandleFunc("/api/books/update", wrap(booksH.Update))
 	mux.HandleFunc("/api/books/delete", wrap(booksH.Delete))
 	mux.HandleFunc("/api/sync/version", wrap(booksH.SyncVersion))
+
+	// Member & Student Management Endpoints (TiDB)
+	mux.HandleFunc("/api/members", wrap(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			membersH.List(w, r)
+		case http.MethodPost:
+			membersH.Create(w, r)
+		case http.MethodPut:
+			membersH.UpdateStatus(w, r)
+		case http.MethodDelete:
+			membersH.Delete(w, r)
+		default:
+			response.Error(w, http.StatusMethodNotAllowed, "Metode tidak diizinkan")
+		}
+	}))
+	mux.HandleFunc("/api/members/status", wrap(membersH.UpdateStatus))
+	mux.HandleFunc("/api/members/delete", wrap(membersH.Delete))
+
+	// Circulation & Loan Endpoints (TiDB)
+	mux.HandleFunc("/api/transactions", wrap(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			trxH.List(w, r)
+		case http.MethodPost:
+			trxH.Borrow(w, r)
+		default:
+			response.Error(w, http.StatusMethodNotAllowed, "Metode tidak diizinkan")
+		}
+	}))
+	mux.HandleFunc("/api/transactions/borrow", wrap(trxH.Borrow))
+	mux.HandleFunc("/api/transactions/return", wrap(trxH.Return))
+
+	// Book Reviews & Rating Endpoints (TiDB)
+	mux.HandleFunc("/api/reviews", wrap(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			reviewsH.List(w, r)
+		case http.MethodPost:
+			reviewsH.Create(w, r)
+		default:
+			response.Error(w, http.StatusMethodNotAllowed, "Metode tidak diizinkan")
+		}
+	}))
 
 	// Cloudinary Upload Endpoints (Cover Buku & Berkas)
 	mux.HandleFunc("/api/upload/cover", wrap(uploadH.UploadCover))
