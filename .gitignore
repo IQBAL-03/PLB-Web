@@ -25,6 +25,8 @@ client_secret*.json
 Agent.md
 AGENTS.md
 .agents/
+plan.md
+PLAN.md
 
 # Screenshots and Binary Media
 *.png

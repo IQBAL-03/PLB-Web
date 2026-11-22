@@ -155,12 +155,19 @@ export const bookModalView = {
             <form id="borrowForm" class="border-t border-stone-200 pt-3 flex flex-col gap-2.5">
               <input type="hidden" id="selectedVolumeInput" value="${activeVolume ? activeVolume.volumeNumber : ''}" />
               <div>
-                <label for="borrowerNis" class="block text-xs font-semibold text-stone-700 mb-1">Nomor Induk Siswa (NIS) / NIP Guru</label>
-                <input type="text" id="borrowerNis" class="w-full text-xs sm:text-sm px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800" placeholder="Contoh: 202610482" required />
+                <div class="flex items-center justify-between mb-1">
+                  <label for="borrowerNis" class="text-xs font-semibold text-stone-700">Nomor Induk Siswa (NIS)</label>
+                  <span class="text-[10px] text-stone-400">Wajib Terdaftar &amp; Terverifikasi</span>
+                </div>
+                <input type="text" id="borrowerNis" class="w-full text-xs sm:text-sm px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800" placeholder="Ketik NIS Anda (Contoh: 20261001)" required />
+                <div id="nisVerificationStatus" class="mt-1.5 text-xs hidden"></div>
               </div>
               <div>
-                <label for="borrowerName" class="block text-xs font-semibold text-stone-700 mb-1">Nama Lengkap Peminjam</label>
-                <input type="text" id="borrowerName" class="w-full text-xs sm:text-sm px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800" placeholder="Nama siswa / guru peminjam" required />
+                <label for="borrowerName" class="block text-xs font-semibold text-stone-700 mb-1">Nama Lengkap Siswa</label>
+                <input type="text" id="borrowerName" class="w-full text-xs sm:text-sm px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-rose-800 focus:border-rose-800" placeholder="Nama otomatis terisi saat NIS valid" required />
+              </div>
+              <div class="text-[11px] text-stone-500 bg-stone-50 p-2.5 rounded-lg border border-stone-200">
+                <span class="font-semibold text-stone-700">Ketentuan Peminjaman:</span> Hanya siswa terdaftar dengan status <strong>Aktif</strong> (diverifikasi admin) yang dapat meminjam buku. Batas maksimal peminjaman 2 buku selama 7 hari kerja.
               </div>
               <button type="submit" id="confirmBorrowBtn"
                 class="w-full bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-lg transition-colors cursor-pointer shadow-sm">

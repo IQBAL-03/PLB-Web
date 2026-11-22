@@ -80,7 +80,8 @@ export const membersView = {
               <div>
                 <label for="memberStatus" class="block text-xs font-bold text-stone-700 uppercase mb-1">Status Keanggotaan</label>
                 <select id="memberStatus" class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none bg-stone-50">
-                  <option value="Aktif">Aktif</option>
+                  <option value="Aktif">Aktif (Terverifikasi)</option>
+                  <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
                   <option value="Ada Denda">Ada Denda</option>
                   <option value="Non-Aktif">Non-Aktif</option>
                 </select>
@@ -102,10 +103,22 @@ export const membersView = {
 
     return members
       .map((m) => {
-        const isDenda = m.status === 'Ada Denda';
-        const badge = isDenda
-          ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">Ada Denda</span>'
-          : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Aktif</span>';
+        let badge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Aktif</span>';
+        if (m.status === 'Menunggu Verifikasi') {
+          badge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Menunggu Verifikasi</span>';
+        } else if (m.status === 'Ada Denda') {
+          badge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">Ada Denda</span>';
+        } else if (m.status === 'Non-Aktif') {
+          badge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-stone-600 border border-stone-200">Non-Aktif</span>';
+        }
+
+        const verifyBtn = m.status === 'Menunggu Verifikasi'
+          ? `<button type="button" data-member-action="verify" data-nis="${m.nis}"
+              class="px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-[11px] transition-colors cursor-pointer shadow-xs"
+              title="Setujui dan Verifikasi Anggota Siswa">
+              ✓ Verifikasi
+            </button>`
+          : '';
 
         return `
           <tr class="hover:bg-stone-50/80 transition-colors border-b border-stone-200/80 text-xs">
@@ -116,6 +129,7 @@ export const membersView = {
             <td class="py-3 px-4 text-center whitespace-nowrap">${badge}</td>
             <td class="py-3 px-4 text-center whitespace-nowrap">
               <div class="flex items-center justify-center gap-1.5">
+                ${verifyBtn}
                 <button type="button" data-member-action="edit" data-nis="${m.nis}"
                   class="px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-[11px] border border-stone-300 transition-colors cursor-pointer">
                   Edit

@@ -8,6 +8,20 @@ import { eventBus } from '../../core/events.js';
 import { showToast } from '../../utils/toast.js';
 import { bookModalView } from './book-modal.view.js';
 import { imagePreviewModal } from './image-preview.modal.js';
+import { initialMembers } from '../../admin/admin-data.js';
+
+function getMembersList() {
+  try {
+    const raw = localStorage.getItem('sisperpus_admin_members');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {
+    // Storage access fallback
+  }
+  return JSON.parse(JSON.stringify(initialMembers));
+}
 
 export const bookModalController = {
   init() {
@@ -70,7 +84,61 @@ export const bookModalController = {
       }
     });
 
-    // Borrow form submission
+    // Live NIS check and verification feedback
+    document.addEventListener('input', (e) => {
+      if (e.target && e.target.id === 'borrowerNis') {
+        const nis = e.target.value.trim();
+        const statusEl = $('#nisVerificationStatus');
+        const nameInput = $('#borrowerName');
+        if (!statusEl) return;
+
+        if (!nis) {
+          statusEl.className = 'mt-1.5 text-xs hidden';
+          statusEl.innerHTML = '';
+          return;
+        }
+
+        const members = getMembersList();
+        const member = members.find((m) => String(m.nis) === String(nis));
+
+        if (!member) {
+          if (nis.length >= 3) {
+            statusEl.className = 'mt-1.5 text-xs text-rose-600 flex items-center gap-1 font-medium';
+            statusEl.innerHTML = '<span>✕ NIS belum terdaftar sebagai anggota perpustakaan.</span>';
+          } else {
+            statusEl.className = 'mt-1.5 text-xs hidden';
+            statusEl.innerHTML = '';
+          }
+          return;
+        }
+
+        // Auto-fill student name from verified membership record
+        if (nameInput) {
+          nameInput.value = member.name;
+        }
+
+        if (member.status === 'Aktif') {
+          if ((member.activeLoans || 0) >= 2) {
+            statusEl.className = 'mt-1.5 text-xs text-amber-700 flex items-center gap-1 font-medium';
+            statusEl.innerHTML = `<span>⚠️ ${member.name} (${member.classRoom}) &middot; Batas pinjam penuh (2 buku aktif).</span>`;
+          } else {
+            statusEl.className = 'mt-1.5 text-xs text-emerald-700 flex items-center gap-1 font-semibold';
+            statusEl.innerHTML = `<span>✓ Terverifikasi: ${member.name} (${member.classRoom}) &middot; Siap pinjam.</span>`;
+          }
+        } else if (member.status === 'Menunggu Verifikasi') {
+          statusEl.className = 'mt-1.5 text-xs text-amber-600 flex items-center gap-1 font-medium';
+          statusEl.innerHTML = `<span>⏳ ${member.name} &middot; Status: Menunggu Verifikasi Admin.</span>`;
+        } else if (member.status === 'Ada Denda') {
+          statusEl.className = 'mt-1.5 text-xs text-rose-700 flex items-center gap-1 font-medium';
+          statusEl.innerHTML = `<span>⚠️ ${member.name} &middot; Ada denda keterlambatan tertunggak.</span>`;
+        } else {
+          statusEl.className = 'mt-1.5 text-xs text-stone-500 flex items-center gap-1 font-medium';
+          statusEl.innerHTML = `<span>✕ ${member.name} &middot; Status anggota: ${member.status}.</span>`;
+        }
+      }
+    });
+
+    // Borrow form submission with strict member verification
     document.addEventListener('submit', (e) => {
       if (e.target && e.target.id === 'borrowForm') {
         e.preventDefault();
@@ -82,17 +150,76 @@ export const bookModalController = {
         const name = nameInput ? nameInput.value.trim() : '';
         const selectedVol = volumeInput ? volumeInput.value : '';
 
+        // 1. Validasi input dasar
         if (!nis || !name) {
           showToast('NIS dan Nama Peminjam wajib diisi.', 'warning');
+          return;
+        }
+
+        // 2. Validasi Keberadaan Anggota
+        const members = getMembersList();
+        const memberIdx = members.findIndex((m) => String(m.nis) === String(nis));
+        if (memberIdx === -1) {
+          showToast(`NIS ${nis} belum terdaftar sebagai anggota perpustakaan. Silakan hubungi petugas perpustakaan.`, 'error', 6000);
+          return;
+        }
+
+        const member = members[memberIdx];
+
+        // 3. Validasi Status Verifikasi oleh Admin
+        if (member.status === 'Menunggu Verifikasi') {
+          showToast(`Siswa "${member.name}" masih MENUNGGU VERIFIKASI dari admin perpustakaan. Peminjaman belum diizinkan.`, 'warning', 6000);
+          return;
+        }
+
+        if (member.status === 'Ada Denda') {
+          showToast(`Siswa "${member.name}" memiliki kewajiban denda keterlambatan. Harap selesaikan denda terlebih dahulu.`, 'error', 6000);
+          return;
+        }
+
+        if (member.status !== 'Aktif') {
+          showToast(`Keanggotaan siswa "${member.name}" berstatus "${member.status}". Belum diizinkan meminjam buku.`, 'error', 5000);
+          return;
+        }
+
+        // 4. Validasi Batas Pinjaman Maksimal (Maks 2 Buku)
+        const currentActiveLoans = member.activeLoans || 0;
+        if (currentActiveLoans >= 2) {
+          showToast(`Siswa "${member.name}" sudah mencapai batas maksimal pinjam (2 buku). Kembalikan buku lama terlebih dahulu.`, 'warning', 6000);
           return;
         }
 
         const currentBook = state.selectedBook;
         if (!currentBook) return;
 
+        // 5. Update data anggota (tambah activeLoans +1)
+        member.activeLoans = currentActiveLoans + 1;
+        members[memberIdx] = member;
+        try {
+          localStorage.setItem('sisperpus_admin_members', JSON.stringify(members));
+        } catch {
+          // Storage quota fallback
+        }
+
+        // 6. Update stok buku lokal
+        if (currentBook.hasVolumes && selectedVol && currentBook.volumes) {
+          const vol = currentBook.volumes.find((v) => v.volumeNumber === Number(selectedVol));
+          if (vol && vol.stock > 0) {
+            vol.stock -= 1;
+          }
+        } else if (currentBook.stock > 0) {
+          currentBook.stock -= 1;
+        }
+        try {
+          localStorage.setItem('sisperpus_admin_books', JSON.stringify(state.books));
+        } catch {
+          // Storage quota fallback
+        }
+
+        // 7. Tandai buku sedang dipinjam di state pengguna
         state.borrowBook(currentBook.id);
 
-        // Record circulation transaction for statistics and admin sync
+        // 8. Catat transaksi sirkulasi
         try {
           const now = new Date();
           const dueDate = new Date();
@@ -101,8 +228,8 @@ export const bookModalController = {
           const txs = raw ? JSON.parse(raw) : [];
           txs.unshift({
             id: `TRX-${Date.now().toString().slice(-6)}`,
-            studentName: name,
-            nis: nis,
+            studentName: member.name,
+            nis: member.nis,
             bookId: currentBook.id,
             bookTitle: currentBook.title + (currentBook.hasVolumes && selectedVol ? ` (Vol. ${selectedVol})` : ''),
             borrowDate: now.toISOString().split('T')[0],
@@ -120,7 +247,7 @@ export const bookModalController = {
         bookModalView.close();
 
         const volSuffix = currentBook.hasVolumes && selectedVol ? ` (Volume ${selectedVol})` : '';
-        showToast(`Buku "${currentBook.title}${volSuffix}" berhasil dipinjam atas nama ${name}. Harap kembalikan dalam 7 hari kerja.`, 'success', 5000);
+        showToast(`Buku "${currentBook.title}${volSuffix}" berhasil dipinjam atas nama ${member.name} (${member.nis}). Harap kembalikan dalam 7 hari kerja.`, 'success', 6000);
       }
     });
   },
