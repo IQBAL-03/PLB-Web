@@ -37,7 +37,7 @@ export const booksCardView = {
                 data-book-title="${escapeHtml(b.title)} - Karya ${escapeHtml(b.author)}">
                 <img src="${b.coverImg || 'img/placeholder-book.svg'}" alt="${escapeHtml(b.title)}"
                   class="max-h-full max-w-full w-auto h-auto object-contain rounded shadow-xs group-hover:scale-102 transition-transform duration-200"
-                  onerror="this.src='img/placeholder-book.svg'"
+                  onerror="window.handleCoverError ? window.handleCoverError(this, '${escapeHtml(b.id)}') : (this.src='img/cover-fallback.svg')"
                   loading="lazy" />
                 <div class="absolute inset-0 bg-stone-950/35 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
                   <span class="bg-stone-900/85 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md backdrop-blur-xs flex items-center gap-1">

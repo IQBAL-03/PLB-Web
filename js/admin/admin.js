@@ -5,6 +5,7 @@
 import { adminAppController } from './admin-app.controller.js';
 import { imagePreviewModal } from '../features/modal/image-preview.modal.js';
 import { showToast } from '../utils/toast.js';
+import '../utils/image-fallback.js';
 
 // Enforce authentication before loading administrative interface
 const token = localStorage.getItem('sisperpus_token');

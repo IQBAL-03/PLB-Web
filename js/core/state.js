@@ -75,11 +75,6 @@ class State {
         if (versionHash) {
           if (lastVersion !== null && lastVersion !== versionHash) {
             lastVersion = versionHash;
-            const hasActiveModal = document.querySelector('#borrowModalDialog:not(.hidden), #bookModalDialog:not(.hidden)');
-            if (!hasActiveModal) {
-              window.location.reload();
-              return;
-            }
             await this.syncBooks();
             return;
           }
@@ -95,11 +90,6 @@ class State {
             const fallbackHash = data.books.map((b) => `${b.id}:${b.updatedAt || ''}:${b.stock}:${b.rating || 0}:${b.reviews_count || 0}`).join('|');
             if (lastVersion !== null && lastVersion !== fallbackHash) {
               lastVersion = fallbackHash;
-              const hasActiveModal = document.querySelector('#borrowModalDialog:not(.hidden), #bookModalDialog:not(.hidden)');
-              if (!hasActiveModal) {
-                window.location.reload();
-                return;
-              }
               await this.syncBooks();
               return;
             }

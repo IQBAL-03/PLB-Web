@@ -36,6 +36,26 @@ export const bookModalController = {
         reviewsController.loadAndRender(book);
       }
     });
+
+    eventBus.on('books:synced', (booksList) => {
+      if (state.selectedBook && Array.isArray(booksList)) {
+        const fresh = booksList.find((b) => b.id === state.selectedBook.id);
+        if (fresh) {
+          state.selectedBook = fresh;
+          const ratingSnippet = $('#bookModalRatingSnippet');
+          if (ratingSnippet) {
+            const stars = bookModalView.renderStarsSnippet(fresh.rating || 0);
+            const score = (Number(fresh.rating) || 0).toFixed(1);
+            const count = fresh.reviews_count || fresh.reviewsCount || 0;
+            ratingSnippet.innerHTML = `
+              <div class="flex items-center gap-0.5 text-amber-500" aria-hidden="true">${stars}</div>
+              <span class="font-bold text-stone-800 text-xs">${score} / 5</span>
+              <span class="text-stone-500 text-xs">(${count} ulasan)</span>
+            `;
+          }
+        }
+      }
+    });
   },
 
   bindEvents() {

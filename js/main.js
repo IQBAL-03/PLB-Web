@@ -10,6 +10,7 @@ import { bookModalController } from './features/modal/book-modal.controller.js';
 import { imagePreviewModal } from './features/modal/image-preview.modal.js';
 import { memberModal } from './features/modal/member-modal.js';
 import { showToast } from './utils/toast.js';
+import './utils/image-fallback.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   navigation.init();
