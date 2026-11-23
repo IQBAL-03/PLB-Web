@@ -116,7 +116,7 @@ func SeedBooks(conn *sql.DB) error {
 			IsPopular:    1,
 			Badge:        "Sinematik Populer",
 			Synopsis:     "Yuta merekam hari-hari terakhir ibunya sebagai tugas film sekolah. Setelah karyanya dikritik, ia bertemu gadis misterius bernama Eri.",
-			CoverImg:     "https://res.cloudinary.com/tla0kvyw/image/upload/v1795280567/sisperpus/covers/eajdrhns4jrkwea8nksv.png",
+			CoverImg:     "https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png",
 			HasVolumes:   0,
 			VolJSON:      "",
 		},

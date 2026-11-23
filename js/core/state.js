@@ -10,7 +10,7 @@ class State {
     // Purge any stale local drafts that contain outdated volume chapters or legacy ratings
     try {
       const saved = localStorage.getItem('sisperpus_admin_books');
-      if (saved && (saved.includes('72-84') || saved.includes('"rating":4.9') || saved.includes('"rating":5'))) {
+      if (saved && (saved.includes('72-84') || saved.includes('"rating":4.9') || saved.includes('"rating":5') || saved.includes('eajdrhns4jrkwea8nksv'))) {
         localStorage.removeItem('sisperpus_admin_books');
       }
     } catch {
@@ -30,11 +30,18 @@ class State {
       // Storage access fallback
     }
 
-    this.books = initialBooks.map((b) => ({
-      ...b,
-      reviewsCount: b.reviews_count || b.reviewsCount || 0,
-      reviews_count: b.reviews_count || b.reviewsCount || 0,
-    }));
+    this.books = initialBooks.map((b) => {
+      let cover = b.coverImg;
+      if (b.id === 'M002' && (!cover || cover.includes('eajdrhns4jrkwea8nksv'))) {
+        cover = 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png';
+      }
+      return {
+        ...b,
+        coverImg: cover,
+        reviewsCount: b.reviews_count || b.reviewsCount || 0,
+        reviews_count: b.reviews_count || b.reviewsCount || 0,
+      };
+    });
     this.categories = [...categories];
     this.activeCategory = 'Semua Koleksi';
     this.searchQuery = '';
@@ -131,11 +138,18 @@ class State {
       if (res.ok) {
         const data = await res.json();
         if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
-          const newBooks = data.books.map((b) => ({
-            ...b,
-            reviewsCount: b.reviews_count || b.reviewsCount || 0,
-            reviews_count: b.reviews_count || b.reviewsCount || 0,
-          }));
+          const newBooks = data.books.map((b) => {
+            let cover = b.coverImg;
+            if (b.id === 'M002' && (!cover || cover.includes('eajdrhns4jrkwea8nksv'))) {
+              cover = 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png';
+            }
+            return {
+              ...b,
+              coverImg: cover,
+              reviewsCount: b.reviews_count || b.reviewsCount || 0,
+              reviews_count: b.reviews_count || b.reviewsCount || 0,
+            };
+          });
 
           const hasChanged = JSON.stringify(this.books) !== JSON.stringify(newBooks);
           if (hasChanged || this.books.length === 0) {

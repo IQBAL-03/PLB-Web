@@ -24,7 +24,13 @@ export const spotlightView = {
     this.container = target;
 
     const spotlightInfo = resolveWeeklySpotlight(state.books);
-    if (!spotlightInfo || !spotlightInfo.book) return;
+    const section = target.closest('#sorotan');
+    if (!spotlightInfo || !spotlightInfo.book) {
+      target.innerHTML = '';
+      if (section) section.classList.add('hidden');
+      return;
+    }
+    if (section) section.classList.remove('hidden');
 
     const spotlightBook = spotlightInfo.book;
     const isBorrowed = state.isBookBorrowed(spotlightBook.id);

@@ -70,60 +70,23 @@ export function resolveWeeklySpotlight(books = []) {
     };
   });
 
-  // 1. If any book has recorded borrow transactions, pick the one with most borrows
-  const borrowedCandidates = candidates.filter((item) => item.borrowCount > 0);
-  if (borrowedCandidates.length > 0) {
-    borrowedCandidates.sort((a, b) => {
-      if (b.borrowCount !== a.borrowCount) {
-        return b.borrowCount - a.borrowCount;
-      }
-      return b.rating - a.rating;
-    });
-
-    // The highest borrow count wins unconditionally
-    const maxBorrows = borrowedCandidates[0].borrowCount;
-    const topBorrowed = borrowedCandidates.filter((item) => item.borrowCount === maxBorrows);
-
-    // If there is a tie for the top borrow count, rotate weekly among the tied books
-    const chosenIndex = weekNo % topBorrowed.length;
-    const chosen = topBorrowed[chosenIndex];
-
-    return {
-      book: chosen.book,
-      reasonBadge: 'Terbanyak Dipinjam Pekan Ini',
-      reasonDetail: `Dipinjam ${chosen.borrowCount} kali oleh siswa`,
-      weekLabel: `Pekan ke-${weekNo} &middot; Tahun ${year}`,
-      source: 'borrow_count',
-    };
-  }
-
-  // 2. Pick by highest rating only if at least one book has a positive rating
+  // When rating is 0 across all books, do not show spotlight notification banner
   const sortedByRating = [...candidates].sort((a, b) => b.rating - a.rating);
   const highestRating = sortedByRating[0] ? sortedByRating[0].rating : 0;
-
-  if (highestRating > 0) {
-    const topRated = sortedByRating.filter((item) => item.rating === highestRating);
-    const chosenIndex = weekNo % topRated.length;
-    const chosen = topRated[chosenIndex];
-
-    return {
-      book: chosen.book,
-      reasonBadge: 'Rating Tertinggi Pekan Ini',
-      reasonDetail: `Skor ${chosen.rating.toFixed(1)} / 5 &middot; Penilaian Pembaca Teratas`,
-      weekLabel: `Pekan ke-${weekNo} &middot; Tahun ${year}`,
-      source: 'rating',
-    };
+  if (highestRating <= 0) {
+    return null;
   }
 
-  // 3. Default fallback when no ratings and no borrows yet: no notification badge
-  const chosenIndex = weekNo % candidates.length;
-  const chosen = candidates[chosenIndex];
+  // 1. Pick by highest rating
+  const topRated = sortedByRating.filter((item) => item.rating === highestRating);
+  const chosenIndex = weekNo % topRated.length;
+  const chosen = topRated[chosenIndex];
 
   return {
     book: chosen.book,
-    reasonBadge: null,
-    reasonDetail: null,
+    reasonBadge: 'Rating Tertinggi Pekan Ini',
+    reasonDetail: `Skor ${chosen.rating.toFixed(1)} / 5 &middot; Penilaian Pembaca Teratas`,
     weekLabel: `Pekan ke-${weekNo} &middot; Tahun ${year}`,
-    source: 'featured',
+    source: 'rating',
   };
 }

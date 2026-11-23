@@ -39,7 +39,7 @@ export const mangaBooks = [
     reviewsCount: 0,
     badge: 'Sinematik Populer',
     synopsis: 'Yuta merekam hari-hari terakhir ibunya sebagai tugas film sekolah. Setelah karyanya dikritik di festival sekolah, ia bertemu gadis misterius bernama Eri yang membantunya membuat mahakarya sinematik baru.',
-    coverImg: 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795280567/sisperpus/covers/eajdrhns4jrkwea8nksv.png',
+    coverImg: 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png',
     isPopular: true,
     hasVolumes: false,
     volumes: [],

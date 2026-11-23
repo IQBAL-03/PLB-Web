@@ -20,7 +20,7 @@ class AdminStateManager {
       if (!saved) return JSON.parse(JSON.stringify(fallback));
       const parsed = JSON.parse(saved);
       if (key === 'books' && Array.isArray(parsed)) {
-        const hasLegacy = parsed.some((b) => b.coverImg && b.coverImg.includes('cover-sementara'));
+        const hasLegacy = parsed.some((b) => b.coverImg && (b.coverImg.includes('cover-sementara') || b.coverImg.includes('eajdrhns4jrkwea8nksv')));
         const hasOldChapters = parsed.some((b) => b.id === 'M003' && b.volumes && b.volumes.some((v) => v.volumeTitle && v.volumeTitle.includes('72-84')));
         const hasLegacyRatings = parsed.some((b) => (b.rating === 4.9 || b.rating === 5) && (!b.reviews_count && !b.reviewsCount));
         if (hasLegacy || hasOldChapters || hasLegacyRatings) {

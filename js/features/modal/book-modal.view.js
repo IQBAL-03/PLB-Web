@@ -27,6 +27,9 @@ export const bookModalView = {
     if (!this.content || !book) return;
 
     let activeCover = book.coverImg || 'img/placeholder-book.svg';
+    if (book.id === 'M002' && (!activeCover || activeCover.includes('eajdrhns4jrkwea8nksv'))) {
+      activeCover = 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png';
+    }
     let activeVolume = null;
 
     if (book.hasVolumes && book.volumes && book.volumes.length > 0) {
