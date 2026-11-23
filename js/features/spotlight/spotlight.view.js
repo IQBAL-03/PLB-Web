@@ -123,12 +123,6 @@ export const spotlightView = {
                 data-book-id="${spotlightBook.id}">
                 ${borrowBtnText}
               </button>
-              <button type="button"
-                class="px-4 py-2.5 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-colors border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/40 cursor-pointer"
-                data-action="open-detail"
-                data-book-id="${spotlightBook.id}">
-                Lihat Sinopsis Lengkap
-              </button>
             </div>
           </div>
         </div>

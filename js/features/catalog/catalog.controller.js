@@ -24,20 +24,7 @@ export const catalogController = {
       catalogView.renderCategoryPills(state.categories, state.activeCategory, categoryChipsContainer);
     }
 
-    const popularGrid = $('#popularBooksGrid');
-    if (popularGrid) {
-      const popular = state.books.filter((b) => b.isPopular);
-      const popularBooks = popular.length > 0 ? popular : state.books;
-      catalogView.renderGrid(popularGrid, popularBooks, (id) => state.isBookBorrowed(id));
-    }
-
     this.updateCatalogGrid();
-
-    const comingSoonGrid = $('#comingSoonGrid');
-    if (comingSoonGrid) {
-      const comingSoonBooks = state.books.filter((b) => b.isComingSoon);
-      catalogView.renderGrid(comingSoonGrid, comingSoonBooks, (id) => state.isBookBorrowed(id));
-    }
   },
 
   updateCatalogGrid() {
@@ -57,6 +44,14 @@ export const catalogController = {
       const count = state.getFilteredBooks().length;
       activeLabel.textContent = `${state.activeCategory} (${count} buku)`;
     }
+
+    // Update hero quick filter buttons active state
+    $$('[data-hero-filter]').forEach((btn) => {
+      const isMatch = btn.dataset.heroFilter === state.activeCategory;
+      btn.className = isMatch
+        ? 'px-3 py-1 rounded-full bg-rose-900 text-white font-semibold transition-colors cursor-pointer shadow-xs'
+        : 'px-3 py-1 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium transition-colors cursor-pointer';
+    });
   },
 
   bindEvents() {
