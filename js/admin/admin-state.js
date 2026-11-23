@@ -22,11 +22,12 @@ class AdminStateManager {
       if (key === 'books' && Array.isArray(parsed)) {
         const hasLegacy = parsed.some((b) => b.coverImg && b.coverImg.includes('cover-sementara'));
         const hasOldChapters = parsed.some((b) => b.id === 'M003' && b.volumes && b.volumes.some((v) => v.volumeTitle && v.volumeTitle.includes('72-84')));
-        if (hasLegacy || parsed.length > 3 || hasOldChapters) {
+        const hasLegacyRatings = parsed.some((b) => (b.rating === 4.9 || b.rating === 5) && (!b.reviews_count && !b.reviewsCount));
+        if (hasLegacy || hasOldChapters || hasLegacyRatings) {
           localStorage.removeItem(this.storagePrefix + key);
           return JSON.parse(JSON.stringify(fallback));
         }
-        return parsed.map((b) => ({ ...b, reviewsCount: 0 }));
+        return parsed.map((b) => ({ ...b, reviewsCount: b.reviews_count || b.reviewsCount || 0 }));
       }
       if (key === 'members' && Array.isArray(parsed) && parsed.length === 0 && fallback.length > 0) {
         return JSON.parse(JSON.stringify(fallback));

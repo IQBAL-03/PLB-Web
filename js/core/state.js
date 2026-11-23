@@ -7,10 +7,10 @@ import { eventBus } from './events.js';
 
 class State {
   constructor() {
-    // Purge any stale local drafts that contain outdated volume chapters
+    // Purge any stale local drafts that contain outdated volume chapters or legacy ratings
     try {
       const saved = localStorage.getItem('sisperpus_admin_books');
-      if (saved && saved.includes('72-84')) {
+      if (saved && (saved.includes('72-84') || saved.includes('"rating":4.9') || saved.includes('"rating":5'))) {
         localStorage.removeItem('sisperpus_admin_books');
       }
     } catch {
@@ -85,7 +85,7 @@ class State {
         if (resBooks.ok) {
           const data = await resBooks.json();
           if (data && data.ok && Array.isArray(data.books)) {
-            const fallbackHash = data.books.map((b) => `${b.id}:${b.updatedAt || ''}:${b.stock}:${b.coverImg || ''}`).join('|');
+            const fallbackHash = data.books.map((b) => `${b.id}:${b.updatedAt || ''}:${b.stock}:${b.rating || 0}:${b.reviews_count || 0}`).join('|');
             if (lastVersion !== null && lastVersion !== fallbackHash) {
               lastVersion = fallbackHash;
               const hasActiveModal = document.querySelector('#borrowModalDialog:not(.hidden), #bookModalDialog:not(.hidden)');
