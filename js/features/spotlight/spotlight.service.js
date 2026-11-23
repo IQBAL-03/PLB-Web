@@ -97,22 +97,33 @@ export function resolveWeeklySpotlight(books = []) {
     };
   }
 
-  // 2. Fallback when fresh / no borrows: pick strictly by highest rating
+  // 2. Pick by highest rating only if at least one book has a positive rating
   const sortedByRating = [...candidates].sort((a, b) => b.rating - a.rating);
-  const highestRating = sortedByRating[0].rating;
+  const highestRating = sortedByRating[0] ? sortedByRating[0].rating : 0;
 
-  // Find all books tied for the highest rating
-  const topRated = sortedByRating.filter((item) => item.rating === highestRating);
+  if (highestRating > 0) {
+    const topRated = sortedByRating.filter((item) => item.rating === highestRating);
+    const chosenIndex = weekNo % topRated.length;
+    const chosen = topRated[chosenIndex];
 
-  // If tied for highest rating, rotate weekly among them; otherwise the highest rating wins
-  const chosenIndex = weekNo % topRated.length;
-  const chosen = topRated[chosenIndex];
+    return {
+      book: chosen.book,
+      reasonBadge: 'Rating Tertinggi Pekan Ini',
+      reasonDetail: `Skor ${chosen.rating.toFixed(1)} / 5 &middot; Penilaian Pembaca Teratas`,
+      weekLabel: `Pekan ke-${weekNo} &middot; Tahun ${year}`,
+      source: 'rating',
+    };
+  }
+
+  // 3. Default fallback when no ratings and no borrows yet
+  const chosenIndex = weekNo % candidates.length;
+  const chosen = candidates[chosenIndex];
 
   return {
     book: chosen.book,
-    reasonBadge: 'Rating Tertinggi Pekan Ini',
-    reasonDetail: `Skor ${chosen.book.rating} &middot; Koleksi Pilihan Kurator`,
+    reasonBadge: 'Koleksi Rekomendasi Pekan Ini',
+    reasonDetail: 'Koleksi pilihan perpustakaan &middot; Jadilah yang pertama memberikan ulasan',
     weekLabel: `Pekan ke-${weekNo} &middot; Tahun ${year}`,
-    source: 'rating',
+    source: 'featured',
   };
 }
