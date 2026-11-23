@@ -86,9 +86,30 @@ export const catalogController = {
       });
     });
 
-    // Delegate book clicks: open book detail & borrow modal
+    // Delegate book clicks: photo preview vs detail / borrow modal
     document.addEventListener('click', (e) => {
-      // 1. If clicking the detail / borrow action button
+      // 1. If clicking book cover photo (catalog card or spotlight) -> open image modal only
+      const coverTrigger = e.target.closest('[data-action="preview-cover"], [data-action="preview-spotlight-cover"]');
+      if (coverTrigger) {
+        const bookId = coverTrigger.dataset.bookId;
+        const book = state.books.find((b) => b.id === bookId);
+        if (book && book.coverImg && book.coverImg.trim()) {
+          if (book.hasVolumes && Array.isArray(book.volumes) && book.volumes.length > 0) {
+            const items = book.volumes.map((v) => ({
+              src: v.coverImg || book.coverImg || 'img/cover-fallback.svg',
+              title: `${book.title} - ${v.volumeTitle || `Volume ${v.volumeNumber}`}`,
+              volumeNumber: v.volumeNumber,
+            }));
+            imagePreviewModal.open(items, 0);
+          } else {
+            const caption = `${book.title} - Karya ${book.author}`;
+            imagePreviewModal.open(book.coverImg, caption);
+          }
+        }
+        return;
+      }
+
+      // 2. If clicking the detail / borrow action button
       const detailBtn = e.target.closest('[data-action="open-detail"]');
       if (detailBtn) {
         const bookId = detailBtn.dataset.bookId;
@@ -96,15 +117,7 @@ export const catalogController = {
         return;
       }
 
-      // 2. If clicking spotlight book cover
-      const spotlightCover = e.target.closest('[data-action="preview-spotlight-cover"]');
-      if (spotlightCover) {
-        const bookId = spotlightCover.dataset.bookId;
-        if (bookId) state.setSelectedBook(bookId);
-        return;
-      }
-
-      // 3. If clicking anywhere on a book card in catalog
+      // 3. If clicking anywhere on a book card in catalog (outside cover photo)
       const card = e.target.closest('article[data-book-id]');
       if (card) {
         const bookId = card.dataset.bookId;

@@ -15,12 +15,10 @@ export const bookModalView = {
 
   renderStarsSnippet(rating) {
     const num = Math.round(Number(rating) || 0);
-    let s = '';
-    for (let i = 1; i <= 5; i++) {
-      const c = num > 0 && i <= num ? 'text-amber-500' : 'text-stone-300';
-      s += `<svg class="w-3.5 h-3.5 ${c} fill-current shrink-0" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
-    }
-    return s;
+    return Array.from({ length: 5 }, (_, i) => {
+      const c = num > 0 && i < num ? 'text-amber-500' : 'text-stone-300';
+      return `<svg class="w-3.5 h-3.5 ${c} fill-current shrink-0" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
+    }).join('');
   },
 
   renderContent(book, isBorrowed, selectedVolumeNum = 1) {
@@ -124,10 +122,10 @@ export const bookModalView = {
               ? `
             <div class="mb-4 bg-amber-50/70 border border-amber-200/80 rounded-xl p-3.5">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-bold text-stone-800 uppercase tracking-wider">Pilih Volume Manga:</span>
+                <span class="text-xs font-bold text-stone-800 uppercase tracking-wider">Pilih Volume:</span>
                 <span id="activeVolumeLabel" class="text-xs font-bold text-rose-900">${escapeHtml(activeVolume.volumeTitle)}</span>
               </div>
-              <div class="flex flex-wrap gap-1.5 mb-2" id="volumeButtonContainer">
+              <div class="flex flex-wrap gap-1.5 mb-2.5" id="volumeButtonContainer">
                 ${book.volumes
                   .map(
                     (v) => `
@@ -144,17 +142,22 @@ export const bookModalView = {
                   )
                   .join('')}
               </div>
-              <p id="volumeDesc" class="text-xs text-stone-600 italic leading-relaxed">
-                ${escapeHtml(activeVolume.description || '')}
-              </p>
+              <div class="pt-2 border-t border-amber-200/60 text-xs">
+                <span class="font-bold text-stone-700 block mb-0.5">
+                  Sinopsis <span id="volumeDescTitle">${escapeHtml(activeVolume.volumeTitle || `Volume ${activeVolume.volumeNumber}`)}</span>:
+                </span>
+                <p id="volumeDesc" class="text-stone-700 leading-relaxed">${escapeHtml(activeVolume.description || '')}</p>
+              </div>
             </div>
           `
               : ''
           }
 
           <div class="mb-4">
-            <h3 class="text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">Sinopsis</h3>
-            <p id="bookModalMainSynopsis" class="text-xs sm:text-sm text-stone-600 leading-relaxed">${escapeHtml((activeVolume && activeVolume.description) || book.synopsis)}</p>
+            <h3 class="text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+              ${book.hasVolumes && book.volumes ? 'Sinopsis Umum' : 'Sinopsis'}
+            </h3>
+            <p id="bookModalMainSynopsis" class="text-xs sm:text-sm text-stone-600 leading-relaxed">${escapeHtml(book.synopsis || '')}</p>
           </div>
 
           ${
@@ -218,19 +221,16 @@ export const bookModalView = {
     }
 
     const volumeCoverBadge = $('#volumeCoverBadge');
-    if (volumeCoverBadge) {
-      volumeCoverBadge.textContent = `Vol. ${vol.volumeNumber}`;
-    }
+    if (volumeCoverBadge) volumeCoverBadge.textContent = `Vol. ${vol.volumeNumber}`;
 
     const volumeDesc = $('#volumeDesc');
-    if (volumeDesc) {
-      volumeDesc.textContent = vol.description || '';
-    }
+    if (volumeDesc) volumeDesc.textContent = vol.description || '';
+
+    const volumeDescTitle = $('#volumeDescTitle');
+    if (volumeDescTitle) volumeDescTitle.textContent = vol.volumeTitle || `Volume ${vol.volumeNumber}`;
 
     const mainSynopsis = $('#bookModalMainSynopsis');
-    if (mainSynopsis) {
-      mainSynopsis.textContent = vol.description || book.synopsis || '';
-    }
+    if (mainSynopsis) mainSynopsis.textContent = book.synopsis || '';
 
     const activeVolumeLabel = $('#activeVolumeLabel');
     if (activeVolumeLabel) activeVolumeLabel.textContent = vol.volumeTitle;
