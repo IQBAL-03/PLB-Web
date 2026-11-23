@@ -44,14 +44,6 @@ export const catalogController = {
       const count = state.getFilteredBooks().length;
       activeLabel.textContent = `${state.activeCategory} (${count} buku)`;
     }
-
-    // Update hero quick filter buttons active state
-    $$('[data-hero-filter]').forEach((btn) => {
-      const isMatch = btn.dataset.heroFilter === state.activeCategory;
-      btn.className = isMatch
-        ? 'px-3 py-1 rounded-full bg-rose-900 text-white font-semibold transition-colors cursor-pointer shadow-xs'
-        : 'px-3 py-1 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium transition-colors cursor-pointer';
-    });
   },
 
   bindEvents() {
@@ -86,6 +78,7 @@ export const catalogController = {
     // Hero quick filter buttons
     $$('[data-hero-filter]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        btn.blur();
         const cat = btn.dataset.heroFilter;
         state.setCategory(cat);
         const target = $('#katalog');
@@ -93,7 +86,7 @@ export const catalogController = {
       });
     });
 
-    // Delegate book clicks: detail action vs card photo popup
+    // Delegate book clicks: open book detail & borrow modal
     document.addEventListener('click', (e) => {
       // 1. If clicking the detail / borrow action button
       const detailBtn = e.target.closest('[data-action="open-detail"]');
@@ -107,31 +100,15 @@ export const catalogController = {
       const spotlightCover = e.target.closest('[data-action="preview-spotlight-cover"]');
       if (spotlightCover) {
         const bookId = spotlightCover.dataset.bookId;
-        const book = state.books.find((b) => b.id === bookId);
-        if (book) {
-          if (book.coverImg && book.coverImg.trim()) {
-            const caption = `${book.title} - Karya ${book.author}`;
-            imagePreviewModal.open(book.coverImg, caption);
-          } else {
-            state.setSelectedBook(bookId);
-          }
-        }
+        if (bookId) state.setSelectedBook(bookId);
         return;
       }
 
-      // 3. If clicking anywhere on a book card in catalog / grids
+      // 3. If clicking anywhere on a book card in catalog
       const card = e.target.closest('article[data-book-id]');
       if (card) {
         const bookId = card.dataset.bookId;
-        const book = state.books.find((b) => b.id === bookId);
-        if (book) {
-          if (book.coverImg && book.coverImg.trim()) {
-            const caption = `${book.title} - Karya ${book.author} (${book.language || 'Bahasa Indonesia'})`;
-            imagePreviewModal.open(book.coverImg, caption);
-          } else {
-            state.setSelectedBook(bookId);
-          }
-        }
+        if (bookId) state.setSelectedBook(bookId);
       }
     });
   },

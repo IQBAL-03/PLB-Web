@@ -46,6 +46,11 @@ export const memberModal = {
 
   init() {
     this.bindEvents();
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.modal && !this.modal.classList.contains('hidden')) {
+        this.close();
+      }
+    });
   },
 
   open(tab = 'check', prefillNis = '') {
@@ -126,7 +131,7 @@ export const memberModal = {
       }
 
       // Close modal
-      if (e.target.closest('#closeMemberModalBtn') || e.target.id === 'memberModalBackdrop') {
+      if (e.target.closest('#closeMemberModalBtn') || e.target.id === 'memberModalBackdrop' || e.target.id === 'memberModalWrapper') {
         this.close();
         return;
       }

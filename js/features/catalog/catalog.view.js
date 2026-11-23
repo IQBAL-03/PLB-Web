@@ -73,17 +73,11 @@ export const catalogView = {
     const hasCover = Boolean(book.coverImg && book.coverImg.trim());
     const coverSection = hasCover
       ? `
-        <div class="relative aspect-[3/4] bg-stone-100 overflow-hidden cursor-zoom-in group/cover">
+        <div class="relative aspect-[3/4] bg-stone-100 overflow-hidden">
           <img src="${escapeHtml(book.coverImg)}" alt="Sampul buku ${escapeHtml(book.title)}"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
             onerror="window.handleCoverError && window.handleCoverError(this, '${escapeHtml(book.id)}')" />
-          <div class="absolute inset-0 bg-stone-950/30 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
-            <span class="bg-stone-900/85 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-md backdrop-blur-xs flex items-center gap-1">
-              <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
-              <span>Perbesar Foto</span>
-            </span>
-          </div>
           <div class="absolute top-2.5 left-2.5">
             <span class="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full border ${badgeColor}">
               ${escapeHtml(book.badge || book.category)}

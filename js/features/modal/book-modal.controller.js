@@ -38,22 +38,16 @@ export const bookModalController = {
     });
 
     eventBus.on('books:synced', (booksList) => {
-      if (state.selectedBook && Array.isArray(booksList)) {
-        const fresh = booksList.find((b) => b.id === state.selectedBook.id);
-        if (fresh) {
-          state.selectedBook = fresh;
-          const ratingSnippet = $('#bookModalRatingSnippet');
-          if (ratingSnippet) {
-            const stars = bookModalView.renderStarsSnippet(fresh.rating || 0);
-            const score = (Number(fresh.rating) || 0).toFixed(1);
-            const count = fresh.reviews_count || fresh.reviewsCount || 0;
-            ratingSnippet.innerHTML = `
-              <div class="flex items-center gap-0.5 text-amber-500" aria-hidden="true">${stars}</div>
-              <span class="font-bold text-stone-800 text-xs">${score} / 5</span>
-              <span class="text-stone-500 text-xs">(${count} ulasan)</span>
-            `;
-          }
-        }
+      if (!state.selectedBook || !Array.isArray(booksList)) return;
+      const fresh = booksList.find((b) => b.id === state.selectedBook.id);
+      if (!fresh) return;
+      state.selectedBook = fresh;
+      const ratingSnippet = $('#bookModalRatingSnippet');
+      if (ratingSnippet) {
+        const stars = bookModalView.renderStarsSnippet(fresh.rating || 0);
+        const score = (Number(fresh.rating) || 0).toFixed(1);
+        const count = fresh.reviews_count || fresh.reviewsCount || 0;
+        ratingSnippet.innerHTML = `<div class="flex items-center gap-0.5 text-amber-500" aria-hidden="true">${stars}</div><span class="font-bold text-stone-800 text-xs">${score} / 5</span><span class="text-stone-500 text-xs">(${count} ulasan)</span>`;
       }
     });
   },
@@ -62,12 +56,19 @@ export const bookModalController = {
     const modal = bookModalView.modal;
     if (!modal) return;
 
-    // Close button & backdrop
+    // Close button, backdrop, and outside wrapper click
     const closeBtn = $('#closeBookModalBtn');
     if (closeBtn) closeBtn.addEventListener('click', () => bookModalView.close());
 
     const backdrop = $('#bookModalBackdrop');
     if (backdrop) backdrop.addEventListener('click', () => bookModalView.close());
+
+    const wrapper = $('#bookModalWrapper');
+    if (wrapper) {
+      wrapper.addEventListener('click', (e) => {
+        if (e.target === wrapper) bookModalView.close();
+      });
+    }
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
@@ -92,16 +93,23 @@ export const bookModalController = {
 
       const coverBtn = e.target.closest('#openCoverPreviewBtn');
       if (coverBtn) {
-        const coverImg = $('#bookModalCoverImg');
         const currentBook = state.selectedBook;
-        if (coverImg && coverImg.src) {
-          const volumeLabel = $('#activeVolumeLabel');
-          const title = currentBook
-            ? currentBook.hasVolumes && volumeLabel
-              ? `${currentBook.title} (${volumeLabel.textContent})`
-              : currentBook.title
-            : 'Sampul Buku';
-          imagePreviewModal.open(coverImg.src, title);
+        if (!currentBook) return;
+
+        if (currentBook.hasVolumes && Array.isArray(currentBook.volumes) && currentBook.volumes.length > 0) {
+          const items = currentBook.volumes.map((v) => ({
+            src: v.coverImg || currentBook.coverImg || 'img/cover-fallback.svg',
+            title: `${currentBook.title} - ${v.volumeTitle || `Volume ${v.volumeNumber}`}`,
+            volumeNumber: v.volumeNumber,
+          }));
+          const selectedVolInput = $('#selectedVolumeInput');
+          const currentVolNum = selectedVolInput ? Number(selectedVolInput.value) : 1;
+          const startIndex = items.findIndex((item) => item.volumeNumber === currentVolNum);
+          imagePreviewModal.open(items, startIndex >= 0 ? startIndex : 0);
+        } else {
+          const coverImg = $('#bookModalCoverImg');
+          const src = (coverImg && coverImg.src) || currentBook.coverImg || 'img/cover-fallback.svg';
+          imagePreviewModal.open(src, `${currentBook.title} - Karya ${currentBook.author}`);
         }
       }
     });
@@ -185,10 +193,6 @@ export const bookModalController = {
           showToast(`Siswa "${member.name}" masih MENUNGGU VERIFIKASI dari admin.`, 'warning', 5000);
           return;
         }
-        if (member.status === 'Ada Denda') {
-          showToast(`Siswa "${member.name}" memiliki kewajiban denda tertunggak.`, 'error', 5000);
-          return;
-        }
         if (member.status !== 'Aktif') {
           showToast(`Keanggotaan siswa "${member.name}" berstatus "${member.status}".`, 'error', 5000);
           return;
@@ -221,6 +225,7 @@ export const bookModalController = {
 
         state.borrowBook(currentBook.id);
 
+        const fullTitle = currentBook.title + (currentBook.hasVolumes && selectedVol ? ` (Vol. ${selectedVol})` : '');
         fetch('/api/transactions/borrow', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -229,15 +234,15 @@ export const bookModalController = {
             student_name: member.name,
             class_room: member.classRoom || '',
             book_id: currentBook.id,
-            book_title: currentBook.title + (currentBook.hasVolumes && selectedVol ? ` (Vol. ${selectedVol})` : ''),
+            book_title: fullTitle,
             volume_number: selectedVol ? Number(selectedVol) : null,
           }),
         }).catch(() => {});
 
         try {
-          const now = new Date();
-          const dueDate = new Date();
-          dueDate.setDate(now.getDate() + 7);
+          const nowStr = new Date().toISOString().split('T')[0];
+          const due = new Date();
+          due.setDate(due.getDate() + 7);
           const raw = localStorage.getItem('sisperpus_admin_transactions');
           const txs = raw ? JSON.parse(raw) : [];
           txs.unshift({
@@ -245,9 +250,9 @@ export const bookModalController = {
             studentName: member.name,
             nis: member.nis,
             bookId: currentBook.id,
-            bookTitle: currentBook.title + (currentBook.hasVolumes && selectedVol ? ` (Vol. ${selectedVol})` : ''),
-            borrowDate: now.toISOString().split('T')[0],
-            dueDate: dueDate.toISOString().split('T')[0],
+            bookTitle: fullTitle,
+            borrowDate: nowStr,
+            dueDate: due.toISOString().split('T')[0],
             returnDate: null,
             status: 'Dipinjam',
             fine: 0,
