@@ -34,7 +34,8 @@ export const spotlightView = {
       : 'bg-rose-900 hover:bg-rose-950 text-white shadow-md cursor-pointer';
 
     const hasCover = Boolean(spotlightBook.coverImg && spotlightBook.coverImg.trim());
-    const ratingScore = (Number(spotlightBook.rating) || 5.0).toFixed(1);
+    const ratingVal = typeof spotlightBook.rating === 'number' ? spotlightBook.rating : (Number(spotlightBook.rating) || 0.0);
+    const ratingScore = ratingVal.toFixed(1);
     const reviewsCount = spotlightBook.reviews_count || spotlightBook.reviewsCount || 0;
 
     target.innerHTML = `

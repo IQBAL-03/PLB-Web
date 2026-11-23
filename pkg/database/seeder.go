@@ -91,7 +91,7 @@ func SeedBooks(conn *sql.DB) error {
 			Year:         "2021",
 			Shelf:        "Rak M-01 (Manga & Komik Edukasi)",
 			Stock:        5,
-			Rating:       4.9,
+			Rating:       0.0,
 			ReviewsCount: 0,
 			IsPopular:    1,
 			Badge:        "Manga Pilihan",
@@ -111,7 +111,7 @@ func SeedBooks(conn *sql.DB) error {
 			Year:         "2022",
 			Shelf:        "Rak M-01 (Manga & Komik Edukasi)",
 			Stock:        4,
-			Rating:       4.9,
+			Rating:       0.0,
 			ReviewsCount: 0,
 			IsPopular:    1,
 			Badge:        "Sinematik Populer",
@@ -131,7 +131,7 @@ func SeedBooks(conn *sql.DB) error {
 			Year:         "2007",
 			Shelf:        "Rak M-02 (Koleksi Khusus / Remaja)",
 			Stock:        7,
-			Rating:       5.0,
+			Rating:       0.0,
 			ReviewsCount: 0,
 			IsPopular:    1,
 			Badge:        "Serial Multi-Volume",
@@ -207,20 +207,7 @@ func SeedTransactions(conn *sql.DB) error {
 	return nil
 }
 
-// SeedReviews populates starter book reviews and ratings.
+// SeedReviews ensures the book reviews table is initialized.
 func SeedReviews(conn *sql.DB) error {
-	var count int
-	_ = conn.QueryRow("SELECT COUNT(*) FROM book_reviews").Scan(&count)
-	if count > 0 {
-		return nil
-	}
-
-	query := `
-		INSERT INTO book_reviews (id, book_id, nis, student_name, rating, review_text) VALUES
-		('REV-001', 'M001', '20261001', 'Ahmad Pratama', 5, 'Kisah one-shot yang luar biasa menyentuh dan sangat menginspirasi!'),
-		('REV-002', 'M002', '20261003', 'Siti Rahmawati', 5, 'Sinematografi manga yang sangat unik dari Tatsuki Fujimoto.')
-		ON DUPLICATE KEY UPDATE review_text=VALUES(review_text)
-	`
-	_, _ = conn.Exec(query)
 	return nil
 }

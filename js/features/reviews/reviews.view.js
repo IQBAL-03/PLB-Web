@@ -6,10 +6,10 @@ import { escapeHtml } from '../../utils/dom.js';
 
 export const reviewsView = {
   renderStars(rating, sizeClass = 'w-4 h-4') {
-    const roundRating = Math.round(Number(rating) || 5);
+    const roundRating = Math.round(Number(rating) || 0);
     let starsHtml = '';
     for (let i = 1; i <= 5; i++) {
-      const isFilled = i <= roundRating;
+      const isFilled = roundRating > 0 && i <= roundRating;
       const color = isFilled ? 'text-amber-500' : 'text-stone-300';
       starsHtml += `
         <svg class="${sizeClass} ${color} fill-current shrink-0" viewBox="0 0 20 20" aria-hidden="true">
@@ -166,8 +166,9 @@ export const reviewsView = {
     return `<div class="space-y-2.5 max-h-64 overflow-y-auto pr-1">${items}</div>`;
   },
 
-  renderSection(book, reviewsData = { reviews: [], total: 0, averageRating: 5.0, userReview: null }, initialNis = '') {
-    const avgScore = Number(reviewsData.averageRating || book.rating || 5.0).toFixed(1);
+  renderSection(book, reviewsData = { reviews: [], total: 0, averageRating: 0.0, userReview: null }, initialNis = '') {
+    const avgVal = typeof reviewsData.averageRating === 'number' ? reviewsData.averageRating : (typeof book.rating === 'number' ? book.rating : 0.0);
+    const avgScore = avgVal.toFixed(1);
     const totalCount = reviewsData.total ?? book.reviews_count ?? book.reviewsCount ?? 0;
 
     return `

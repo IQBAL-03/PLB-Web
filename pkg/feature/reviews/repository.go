@@ -165,7 +165,7 @@ func (r *Repository) recalculateRatingInTx(tx *sql.Tx, bookID string) error {
 
 	var finalRating float64
 	if count == 0 {
-		finalRating = 5.0
+		finalRating = 0.0
 	} else {
 		finalRating = avgRating
 	}

@@ -42,7 +42,7 @@ func Migrate(conn *sql.DB) error {
 			year                 VARCHAR(10)  NOT NULL DEFAULT '',
 			shelf                VARCHAR(100) NOT NULL DEFAULT '',
 			stock                INT          NOT NULL DEFAULT 0,
-			rating               DOUBLE       NOT NULL DEFAULT 4.9,
+			rating               DOUBLE       NOT NULL DEFAULT 0.0,
 			reviews_count        INT          NOT NULL DEFAULT 0,
 			badge                VARCHAR(100) NOT NULL DEFAULT '',
 			synopsis             TEXT,

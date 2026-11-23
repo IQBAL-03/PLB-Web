@@ -59,7 +59,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	if len(list) > 0 {
 		avg = float64(sum) / float64(len(list))
 	} else {
-		avg = 5.0
+		avg = 0.0
 	}
 
 	response.JSON(w, http.StatusOK, map[string]interface{}{

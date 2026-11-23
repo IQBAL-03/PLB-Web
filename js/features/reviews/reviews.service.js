@@ -19,7 +19,7 @@ export const reviewsService = {
           return {
             reviews: Array.isArray(data.reviews) ? data.reviews : [],
             total: data.total || 0,
-            averageRating: typeof data.average_rating === 'number' ? data.average_rating : 5.0,
+            averageRating: typeof data.average_rating === 'number' ? data.average_rating : 0.0,
             userReview: data.user_review || null,
           };
         }
@@ -30,7 +30,7 @@ export const reviewsService = {
     return {
       reviews: [],
       total: 0,
-      averageRating: 5.0,
+      averageRating: 0.0,
       userReview: null,
     };
   },
