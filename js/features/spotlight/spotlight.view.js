@@ -69,9 +69,11 @@ export const spotlightView = {
 
           <div class="${hasCover ? 'md:col-span-7 lg:col-span-8' : 'md:col-span-12'} flex flex-col justify-center">
             <div class="flex flex-wrap items-center gap-2 mb-3">
-              <span class="bg-amber-400/20 text-amber-200 border border-amber-400/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
-                ${escapeHtml(spotlightInfo.reasonBadge)}
-              </span>
+              ${
+                spotlightInfo.reasonBadge
+                  ? `<span class="bg-amber-400/20 text-amber-200 border border-amber-400/30 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">${escapeHtml(spotlightInfo.reasonBadge)}</span>`
+                  : ''
+              }
               <span class="text-rose-200 text-xs">${spotlightInfo.weekLabel}</span>
               <span class="text-stone-400 text-xs">&bull;</span>
               <span class="text-rose-200 text-xs">${escapeHtml(spotlightBook.category)}</span>
@@ -81,11 +83,13 @@ export const spotlightView = {
               ${escapeHtml(spotlightBook.title)}
             </h2>
             <p class="text-amber-200/90 text-sm sm:text-base font-medium mb-1">
-              Karya ${escapeHtml(spotlightBook.author)} &middot; Tahun ${spotlightBook.year}
+              Karya ${escapeHtml(spotlightBook.author)}${spotlightBook.year ? ` &middot; Tahun ${escapeHtml(spotlightBook.year)}` : ''}
             </p>
-            <p class="text-amber-300/80 text-xs font-medium mb-4">
-              ${spotlightInfo.reasonDetail}
-            </p>
+            ${
+              spotlightInfo.reasonDetail
+                ? `<p class="text-amber-300/80 text-xs font-medium mb-4">${spotlightInfo.reasonDetail}</p>`
+                : ''
+            }
 
             <p class="text-rose-100/90 text-xs sm:text-sm leading-relaxed mb-6 max-w-2xl">
               ${escapeHtml(spotlightBook.synopsis)}

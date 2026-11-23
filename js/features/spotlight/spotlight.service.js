@@ -115,14 +115,14 @@ export function resolveWeeklySpotlight(books = []) {
     };
   }
 
-  // 3. Default fallback when no ratings and no borrows yet
+  // 3. Default fallback when no ratings and no borrows yet: no notification badge
   const chosenIndex = weekNo % candidates.length;
   const chosen = candidates[chosenIndex];
 
   return {
     book: chosen.book,
-    reasonBadge: 'Koleksi Rekomendasi Pekan Ini',
-    reasonDetail: 'Koleksi pilihan perpustakaan &middot; Jadilah yang pertama memberikan ulasan',
+    reasonBadge: null,
+    reasonDetail: null,
     weekLabel: `Pekan ke-${weekNo} &middot; Tahun ${year}`,
     source: 'featured',
   };
