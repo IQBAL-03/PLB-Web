@@ -32,8 +32,8 @@ class State {
 
     this.books = initialBooks.map((b) => ({
       ...b,
-      reviewsCount: 0,
-      reviews_count: 0,
+      reviewsCount: b.reviews_count || b.reviewsCount || 0,
+      reviews_count: b.reviews_count || b.reviewsCount || 0,
     }));
     this.categories = [...categories];
     this.activeCategory = 'Semua Koleksi';
@@ -133,8 +133,8 @@ class State {
         if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
           const newBooks = data.books.map((b) => ({
             ...b,
-            reviewsCount: 0,
-            reviews_count: 0,
+            reviewsCount: b.reviews_count || b.reviewsCount || 0,
+            reviews_count: b.reviews_count || b.reviewsCount || 0,
           }));
 
           const hasChanged = JSON.stringify(this.books) !== JSON.stringify(newBooks);

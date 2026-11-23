@@ -111,7 +111,7 @@
                   <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80" alt="Buku Novel Klasik" class="w-full h-full object-cover" />
                 </div>
                 <div class="w-40 sm:w-48 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transform z-10 border-2 border-white -mx-8">
-                  <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80" alt="Buku Bumi Manusia" class="w-full h-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80" alt="Buku Bumi Manusia" class="w-full h-full object-cover" fetchpriority="high" />
                 </div>
                 <div class="w-36 sm:w-44 aspect-[3/4] rounded-lg overflow-hidden shadow-md transform rotate-6 translate-y-3 border-2 border-white">
                   <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80" alt="Buku Inspirasi Pelajar" class="w-full h-full object-cover" />
@@ -144,14 +144,14 @@
     </section>
     <!-- Announcement & Guide Banner -->
     <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="bg-gradient-to-r from-rose-950 via-stone-900 to-rose-950 rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 border border-rose-900/40">
         <div class="flex items-center gap-5">
           <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
             <svg class="w-8 h-8 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
           </div>
           <div>
             <h3 class="font-serif font-bold text-lg sm:text-xl text-white mb-1">Pinjam Buku Mandiri, Bebas Antre</h3>
-            <p class="text-xs sm:text-sm text-purple-200/90 max-w-xl">Cari buku yang Anda inginkan, masukkan NIS Anda pada detail buku, dan konfirmasi peminjaman langsung dari gadget Anda.</p>
+            <p class="text-xs sm:text-sm text-stone-300 max-w-xl">Cari buku yang Anda inginkan, masukkan NIS Anda pada detail buku, dan konfirmasi peminjaman langsung dari gadget Anda.</p>
           </div>
         </div>
         <button type="button" id="libraryGuideBtn" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs sm:text-sm font-bold transition-colors cursor-pointer shrink-0">Panduan Peminjaman</button>
@@ -250,7 +250,7 @@
       </div>
       <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px]">
         <p>&copy; 2026 SISPERPUS &middot; Sistem Informasi Perpustakaan Sekolah. Hak Cipta Dilindungi.</p>
-        <p class="text-stone-500">Dirancang dengan Tailwind CSS &middot; Standar Aksesibilitas Web</p>
+        <!-- <p class="text-stone-500">Dirancang dengan Tailwind CSS &middot; Standar Aksesibilitas Web</p> -->
       </div>
     </div>
   </footer>

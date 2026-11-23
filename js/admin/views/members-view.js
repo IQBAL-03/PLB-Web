@@ -116,7 +116,7 @@ export const membersView = {
           ? `<button type="button" data-member-action="verify" data-nis="${m.nis}"
               class="px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-[11px] transition-colors cursor-pointer shadow-xs"
               title="Setujui dan Verifikasi Anggota Siswa">
-              ✓ Verifikasi
+              Verifikasi
             </button>`
           : '';
 

@@ -117,6 +117,8 @@ func Migrate(conn *sql.DB) error {
 			rating       INT          NOT NULL DEFAULT 5,
 			review_text  TEXT         NOT NULL,
 			created_at   DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+			updated_at   DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+			UNIQUE KEY uq_book_review_student (book_id, nis),
 			INDEX idx_review_book (book_id),
 			INDEX idx_review_nis (nis)
 		)
@@ -124,6 +126,9 @@ func Migrate(conn *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("migrasi tabel book_reviews: %w", err)
 	}
+
+	addColumnIfNotExists(conn, "book_reviews", "updated_at", "DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)")
+	addUniqueIndexIfNotExists(conn, "book_reviews", "uq_book_review_student", "book_id, nis")
 
 	return nil
 }

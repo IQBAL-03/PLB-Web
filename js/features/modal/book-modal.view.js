@@ -13,6 +13,16 @@ export const bookModalView = {
     return $('#bookModalContent');
   },
 
+  renderStarsSnippet(rating) {
+    const num = Math.round(Number(rating) || 5);
+    let s = '';
+    for (let i = 1; i <= 5; i++) {
+      const c = i <= num ? 'text-amber-500' : 'text-stone-300';
+      s += `<svg class="w-3.5 h-3.5 ${c} fill-current shrink-0" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>`;
+    }
+    return s;
+  },
+
   renderContent(book, isBorrowed, selectedVolumeNum = 1) {
     if (!this.content || !book) return;
 
@@ -33,9 +43,7 @@ export const bookModalView = {
 
     const borrowBadge = isBorrowed
       ? '<span class="inline-block bg-blue-100 text-blue-900 border border-blue-200 text-xs px-2.5 py-0.5 rounded-full font-semibold">Sedang Anda Pinjam</span>'
-      : !isOutOfStock
-      ? '<span class="inline-block bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-semibold">Tersedia untuk Dipinjam</span>'
-      : '<span class="inline-block bg-rose-100 text-rose-900 border border-rose-200 text-xs px-2.5 py-0.5 rounded-full font-semibold">Stok Sedang Habis</span>';
+      : !isOutOfStock ? '<span class="inline-block bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-semibold">Tersedia untuk Dipinjam</span>' : '<span class="inline-block bg-rose-100 text-rose-900 border border-rose-200 text-xs px-2.5 py-0.5 rounded-full font-semibold">Stok Sedang Habis</span>';
 
     const languageBadge = book.language === 'Bahasa Inggris'
       ? '<span class="inline-block bg-indigo-50 text-indigo-900 border border-indigo-200 text-xs px-2 py-0.5 rounded font-semibold">Bahasa Inggris (English Edition)</span>'
@@ -80,9 +88,16 @@ export const bookModalView = {
           <h2 class="font-serif text-xl sm:text-2xl font-bold text-stone-900 leading-tight mb-1">
             ${escapeHtml(book.title)}
           </h2>
-          <p class="text-xs sm:text-sm text-stone-600 font-medium mb-3">
+          <p class="text-xs sm:text-sm text-stone-600 font-medium mb-1.5">
             Karya <span class="text-stone-900 font-semibold">${escapeHtml(book.author)}</span> &middot; Tahun ${book.year}
           </p>
+          <div class="flex items-center gap-2 mb-3 text-xs">
+            <div class="flex items-center gap-0.5 text-amber-500" aria-hidden="true">
+              ${this.renderStarsSnippet(book.rating || 5.0)}
+            </div>
+            <span class="font-bold text-stone-800 text-xs">${(Number(book.rating) || 5.0).toFixed(1)} / 5</span>
+            <span class="text-stone-500 text-xs">(${book.reviews_count || book.reviewsCount || 0} ulasan)</span>
+          </div>
 
           <div class="bg-stone-50 rounded-xl p-3 border border-stone-200 mb-4 text-xs grid grid-cols-3 gap-2">
             <div>
@@ -183,6 +198,7 @@ export const bookModalView = {
           }
         </div>
       </div>
+      <div id="bookReviewsMountPoint"></div>
     `;
   },
 
@@ -212,9 +228,7 @@ export const bookModalView = {
     }
 
     const activeVolumeLabel = $('#activeVolumeLabel');
-    if (activeVolumeLabel) {
-      activeVolumeLabel.textContent = vol.volumeTitle;
-    }
+    if (activeVolumeLabel) activeVolumeLabel.textContent = vol.volumeTitle;
 
     const volumeStockDisplay = $('#volumeStockDisplay');
     if (volumeStockDisplay) {
@@ -223,14 +237,10 @@ export const bookModalView = {
     }
 
     const selectedVolumeInput = $('#selectedVolumeInput');
-    if (selectedVolumeInput) {
-      selectedVolumeInput.value = vol.volumeNumber;
-    }
+    if (selectedVolumeInput) selectedVolumeInput.value = vol.volumeNumber;
 
     const confirmBorrowBtn = $('#confirmBorrowBtn');
-    if (confirmBorrowBtn) {
-      confirmBorrowBtn.textContent = `Konfirmasi Peminjaman (Volume ${vol.volumeNumber}) (7 Hari)`;
-    }
+    if (confirmBorrowBtn) confirmBorrowBtn.textContent = `Konfirmasi Peminjaman (Volume ${vol.volumeNumber}) (7 Hari)`;
 
     // Update active styles on buttons
     document.querySelectorAll('.volume-chip-btn').forEach((btn) => {

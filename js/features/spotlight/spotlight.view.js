@@ -34,6 +34,8 @@ export const spotlightView = {
       : 'bg-rose-900 hover:bg-rose-950 text-white shadow-md cursor-pointer';
 
     const hasCover = Boolean(spotlightBook.coverImg && spotlightBook.coverImg.trim());
+    const ratingScore = (Number(spotlightBook.rating) || 5.0).toFixed(1);
+    const reviewsCount = spotlightBook.reviews_count || spotlightBook.reviewsCount || 0;
 
     target.innerHTML = `
       <div class="bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 rounded-2xl p-6 sm:p-8 md:p-10 text-white shadow-xl relative overflow-hidden border border-rose-800/40">
@@ -48,8 +50,9 @@ export const spotlightView = {
               <div class="w-48 sm:w-56 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl border-2 border-amber-200/30 transform group-hover:-translate-y-1 transition-transform duration-300">
                 <img src="${escapeHtml(spotlightBook.coverImg)}" alt="${escapeHtml(spotlightBook.title)}" class="w-full h-full object-cover" />
               </div>
-              <div class="absolute -bottom-3 -right-3 bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
-                Skor ${spotlightBook.rating}
+              <div class="absolute -bottom-3 -right-3 bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <span>${ratingScore}</span>
               </div>
             </div>
           </div>
@@ -92,7 +95,7 @@ export const spotlightView = {
               </div>
               <div>
                 <span class="text-rose-300 block text-[11px]">Ulasan Pembaca</span>
-                <span class="font-bold text-white text-sm">${spotlightBook.reviewsCount} Siswa</span>
+                <span class="font-bold text-white text-sm">${reviewsCount} Siswa</span>
               </div>
             </div>
 

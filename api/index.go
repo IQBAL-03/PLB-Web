@@ -116,10 +116,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			reviewsH.List(w, r)
 		case http.MethodPost:
 			reviewsH.Create(w, r)
+		case http.MethodDelete:
+			reviewsH.Delete(w, r)
 		default:
 			response.Error(w, http.StatusMethodNotAllowed, "Metode tidak diizinkan")
 		}
 	}))
+	mux.HandleFunc("/api/reviews/delete", wrap(reviewsH.Delete))
 
 	// Cloudinary Upload Endpoints (Cover Buku & Berkas)
 	mux.HandleFunc("/api/upload/cover", wrap(uploadH.UploadCover))
