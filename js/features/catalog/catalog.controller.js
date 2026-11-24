@@ -10,12 +10,12 @@ import { imagePreviewModal } from '../modal/image-preview.modal.js';
 
 export const catalogController = {
   init() {
-    this.render();
-    this.bindEvents();
-
     eventBus.on('catalog:filter-changed', () => this.updateCatalogGrid());
     eventBus.on('book:borrowed', () => this.render());
     eventBus.on('books:synced', () => this.render());
+
+    this.render();
+    this.bindEvents();
   },
 
   render() {
@@ -29,10 +29,17 @@ export const catalogController = {
 
   updateCatalogGrid() {
     const catalogGrid = $('#catalogBooksGrid');
-    if (catalogGrid) {
-      const filtered = state.getFilteredBooks();
-      catalogView.renderGrid(catalogGrid, filtered, (id) => state.isBookBorrowed(id));
+    if (!catalogGrid) return;
+
+    if (state.isLoading && state.books.length === 0) {
+      catalogView.renderSkeletons(catalogGrid, 6);
+      const activeLabel = $('#activeFilterLabel');
+      if (activeLabel) activeLabel.textContent = 'Memuat koleksi...';
+      return;
     }
+
+    const filtered = state.getFilteredBooks();
+    catalogView.renderGrid(catalogGrid, filtered, (id) => state.isBookBorrowed(id));
 
     const categoryChipsContainer = $('#categoryChips');
     if (categoryChipsContainer) {
@@ -41,7 +48,7 @@ export const catalogController = {
 
     const activeLabel = $('#activeFilterLabel');
     if (activeLabel) {
-      const count = state.getFilteredBooks().length;
+      const count = filtered.length;
       activeLabel.textContent = `${state.activeCategory} (${count} buku)`;
     }
   },

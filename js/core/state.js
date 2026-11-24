@@ -7,17 +7,7 @@ import { eventBus } from './events.js';
 
 class State {
   constructor() {
-    // Purge any stale local drafts that contain outdated volume chapters or legacy ratings
-    try {
-      const saved = localStorage.getItem('sisperpus_admin_books');
-      if (saved && (saved.includes('72-84') || saved.includes('"rating":4.9') || saved.includes('"rating":5') || saved.includes('eajdrhns4jrkwea8nksv'))) {
-        localStorage.removeItem('sisperpus_admin_books');
-      }
-    } catch {
-      // Storage access fallback
-    }
-
-    let initialBooks = [...books];
+    let initialBooks = [];
     try {
       const saved = localStorage.getItem('sisperpus_admin_books');
       if (saved) {
@@ -42,6 +32,8 @@ class State {
         reviews_count: b.reviews_count || b.reviewsCount || 0,
       };
     });
+
+    this.isLoading = this.books.length === 0;
     this.categories = [...categories];
     this.activeCategory = 'Semua Koleksi';
     this.searchQuery = '';
@@ -73,12 +65,10 @@ class State {
 
         // If Golang hash received
         if (versionHash) {
-          if (lastVersion !== null && lastVersion !== versionHash) {
+          if (lastVersion === null || lastVersion !== versionHash) {
             lastVersion = versionHash;
             await this.syncBooks();
-            return;
           }
-          lastVersion = versionHash;
           return;
         }
 
@@ -88,12 +78,10 @@ class State {
           const data = await resBooks.json();
           if (data && data.ok && Array.isArray(data.books)) {
             const fallbackHash = data.books.map((b) => `${b.id}:${b.updatedAt || ''}:${b.stock}:${b.rating || 0}:${b.reviews_count || 0}`).join('|');
-            if (lastVersion !== null && lastVersion !== fallbackHash) {
+            if (lastVersion === null || lastVersion !== fallbackHash) {
               lastVersion = fallbackHash;
               await this.syncBooks();
-              return;
             }
-            lastVersion = fallbackHash;
           }
         }
       } catch {
@@ -141,24 +129,34 @@ class State {
             };
           });
 
-          const hasChanged = JSON.stringify(this.books) !== JSON.stringify(newBooks);
-          if (hasChanged || this.books.length === 0) {
-            this.books = newBooks;
-            try {
-              localStorage.setItem('sisperpus_admin_books', JSON.stringify(this.books));
-            } catch {
-              // Storage quota fallback
-            }
-            eventBus.emit('catalog:filter-changed', {
-              category: this.activeCategory,
-              query: this.searchQuery,
-            });
-            eventBus.emit('books:synced', this.books);
+          this.books = newBooks;
+          this.isLoading = false;
+          try {
+            localStorage.setItem('sisperpus_admin_books', JSON.stringify(this.books));
+          } catch {
+            // Storage quota fallback
           }
+          eventBus.emit('catalog:filter-changed', {
+            category: this.activeCategory,
+            query: this.searchQuery,
+          });
+          eventBus.emit('books:synced', this.books);
+          return;
         }
       }
     } catch {
       // Offline fallback
+    }
+
+    // Offline or empty API fallback
+    if (this.books.length === 0) {
+      this.books = [...books];
+      this.isLoading = false;
+      eventBus.emit('catalog:filter-changed', {
+        category: this.activeCategory,
+        query: this.searchQuery,
+      });
+      eventBus.emit('books:synced', this.books);
     }
   }
 
