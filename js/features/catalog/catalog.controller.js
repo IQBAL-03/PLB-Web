@@ -31,7 +31,7 @@ export const catalogController = {
     const catalogGrid = $('#catalogBooksGrid');
     if (!catalogGrid) return;
 
-    if (state.isLoading && state.books.length === 0) {
+    if (state.isLoading) {
       catalogView.renderSkeletons(catalogGrid, 6);
       const activeLabel = $('#activeFilterLabel');
       if (activeLabel) activeLabel.textContent = 'Memuat koleksi...';

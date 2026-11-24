@@ -6,9 +6,41 @@ import { $, $$ } from '../../utils/dom.js';
 
 export const navigation = {
   init() {
+    this.bindScrollRestoration();
+    this.bindSmoothAnchors();
     this.bindMobileMenu();
     this.bindScrollEffects();
     this.bindSearchShortcuts();
+  },
+
+  bindScrollRestoration() {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    const savedPos = sessionStorage.getItem('sisperpus_scroll_y');
+    if (savedPos !== null && Number(savedPos) > 0) {
+      window.scrollTo({ top: Number(savedPos), behavior: 'instant' });
+    }
+
+    window.addEventListener('scroll', () => {
+      sessionStorage.setItem('sisperpus_scroll_y', String(window.scrollY));
+    }, { passive: true });
+  },
+
+  bindSmoothAnchors() {
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (!href || href === '#' || href === '#!') return;
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+        history.pushState(null, '', href);
+      }
+    });
   },
 
   bindMobileMenu() {

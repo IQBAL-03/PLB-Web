@@ -33,7 +33,7 @@ class State {
       };
     });
 
-    this.isLoading = this.books.length === 0;
+    this.isLoading = true;
     this.categories = [...categories];
     this.activeCategory = 'Semua Koleksi';
     this.searchQuery = '';
@@ -111,6 +111,7 @@ class State {
   }
 
   async syncBooks() {
+    const startTime = Date.now();
     try {
       const res = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
@@ -128,6 +129,11 @@ class State {
               reviews_count: b.reviews_count || b.reviewsCount || 0,
             };
           });
+
+          const elapsed = Date.now() - startTime;
+          if (elapsed < 350) {
+            await new Promise((resolve) => setTimeout(resolve, 350 - elapsed));
+          }
 
           this.books = newBooks;
           this.isLoading = false;
@@ -148,16 +154,15 @@ class State {
       // Offline fallback
     }
 
-    // Offline or empty API fallback
     if (this.books.length === 0) {
       this.books = [...books];
-      this.isLoading = false;
-      eventBus.emit('catalog:filter-changed', {
-        category: this.activeCategory,
-        query: this.searchQuery,
-      });
-      eventBus.emit('books:synced', this.books);
     }
+    this.isLoading = false;
+    eventBus.emit('catalog:filter-changed', {
+      category: this.activeCategory,
+      query: this.searchQuery,
+    });
+    eventBus.emit('books:synced', this.books);
   }
 
   setCategory(category) {
