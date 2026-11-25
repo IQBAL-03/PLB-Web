@@ -8,6 +8,23 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="css/tailwind.css" />
+  <script>
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    try {
+      var rawScroll = sessionStorage.getItem('sisperpus_scroll_state');
+      if (rawScroll) {
+        var parsedScroll = JSON.parse(rawScroll);
+        if (parsedScroll && (parsedScroll.y > 10 || parsedScroll.atBottom)) {
+          document.documentElement.classList.add('is-restoring-scroll');
+          setTimeout(function () {
+            document.documentElement.classList.remove('is-restoring-scroll');
+          }, 1500);
+        }
+      }
+    } catch (e) {}
+  </script>
 </head>
 <body class="bg-[#F6F2EA] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-900 selection:text-white">
 
@@ -119,23 +136,8 @@
       </div>
     </section>
     <!-- Spotlight Section -->
-    <section id="sorotan" class="hidden py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div id="spotlightContainer"></div>
-    </section>
-    <!-- Announcement & Guide Banner -->
-    <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="bg-gradient-to-r from-rose-950 via-stone-900 to-rose-950 rounded-2xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 border border-rose-900/40">
-        <div class="flex items-center gap-5">
-          <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
-            <svg class="w-8 h-8 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-          </div>
-          <div>
-            <h3 class="font-serif font-bold text-lg sm:text-xl text-white mb-1">Pinjam Buku Mandiri, Bebas Antre</h3>
-            <p class="text-xs sm:text-sm text-stone-300 max-w-xl">Cari buku yang Anda inginkan, masukkan NIS Anda pada detail buku, dan konfirmasi peminjaman langsung dari gadget Anda.</p>
-          </div>
-        </div>
-        <button type="button" id="libraryGuideBtn" class="px-5 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs sm:text-sm font-bold transition-colors cursor-pointer shrink-0">Panduan Peminjaman</button>
-      </div>
+    <section id="sorotan" class="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div id="spotlightContainer" class="min-h-[340px]"></div>
     </section>
     <!-- Catalog Explorer Section -->
     <section id="katalog" class="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -177,7 +179,7 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-stone-950 text-stone-400 text-xs border-t border-stone-800 py-12">
+  <footer id="footer" class="bg-stone-950 text-stone-400 text-xs border-t border-stone-800 py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-stone-800">
         <div class="md:col-span-1">
@@ -335,6 +337,29 @@
     </div>
   </div>
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4" aria-live="polite"></div>
+  <script>
+    (function () {
+      try {
+        var raw = sessionStorage.getItem('sisperpus_scroll_state');
+        if (raw) {
+          var s = JSON.parse(raw);
+          var targetY = typeof s.y === 'number' ? s.y : 0;
+          if (s.atBottom) {
+            targetY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+          } else if (s.sectionId) {
+            var el = document.getElementById(s.sectionId);
+            if (el && !el.classList.contains('hidden')) {
+              targetY = el.getBoundingClientRect().top + window.scrollY + (Number(s.offset) || 0);
+            }
+          }
+          if (targetY > 0) {
+            window.scrollTo(0, Math.max(0, targetY));
+          }
+        }
+      } catch (e) {}
+      document.documentElement.classList.remove('is-restoring-scroll');
+    })();
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

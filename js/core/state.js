@@ -34,23 +34,23 @@ class State {
     });
 
     this.isLoading = true;
+    this.isSyncing = false;
     this.categories = [...categories];
     this.activeCategory = 'Semua Koleksi';
     this.searchQuery = '';
     this.selectedBook = null;
     this.borrowedBookIds = new Set(JSON.parse(localStorage.getItem('sisperpus_borrowed') || '[]'));
-    this.syncBooks();
+    this.initialSyncPromise = this.syncBooks();
     this.setupAutoSync();
   }
 
   setupAutoSync() {
     let lastVersion = null;
 
-    const checkUpdates = async () => {
+    const checkUpdates = async (seedOnly = false) => {
       try {
         let versionHash = null;
 
-        // 1. Try high-performance Golang sync version endpoint
         try {
           const resVer = await fetch(`/api/sync/version?t=${Date.now()}`, { cache: 'no-store' });
           if (resVer.ok) {
@@ -63,8 +63,11 @@ class State {
           // Version endpoint fallback
         }
 
-        // If Golang hash received
         if (versionHash) {
+          if (seedOnly && lastVersion === null) {
+            lastVersion = versionHash;
+            return;
+          }
           if (lastVersion === null || lastVersion !== versionHash) {
             lastVersion = versionHash;
             await this.syncBooks();
@@ -72,12 +75,15 @@ class State {
           return;
         }
 
-        // 2. Direct book-diff fallback with cache busting
         const resBooks = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
         if (resBooks.ok) {
           const data = await resBooks.json();
           if (data && data.ok && Array.isArray(data.books)) {
             const fallbackHash = data.books.map((b) => `${b.id}:${b.updatedAt || ''}:${b.stock}:${b.rating || 0}:${b.reviews_count || 0}`).join('|');
+            if (seedOnly && lastVersion === null) {
+              lastVersion = fallbackHash;
+              return;
+            }
             if (lastVersion === null || lastVersion !== fallbackHash) {
               lastVersion = fallbackHash;
               await this.syncBooks();
@@ -89,28 +95,30 @@ class State {
       }
     };
 
-    checkUpdates();
+    this.initialSyncPromise.finally(() => checkUpdates(true));
 
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-          checkUpdates();
+          checkUpdates(false);
         }
       });
     }
     if (typeof window !== 'undefined') {
-      window.addEventListener('focus', () => checkUpdates());
+      window.addEventListener('focus', () => checkUpdates(false));
     }
 
-    // High-frequency check every 3 seconds for immediate auto-reload
     setInterval(() => {
       if (typeof document === 'undefined' || document.visibilityState === 'visible') {
-        checkUpdates();
+        checkUpdates(false);
       }
     }, 3000);
   }
 
   async syncBooks() {
+    if (this.isSyncing) return;
+    this.isSyncing = true;
+    const wasLoading = this.isLoading;
     const startTime = Date.now();
     try {
       const res = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
@@ -130,11 +138,14 @@ class State {
             };
           });
 
-          const elapsed = Date.now() - startTime;
-          if (elapsed < 350) {
-            await new Promise((resolve) => setTimeout(resolve, 350 - elapsed));
+          if (wasLoading) {
+            const elapsed = Date.now() - startTime;
+            if (elapsed < 350) {
+              await new Promise((resolve) => setTimeout(resolve, 350 - elapsed));
+            }
           }
 
+          const hasChanged = JSON.stringify(this.books) !== JSON.stringify(newBooks);
           this.books = newBooks;
           this.isLoading = false;
           try {
@@ -142,16 +153,21 @@ class State {
           } catch {
             // Storage quota fallback
           }
-          eventBus.emit('catalog:filter-changed', {
-            category: this.activeCategory,
-            query: this.searchQuery,
-          });
-          eventBus.emit('books:synced', this.books);
+
+          if (wasLoading || hasChanged) {
+            eventBus.emit('catalog:filter-changed', {
+              category: this.activeCategory,
+              query: this.searchQuery,
+            });
+            eventBus.emit('books:synced', this.books);
+          }
           return;
         }
       }
     } catch {
       // Offline fallback
+    } finally {
+      this.isSyncing = false;
     }
 
     if (this.books.length === 0) {

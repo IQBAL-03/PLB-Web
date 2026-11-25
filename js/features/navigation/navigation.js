@@ -3,15 +3,17 @@
  */
 
 import { $, $$ } from '../../utils/dom.js';
+import { state } from '../../core/state.js';
 import { eventBus } from '../../core/events.js';
 
 const SCROLL_STORAGE_KEY = 'sisperpus_scroll_state';
-const TRACKED_SECTIONS = ['beranda', 'sorotan', 'katalog', 'informasi'];
+const TRACKED_SECTIONS = ['beranda', 'sorotan', 'katalog', 'informasi', 'footer'];
 
 export const navigation = {
   isRestoring: true,
   isProgrammaticScroll: false,
   hasUserInteracted: false,
+  lastRestoredY: 0,
   programmaticTimer: null,
 
   init() {
@@ -37,28 +39,37 @@ export const navigation = {
 
     window.addEventListener('wheel', markUserInteraction, { passive: true, once: true });
     window.addEventListener('touchstart', markUserInteraction, { passive: true, once: true });
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) {
+        markUserInteraction();
+      }
+    }, { passive: true });
 
     let scrollDebounce = null;
     window.addEventListener(
       'scroll',
       () => {
-        if (this.isRestoring || this.isProgrammaticScroll) return;
+        if (this.isProgrammaticScroll) return;
+        if (this.isRestoring) {
+          if (Math.abs(window.scrollY - this.lastRestoredY) > 12) {
+            markUserInteraction();
+          } else {
+            return;
+          }
+        }
         clearTimeout(scrollDebounce);
-        scrollDebounce = setTimeout(() => this.saveScrollState(), 80);
+        scrollDebounce = setTimeout(() => this.saveScrollState(), 60);
       },
       { passive: true }
     );
 
-    window.addEventListener('beforeunload', () => {
-      if (!this.isRestoring) {
-        this.saveScrollState();
-      }
-    });
+    const flushSave = () => {
+      if (!this.isRestoring) this.saveScrollState();
+    };
+    window.addEventListener('beforeunload', flushSave);
+    window.addEventListener('pagehide', flushSave);
 
-    let syncedOnce = false;
-    eventBus.on('books:synced', () => {
-      if (syncedOnce) return;
-      syncedOnce = true;
+    const finishRestore = () => {
       requestAnimationFrame(() => {
         if (!this.hasUserInteracted) {
           this.restoreScrollPosition();
@@ -68,7 +79,22 @@ export const navigation = {
           document.documentElement.style.overflowAnchor = '';
         }, 120);
       });
-    });
+    };
+
+    if (!state.isLoading) {
+      finishRestore();
+    } else {
+      let aligned = false;
+      const runOnce = () => {
+        if (aligned) return;
+        aligned = true;
+        finishRestore();
+      };
+      eventBus.on('books:synced', runOnce);
+      if (state.initialSyncPromise) {
+        state.initialSyncPromise.finally(runOnce);
+      }
+    }
 
     setTimeout(() => {
       if (this.isRestoring) {
@@ -79,8 +105,11 @@ export const navigation = {
   },
 
   saveScrollState() {
+    if (document.body.classList.contains('overflow-hidden')) return;
     try {
       const y = window.scrollY;
+      const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const atBottom = maxScroll > 50 && y >= maxScroll - 24;
       let activeId = 'beranda';
       let offset = y;
 
@@ -88,7 +117,7 @@ export const navigation = {
         const el = document.getElementById(id);
         if (!el || el.classList.contains('hidden')) continue;
         const top = el.getBoundingClientRect().top + y;
-        if (y + 120 >= top) {
+        if (y + 80 >= top) {
           activeId = id;
           offset = y - top;
         }
@@ -96,7 +125,7 @@ export const navigation = {
 
       sessionStorage.setItem(
         SCROLL_STORAGE_KEY,
-        JSON.stringify({ y, sectionId: activeId, offset })
+        JSON.stringify({ y, sectionId: activeId, offset, atBottom })
       );
     } catch {
       // Storage quota fallback
@@ -104,9 +133,11 @@ export const navigation = {
   },
 
   scrollToInstant(top) {
+    const safeTop = Math.max(0, top);
+    this.lastRestoredY = safeTop;
     this.isProgrammaticScroll = true;
     clearTimeout(this.programmaticTimer);
-    window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
+    window.scrollTo({ top: safeTop, behavior: 'instant' });
     this.programmaticTimer = setTimeout(() => {
       this.isProgrammaticScroll = false;
     }, 100);
@@ -118,8 +149,13 @@ export const navigation = {
       if (raw) {
         const saved = JSON.parse(raw);
         if (saved && typeof saved.y === 'number') {
-          if (saved.y <= 10) {
+          if (saved.y <= 10 && !saved.atBottom) {
             this.scrollToInstant(0);
+            return;
+          }
+          if (saved.atBottom) {
+            const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            this.scrollToInstant(maxScroll);
             return;
           }
           const sectionEl = saved.sectionId ? document.getElementById(saved.sectionId) : null;

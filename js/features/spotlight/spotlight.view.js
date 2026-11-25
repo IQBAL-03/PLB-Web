@@ -18,13 +18,56 @@ export const spotlightView = {
     eventBus.on('book:borrowed', () => this.render(this.container));
   },
 
+  renderSkeleton(container) {
+    if (!container) return;
+    container.innerHTML = `
+      <div class="bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 rounded-2xl p-6 sm:p-8 md:p-10 shadow-xl relative overflow-hidden border border-rose-800/40 animate-pulse" aria-hidden="true">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative z-10">
+          <div class="md:col-span-5 lg:col-span-4 flex justify-center">
+            <div class="w-48 sm:w-56 aspect-[3/4] rounded-lg bg-white/10 border-2 border-amber-200/20 flex items-center justify-center">
+              <svg class="w-12 h-12 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+          <div class="md:col-span-7 lg:col-span-8 flex flex-col justify-center">
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+              <div class="h-6 w-44 rounded-full bg-amber-400/20"></div>
+              <div class="h-4 w-36 rounded bg-white/10"></div>
+            </div>
+            <div class="h-8 sm:h-10 w-3/4 rounded-lg bg-white/15 mb-3"></div>
+            <div class="h-4 w-1/3 rounded bg-amber-200/20 mb-2"></div>
+            <div class="h-3.5 w-1/4 rounded bg-amber-300/15 mb-5"></div>
+            <div class="space-y-2 mb-6 max-w-2xl">
+              <div class="h-3.5 w-full rounded bg-white/10"></div>
+              <div class="h-3.5 w-11/12 rounded bg-white/10"></div>
+              <div class="h-3.5 w-4/5 rounded bg-white/10"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 py-4 mb-6 border-y border-rose-800/60">
+              <div class="space-y-1.5"><div class="h-3 w-16 rounded bg-rose-300/20"></div><div class="h-4 w-20 rounded bg-white/15"></div></div>
+              <div class="space-y-1.5"><div class="h-3 w-16 rounded bg-rose-300/20"></div><div class="h-4 w-16 rounded bg-white/15"></div></div>
+              <div class="space-y-1.5"><div class="h-3 w-20 rounded bg-rose-300/20"></div><div class="h-4 w-14 rounded bg-white/15"></div></div>
+            </div>
+            <div class="h-10 w-48 rounded-lg bg-white/15"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
   render(container) {
     const target = container || this.container || $('#spotlightContainer');
     if (!target) return;
     this.container = target;
 
-    const spotlightInfo = resolveWeeklySpotlight(state.books);
     const section = target.closest('#sorotan');
+    if (state.isLoading) {
+      if (section) section.classList.remove('hidden');
+      this.renderSkeleton(target);
+      return;
+    }
+
+    const spotlightInfo = resolveWeeklySpotlight(state.books);
     if (!spotlightInfo || !spotlightInfo.book) {
       target.innerHTML = '';
       if (section) section.classList.add('hidden');
