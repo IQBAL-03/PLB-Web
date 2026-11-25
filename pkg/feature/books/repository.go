@@ -189,10 +189,13 @@ func (r *Repository) Update(id string, b model.Book) error {
 	if strings.TrimSpace(b.Year) == "" {
 		b.Year = "-"
 	}
+	if strings.TrimSpace(b.Badge) == "" {
+		b.Badge = "Koleksi Pilihan"
+	}
 	query := `
 		UPDATE books
 		SET title = ?, author = ?, category = ?, language = ?, price = ?,
-		    year = ?, shelf = ?, stock = ?, synopsis = ?,
+		    year = ?, shelf = ?, stock = ?, badge = ?, synopsis = ?,
 		    cover_img = IF(? != '', ?, cover_img),
 		    cloudinary_public_id = IF(? != '', ?, cloudinary_public_id),
 		    has_volumes = ?, volumes_json = ?, genres_json = ?
@@ -200,7 +203,7 @@ func (r *Repository) Update(id string, b model.Book) error {
 	`
 	_, err := r.db.Exec(query,
 		b.Title, b.Author, b.Category, b.Language, b.Price,
-		b.Year, b.Shelf, b.Stock, b.Synopsis,
+		b.Year, b.Shelf, b.Stock, b.Badge, b.Synopsis,
 		b.CoverImg, b.CoverImg,
 		b.CloudinaryPublicID, b.CloudinaryPublicID,
 		boolToInt(b.HasVolumes), volJSONStr, genJSONStr, id,

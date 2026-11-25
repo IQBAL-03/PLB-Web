@@ -7,6 +7,7 @@ import { showToast } from '../../utils/toast.js';
 import { adminState } from '../admin-state.js';
 import { booksView } from '../views/books-view.js';
 import { imagePreviewModal } from '../../features/modal/image-preview.modal.js';
+import { bookReviewsModal } from '../views/book-reviews-modal.js';
 import { bookVolumeHelper } from './book-volume-helper.js';
 import { bookGenreHelper } from './book-genre-helper.js';
 
@@ -39,6 +40,7 @@ export const bookActions = {
           form.reset();
           $('#bookFormOriginalId').value = '';
           if ($('#bookYearInput')) $('#bookYearInput').value = '-';
+          if ($('#bookBadgeInput')) $('#bookBadgeInput').value = 'Koleksi Pilihan';
           $('#bookPriceInput').value = '';
           $('#bookCoverInput').value = '';
           $('#bookCloudinaryIdInput').value = '';
@@ -76,6 +78,7 @@ export const bookActions = {
           $('#bookTitleInput').value = book.title;
           $('#bookAuthorInput').value = book.author;
           $('#bookCategoryInput').value = book.category;
+          if ($('#bookBadgeInput')) $('#bookBadgeInput').value = book.badge || 'Koleksi Pilihan';
           $('#bookLanguageInput').value = book.language || 'Bahasa Indonesia';
           if ($('#bookYearInput')) $('#bookYearInput').value = book.year || '-';
           $('#bookPriceInput').value = book.price || '';
@@ -100,6 +103,15 @@ export const bookActions = {
           bookVolumeHelper.syncTotalStock(hasVols);
           $('#bookModalDialog').classList.remove('hidden');
         }
+        return;
+      }
+
+      const revBtn = e.target.closest('[data-book-action="reviews"]');
+      if (revBtn) {
+        bookReviewsModal.open(revBtn.dataset.id, revBtn.dataset.title, async () => {
+          await adminState.syncBooksFromAPI();
+          switchTabFn('books');
+        });
         return;
       }
 
@@ -206,37 +218,17 @@ export const bookActions = {
         const isPopular = origBook ? Boolean(origBook.isPopular) : true;
         const isSpotlight = origBook ? Boolean(origBook.isSpotlight) : false;
         const reviewsCount = origBook ? (origBook.reviewsCount || 0) : 0;
-        const badge = origBook && origBook.badge ? origBook.badge : 'Koleksi Pilihan';
-
-        let finalCover = coverImg;
-        if (!finalCover && origBook && origBook.coverImg) {
-          finalCover = origBook.coverImg;
-        }
+        const badge = ($('#bookBadgeInput') ? $('#bookBadgeInput').value.trim() : '') || (origBook && origBook.badge ? origBook.badge : 'Koleksi Pilihan');
+        let finalCover = coverImg || (origBook && origBook.coverImg ? origBook.coverImg : '');
 
         const clInput = $('#bookCloudinaryIdInput');
         const clId = clInput && clInput.value.trim() ? clInput.value.trim() : (origBook && origBook.cloudinary_public_id ? origBook.cloudinary_public_id : '');
 
         const payload = {
-          id,
-          title,
-          author,
-          category,
-          genres,
-          language,
-          year,
-          price,
-          stock,
-          shelf,
-          synopsis,
-          rating,
-          reviews_count: reviewsCount,
-          badge,
-          isPopular,
-          isSpotlight,
-          coverImg: finalCover,
-          cloudinary_public_id: clId,
-          hasVolumes: hasVolumes && volumes.length > 0,
-          volumes: volumes,
+          id, title, author, category, genres, language, year, price, stock, shelf, synopsis,
+          rating, reviews_count: reviewsCount, badge, isPopular, isSpotlight,
+          coverImg: finalCover, cloudinary_public_id: clId,
+          hasVolumes: hasVolumes && volumes.length > 0, volumes,
         };
 
         try {

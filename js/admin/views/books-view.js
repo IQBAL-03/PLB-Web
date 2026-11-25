@@ -93,7 +93,7 @@ export const booksView = {
                 </div>
               </div>
 
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label for="bookAuthorInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Pengarang</label>
                   <input type="text" id="bookAuthorInput" required class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Nama penulis" />
@@ -108,6 +108,19 @@ export const booksView = {
                     <option value="Pengembangan Diri">Pengembangan Diri</option>
                     <option value="Buku Referensi">Buku Referensi</option>
                   </select>
+                </div>
+                <div>
+                  <label for="bookBadgeInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Tag Spesial</label>
+                  <input type="text" id="bookBadgeInput" list="bookBadgePresets" maxlength="32" class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Koleksi Pilihan" />
+                  <datalist id="bookBadgePresets">
+                    <option value="Koleksi Pilihan"></option>
+                    <option value="Koleksi Spesial"></option>
+                    <option value="Serial Multi-Volume"></option>
+                    <option value="Sinematik Populer"></option>
+                    <option value="Manga Pilihan"></option>
+                    <option value="Baru Masuk"></option>
+                    <option value="Rekomendasi"></option>
+                  </datalist>
                 </div>
               </div>
 

@@ -84,6 +84,11 @@ export const booksCardView = {
                 </div>
 
                 <div class="flex items-center justify-between text-xs">
+                  <span class="text-stone-500 text-[11px]">Tag Spesial:</span>
+                  <span class="font-semibold text-rose-900">${escapeHtml(b.badge || 'Koleksi Pilihan')}</span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs">
                   <span class="text-stone-500 text-[11px]">Tahun Terbit:</span>
                   <span class="font-semibold text-stone-700">${escapeHtml(b.year || '-')}</span>
                 </div>
@@ -100,13 +105,17 @@ export const booksCardView = {
             </div>
 
             <!-- Card Actions -->
-            <div class="p-3 bg-stone-50/70 border-t border-stone-100 flex items-center justify-between gap-2">
+            <div class="p-3 bg-stone-50/70 border-t border-stone-100 flex flex-wrap items-center justify-between gap-2">
               <button type="button" data-book-action="edit" data-id="${b.id}"
-                class="flex-1 py-1.5 px-3 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs border border-stone-300 transition-colors cursor-pointer text-center">
-                Edit Sampul &amp; Data
+                class="flex-1 py-1.5 px-2.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs border border-stone-300 transition-colors cursor-pointer text-center">
+                Edit Data
+              </button>
+              <button type="button" data-book-action="reviews" data-id="${b.id}" data-title="${escapeHtml(b.title)}"
+                class="py-1.5 px-2.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold text-xs border border-amber-200 transition-colors cursor-pointer text-center">
+                Ulasan (${Number(b.reviewsCount || b.reviews_count || 0)})
               </button>
               <button type="button" data-book-action="delete" data-id="${b.id}"
-                class="py-1.5 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 font-semibold text-xs border border-rose-200 transition-colors cursor-pointer text-center">
+                class="py-1.5 px-2.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 font-semibold text-xs border border-rose-200 transition-colors cursor-pointer text-center">
                 Hapus
               </button>
             </div>
