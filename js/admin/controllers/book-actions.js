@@ -241,15 +241,15 @@ export const bookActions = {
         try {
           if (origId) {
             await adminState.updateBook(origId, payload);
-            showToast(`Katalog buku "${title}" berhasil diperbarui di TiDB.`, 'success');
+            showToast(`Katalog buku "${title}" berhasil diperbarui.`, 'success');
           } else {
             await adminState.addBook(payload);
-            showToast(`Buku baru "${title}" berhasil ditambahkan ke TiDB.`, 'success');
+            showToast(`Buku baru "${title}" berhasil ditambahkan.`, 'success');
           }
           $('#bookModalDialog').classList.add('hidden');
           switchTabFn('books');
         } catch (err) {
-          showToast(err.message || 'Gagal menyimpan data buku ke TiDB.', 'error');
+          showToast(err.message || 'Gagal menyimpan data buku.', 'error');
         }
       }
     });
