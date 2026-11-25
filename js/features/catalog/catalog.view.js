@@ -124,7 +124,7 @@ export const catalogView = {
             <h3 class="font-serif font-bold text-stone-900 text-sm sm:text-base leading-snug line-clamp-1 mb-1 group-hover:text-rose-900 transition-colors">
               ${escapeHtml(book.title)}
             </h3>
-            <p class="text-xs text-stone-500 line-clamp-1 mb-1 font-medium">${escapeHtml(book.author)}</p>
+            <p class="text-xs text-stone-500 line-clamp-1 mb-1 font-medium">${escapeHtml(book.author)} &middot; ${escapeHtml(book.year || '-')}</p>
 
             <!-- Star Rating & Review Count Info -->
             <div class="flex items-center gap-1.5 text-xs text-stone-700 mb-2">

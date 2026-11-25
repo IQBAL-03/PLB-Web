@@ -11,10 +11,13 @@ import { booksView } from './views/books-view.js';
 import { reportView } from './views/report-view.js';
 import { memberActions } from './controllers/member-actions.js';
 import { bookActions } from './controllers/book-actions.js';
+import { returnModal } from './views/return-modal.js';
 import { categories } from '../data/library-data.js';
 
 export const adminAppController = {
   currentTab: 'dashboard',
+  activeTxFilter: 'Semua',
+  dashSearchQuery: '',
   reportStartDate: '2026-11-01',
   reportEndDate: '2026-11-21',
 
@@ -89,8 +92,9 @@ export const adminAppController = {
 
     if (tabName === 'dashboard') {
       const metrics = adminState.getMetrics();
-      const transactions = adminState.getTransactions();
+      const transactions = adminState.getTransactions(this.activeTxFilter, this.dashSearchQuery);
       dashboardView.render(container, metrics, transactions);
+      this.syncDashFilterUI();
     } else if (tabName === 'members') {
       const members = adminState.getMembers();
       membersView.render(container, members);
@@ -110,6 +114,27 @@ export const adminAppController = {
     });
   },
 
+  syncDashFilterUI() {
+    $$('[data-tx-filter]').forEach((btn) => {
+      const isMatch = btn.dataset.txFilter === this.activeTxFilter;
+      btn.className = isMatch
+        ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-900 text-white cursor-pointer shadow-xs'
+        : 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 cursor-pointer';
+    });
+    const searchInput = $('#dashSearchInput');
+    if (searchInput && searchInput.value !== this.dashSearchQuery) {
+      searchInput.value = this.dashSearchQuery;
+    }
+  },
+
+  refreshDashTable() {
+    const filtered = adminState.getTransactions(this.activeTxFilter, this.dashSearchQuery);
+    const tbody = $('#dashTableBody');
+    if (tbody) tbody.innerHTML = dashboardView.renderRows(filtered);
+    const countLabel = $('#dashTableResultCount');
+    if (countLabel) countLabel.textContent = `Menampilkan ${filtered.length} transaksi`;
+  },
+
   bindDashboardAndReport() {
     document.addEventListener('click', (e) => {
       if (e.target.closest('#triggerPrintPdfBtn')) {
@@ -117,17 +142,27 @@ export const adminAppController = {
         return;
       }
 
-      if (e.target.closest('#dashQuickLoanBtn')) {
-        showToast('Gunakan tab Kelola Buku atau catat sirkulasi pada formulir transaksi.', 'info');
+      const filterBtn = e.target.closest('[data-tx-filter]');
+      if (filterBtn) {
+        this.activeTxFilter = filterBtn.dataset.txFilter || 'Semua';
+        this.syncDashFilterUI();
+        this.refreshDashTable();
         return;
       }
 
       const returnBtn = e.target.closest('[data-action="return-loan"]');
       if (returnBtn) {
         const id = returnBtn.dataset.id;
-        adminState.returnTransaction(id);
-        this.switchTab('dashboard');
-        showToast(`Transaksi ${id} tuntas. Buku telah dikembalikan.`, 'success');
+        const tx = adminState.transactions.find((t) => t.id === id);
+        if (!tx) return;
+        const book = adminState.books.find((b) => b.id === tx.bookId);
+        const bookPrice = tx.price || (book && book.price) || 0;
+        returnModal.open(tx, bookPrice, async (condition, fine) => {
+          await adminState.returnTransaction(id, condition, fine);
+          await adminState.syncBooksFromAPI();
+          this.switchTab('dashboard');
+          showToast(`Transaksi ${id} tuntas. Buku telah dikembalikan.`, 'success');
+        });
         return;
       }
 
@@ -152,10 +187,8 @@ export const adminAppController = {
 
     document.addEventListener('input', (e) => {
       if (e.target.id === 'dashSearchInput') {
-        const q = e.target.value;
-        const filtered = adminState.getTransactions('Semua', q);
-        const tbody = $('#dashTableBody');
-        if (tbody) tbody.innerHTML = dashboardView.renderRows(filtered);
+        this.dashSearchQuery = e.target.value;
+        this.refreshDashTable();
       }
     });
   },

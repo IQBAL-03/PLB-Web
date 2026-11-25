@@ -33,5 +33,7 @@ type BorrowReq struct {
 
 // ReturnLoanReq defines payload for returning a borrowed book.
 type ReturnLoanReq struct {
-	ID string `json:"id"`
+	ID        string `json:"id"`
+	Condition string `json:"condition,omitempty"`
+	Fine      int    `json:"fine,omitempty"`
 }

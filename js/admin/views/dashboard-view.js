@@ -20,37 +20,25 @@ export const dashboardView = {
         <!-- 4 KPI Metrics Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div class="bg-white rounded-xl p-5 border border-stone-200 shadow-xs">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-stone-500 uppercase tracking-wider">Total Stok Buku</span>
-              <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-900 flex items-center justify-center font-bold">B</div>
-            </div>
+            <span class="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2">Total Stok Buku</span>
             <div class="text-2xl sm:text-3xl font-serif font-black text-stone-900 mb-1">${metrics.totalBookStock.toLocaleString('id-ID')}</div>
             <p class="text-[11px] text-stone-500 font-medium">Tersebar di ${metrics.totalBookTitles} judul koleksi aktif</p>
           </div>
 
           <div class="bg-white rounded-xl p-5 border border-stone-200 shadow-xs">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-stone-500 uppercase tracking-wider">Transaksi Peminjaman</span>
-              <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-900 flex items-center justify-center font-bold">P</div>
-            </div>
+            <span class="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2">Transaksi Peminjaman</span>
             <div class="text-2xl sm:text-3xl font-serif font-black text-amber-900 mb-1">${metrics.activeLoansCount}</div>
             <p class="text-[11px] text-stone-500 font-medium">Buku sedang dipinjam siswa &amp; guru</p>
           </div>
 
           <div class="bg-white rounded-xl p-5 border border-stone-200 shadow-xs">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-stone-500 uppercase tracking-wider">Buku Selesai Kembali</span>
-              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center font-bold">K</div>
-            </div>
+            <span class="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2">Buku Selesai Kembali</span>
             <div class="text-2xl sm:text-3xl font-serif font-black text-emerald-800 mb-1">${metrics.completedLoansCount}</div>
             <p class="text-[11px] text-stone-500 font-medium">Pengembalian tertib tercatat</p>
           </div>
 
           <div class="bg-white rounded-xl p-5 border border-stone-200 shadow-xs">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-stone-500 uppercase tracking-wider">Denda Belum Dibayar</span>
-              <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-900 flex items-center justify-center font-bold">Rp</div>
-            </div>
+            <span class="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2">Denda Belum Dibayar</span>
             <div class="text-2xl sm:text-3xl font-serif font-black text-rose-950 mb-1">${formatRp(metrics.unpaidFinesAmount)}</div>
             <p class="text-[11px] text-rose-800 font-semibold">${metrics.unpaidFinesCount} transaksi terlambat</p>
           </div>

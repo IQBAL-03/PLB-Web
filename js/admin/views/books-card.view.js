@@ -84,6 +84,11 @@ export const booksCardView = {
                 </div>
 
                 <div class="flex items-center justify-between text-xs">
+                  <span class="text-stone-500 text-[11px]">Tahun Terbit:</span>
+                  <span class="font-semibold text-stone-700">${escapeHtml(b.year || '-')}</span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs">
                   <span class="text-stone-500 text-[11px]">Sisa Fisik:</span>
                   <span class="font-bold ${b.stock > 0 ? 'text-emerald-800' : 'text-rose-800'}">${b.stock} Eksemplar</span>
                 </div>

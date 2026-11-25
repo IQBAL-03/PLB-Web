@@ -70,6 +70,9 @@ func (r *Repository) List(query, category string) ([]model.Book, error) {
 
 		b.Synopsis = synopsis.String
 		b.CloudinaryPublicID = cloudID.String
+		if strings.TrimSpace(b.Year) == "" {
+			b.Year = "-"
+		}
 		b.IsPopular = isPop == 1
 		b.IsSpotlight = isSpot == 1
 		b.HasVolumes = hasVol == 1
@@ -118,6 +121,9 @@ func (r *Repository) Create(b model.Book) error {
 		}
 	}
 
+	if strings.TrimSpace(b.Year) == "" {
+		b.Year = "-"
+	}
 	query := `
 		INSERT INTO books (
 			id, title, author, category, language, price, year, shelf, stock,
@@ -180,6 +186,9 @@ func (r *Repository) Update(id string, b model.Book) error {
 		}
 	}
 
+	if strings.TrimSpace(b.Year) == "" {
+		b.Year = "-"
+	}
 	query := `
 		UPDATE books
 		SET title = ?, author = ?, category = ?, language = ?, price = ?,

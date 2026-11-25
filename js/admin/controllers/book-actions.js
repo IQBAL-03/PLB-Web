@@ -38,6 +38,7 @@ export const bookActions = {
         if (modal && form) {
           form.reset();
           $('#bookFormOriginalId').value = '';
+          if ($('#bookYearInput')) $('#bookYearInput').value = '-';
           $('#bookPriceInput').value = '';
           $('#bookCoverInput').value = '';
           $('#bookCloudinaryIdInput').value = '';
@@ -76,6 +77,7 @@ export const bookActions = {
           $('#bookAuthorInput').value = book.author;
           $('#bookCategoryInput').value = book.category;
           $('#bookLanguageInput').value = book.language || 'Bahasa Indonesia';
+          if ($('#bookYearInput')) $('#bookYearInput').value = book.year || '-';
           $('#bookPriceInput').value = book.price || '';
           $('#bookStockInput').value = book.stock;
           $('#bookShelfInput').value = book.shelf;
@@ -134,13 +136,8 @@ export const bookActions = {
 
         const preview = $('#bookModalCoverPreview');
         if (preview) preview.src = URL.createObjectURL(file);
-
-        const nameLabel = $('#bookCoverFileName');
-        if (nameLabel) nameLabel.textContent = file.name;
-
-        const overlay = $('#bookModalCoverUploading');
-        if (overlay) overlay.classList.remove('hidden');
-
+        if ($('#bookCoverFileName')) $('#bookCoverFileName').textContent = file.name;
+        if ($('#bookModalCoverUploading')) $('#bookModalCoverUploading').classList.remove('hidden');
         const triggerBtn = $('#triggerCoverUploadBtn');
         if (triggerBtn) triggerBtn.disabled = true;
 
@@ -148,27 +145,17 @@ export const bookActions = {
         formData.append('cover', file);
 
         try {
-          const res = await fetch('/api/upload/cover', {
-            method: 'POST',
-            body: formData,
-          });
+          const res = await fetch('/api/upload/cover', { method: 'POST', body: formData });
           const data = await res.json();
-          if (!res.ok || !data.success) {
-            throw new Error(data.error || data.message || 'Gagal mengunggah foto ke Cloudinary.');
-          }
-
-          const coverInput = $('#bookCoverInput');
-          if (coverInput) coverInput.value = data.url;
-
-          const clIdInput = $('#bookCloudinaryIdInput');
-          if (clIdInput) clIdInput.value = data.public_id || '';
-
+          if (!res.ok || !data.success) throw new Error(data.error || data.message || 'Gagal mengunggah foto ke Cloudinary.');
+          if ($('#bookCoverInput')) $('#bookCoverInput').value = data.url;
+          if ($('#bookCloudinaryIdInput')) $('#bookCloudinaryIdInput').value = data.public_id || '';
           if (preview) preview.src = data.url;
           showToast('Foto sampul berhasil diunggah ke Cloudinary.', 'success');
         } catch (err) {
           showToast(err.message || 'Terjadi kesalahan saat mengunggah foto.', 'error');
         } finally {
-          if (overlay) overlay.classList.add('hidden');
+          if ($('#bookModalCoverUploading')) $('#bookModalCoverUploading').classList.add('hidden');
           if (triggerBtn) triggerBtn.disabled = false;
         }
       }
@@ -184,6 +171,7 @@ export const bookActions = {
         const author = $('#bookAuthorInput').value.trim();
         const category = $('#bookCategoryInput').value;
         const language = $('#bookLanguageInput').value;
+        const year = ($('#bookYearInput') ? $('#bookYearInput').value.trim() : '') || '-';
         const price = Number($('#bookPriceInput').value) || 0;
         const hasVolumes = $('#bookHasVolumesCheckbox') ? $('#bookHasVolumesCheckbox').checked : false;
         const volumes = hasVolumes ? bookVolumeHelper.collect() : [];
@@ -227,6 +215,7 @@ export const bookActions = {
           category,
           genres,
           language,
+          year,
           price,
           stock,
           shelf,

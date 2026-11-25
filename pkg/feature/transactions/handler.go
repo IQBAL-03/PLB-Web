@@ -87,10 +87,11 @@ func (h *Handler) Return(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var req model.ReturnLoanReq
+	_ = json.NewDecoder(r.Body).Decode(&req)
+
 	id := r.URL.Query().Get("id")
 	if id == "" {
-		var req model.ReturnLoanReq
-		_ = json.NewDecoder(r.Body).Decode(&req)
 		id = req.ID
 	}
 
@@ -99,13 +100,41 @@ func (h *Handler) Return(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.repo.ReturnLoan(id); err != nil {
+	fine, err := h.repo.ReturnLoan(id, req.Condition, req.Fine)
+	if err != nil {
 		response.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"ok":      true,
+		"fine":    fine,
 		"message": "Buku berhasil dikembalikan dan dicatat di basis data TiDB.",
+	})
+}
+
+// PayFine marks an outstanding transaction fine as paid in TiDB.
+func (h *Handler) PayFine(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost && r.Method != http.MethodPut {
+		response.Error(w, http.StatusMethodNotAllowed, "Metode harus POST atau PUT")
+		return
+	}
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		var req model.ReturnLoanReq
+		_ = json.NewDecoder(r.Body).Decode(&req)
+		id = req.ID
+	}
+	if id == "" {
+		response.Error(w, http.StatusBadRequest, "ID transaksi wajib disertakan")
+		return
+	}
+	if err := h.repo.PayFine(id); err != nil {
+		response.DBError(w, err)
+		return
+	}
+	response.JSON(w, http.StatusOK, map[string]interface{}{
+		"ok":      true,
+		"message": "Denda transaksi berhasil dilunasi.",
 	})
 }

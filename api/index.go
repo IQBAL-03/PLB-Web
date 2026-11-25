@@ -108,6 +108,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}))
 	mux.HandleFunc("/api/transactions/borrow", wrap(trxH.Borrow))
 	mux.HandleFunc("/api/transactions/return", wrap(trxH.Return))
+	mux.HandleFunc("/api/transactions/pay-fine", wrap(trxH.PayFine))
 
 	// Book Reviews & Rating Endpoints (TiDB)
 	mux.HandleFunc("/api/reviews", wrap(func(w http.ResponseWriter, r *http.Request) {

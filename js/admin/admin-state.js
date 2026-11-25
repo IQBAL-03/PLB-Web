@@ -5,6 +5,7 @@
 import { books as catalogBooks } from '../data/library-data.js';
 import { initialTransactions, initialMembers } from './admin-data.js';
 import { adminAnalytics } from './admin-analytics.js';
+import { adminSyncService } from './admin-sync.service.js';
 
 class AdminStateManager {
   constructor() {
@@ -49,8 +50,10 @@ class AdminStateManager {
   // Transactions
   getTransactions(filter = 'Semua', query = '') {
     const q = query.toLowerCase().trim();
+    const todayStr = new Date().toISOString().split('T')[0];
     return this.transactions.filter((t) => {
-      const matchFilter = filter === 'Semua' || t.status === filter;
+      const isOverdue = t.status === 'Terlambat' || (t.status === 'Dipinjam' && t.dueDate && String(t.dueDate).slice(0, 10) < todayStr);
+      const matchFilter = filter === 'Semua' || (filter === 'Terlambat' ? isOverdue : t.status === filter);
       const matchQuery = !q || t.studentName.toLowerCase().includes(q) || t.nis.toLowerCase().includes(q) || t.bookTitle.toLowerCase().includes(q) || t.id.toLowerCase().includes(q);
       return matchFilter && matchQuery;
     });
@@ -61,13 +64,31 @@ class AdminStateManager {
     this.save('transactions', this.transactions);
   }
 
-  returnTransaction(id) {
+  async returnTransaction(id, condition = 'normal', customFine = 0) {
     const tx = this.transactions.find((t) => t.id === id);
     if (tx) {
       tx.status = 'Kembali';
       tx.returnDate = new Date().toISOString().split('T')[0];
+      tx.fine = Number(customFine) || 0;
+      tx.finePaid = tx.fine <= 0;
       this.save('transactions', this.transactions);
-      fetch(`/api/transactions/return?id=${encodeURIComponent(id)}`, { method: 'POST' }).catch(() => {});
+      try {
+        const res = await fetch('/api/transactions/return', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, condition, fine: tx.fine }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof data.fine === 'number') {
+            tx.fine = data.fine;
+            tx.finePaid = data.fine <= 0;
+            this.save('transactions', this.transactions);
+          }
+        }
+      } catch {
+        // Offline fallback
+      }
     }
     return tx;
   }
@@ -77,6 +98,7 @@ class AdminStateManager {
     if (tx) {
       tx.finePaid = true;
       this.save('transactions', this.transactions);
+      fetch(`/api/transactions/pay-fine?id=${encodeURIComponent(id)}`, { method: 'POST' }).catch(() => {});
     }
     return tx;
   }
@@ -90,53 +112,21 @@ class AdminStateManager {
   }
 
   async syncMembersFromAPI() {
-    try {
-      const res = await fetch(`/api/members?t=${Date.now()}`, { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.ok && Array.isArray(data.members) && data.members.length > 0) {
-          this.members = data.members.map((m) => ({
-            nis: m.nis,
-            name: m.name,
-            classRoom: m.class_room || m.classRoom,
-            activeLoans: m.active_loans ?? m.activeLoans ?? 0,
-            status: m.status,
-          }));
-          this.save('members', this.members);
-          return true;
-        }
-      }
-    } catch {
-      // Offline fallback
+    const members = await adminSyncService.fetchMembers();
+    if (members) {
+      this.members = members;
+      this.save('members', this.members);
+      return true;
     }
     return false;
   }
 
   async syncTransactionsFromAPI() {
-    try {
-      const res = await fetch(`/api/transactions?t=${Date.now()}`, { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.ok && Array.isArray(data.transactions)) {
-          this.transactions = data.transactions.map((t) => ({
-            id: t.id,
-            studentName: t.student_name || t.studentName,
-            nis: t.nis,
-            bookId: t.book_id || t.bookId,
-            bookTitle: t.book_title || t.bookTitle,
-            loanDate: t.loan_date || t.loanDate,
-            dueDate: t.due_date || t.dueDate,
-            returnDate: t.return_date || t.returnDate,
-            status: t.status,
-            fine: t.fine || 0,
-            finePaid: t.fine_paid ?? t.finePaid ?? true,
-          }));
-          this.save('transactions', this.transactions);
-          return true;
-        }
-      }
-    } catch {
-      // Offline fallback
+    const txs = await adminSyncService.fetchTransactions();
+    if (txs) {
+      this.transactions = txs;
+      this.save('transactions', this.transactions);
+      return true;
     }
     return false;
   }
@@ -185,21 +175,11 @@ class AdminStateManager {
   }
 
   async syncBooksFromAPI() {
-    try {
-      const res = await fetch(`/api/books?t=${Date.now()}`, { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
-          const hasChanged = JSON.stringify(this.books) !== JSON.stringify(data.books);
-          if (hasChanged || this.books.length === 0) {
-            this.books = data.books;
-            this.save('books', this.books);
-            return true;
-          }
-        }
-      }
-    } catch {
-      // Offline fallback
+    const books = await adminSyncService.fetchBooks();
+    if (books && (JSON.stringify(this.books) !== JSON.stringify(books) || this.books.length === 0)) {
+      this.books = books;
+      this.save('books', this.books);
+      return true;
     }
     return false;
   }

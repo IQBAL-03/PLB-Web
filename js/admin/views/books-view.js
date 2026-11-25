@@ -129,13 +129,17 @@ export const booksView = {
                 </div>
               </div>
 
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div>
                   <label for="bookLanguageInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Bahasa</label>
                   <select id="bookLanguageInput" class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none bg-stone-50">
                     <option value="Bahasa Indonesia">Bahasa Indonesia</option>
                     <option value="Bahasa Inggris">Bahasa Inggris</option>
                   </select>
+                </div>
+                <div>
+                  <label for="bookYearInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Tahun Terbit</label>
+                  <input type="text" id="bookYearInput" maxlength="10" class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="-" />
                 </div>
                 <div>
                   <label for="bookPriceInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Harga (Rp)</label>
@@ -145,7 +149,7 @@ export const booksView = {
                   <label for="bookStockInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Jumlah Stok</label>
                   <input type="number" id="bookStockInput" min="0" required class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="5" />
                 </div>
-                <div>
+                <div class="col-span-2 sm:col-span-1">
                   <label for="bookShelfInput" class="block text-xs font-bold text-stone-700 uppercase mb-1">Nomor Rak</label>
                   <input type="text" id="bookShelfInput" required class="w-full text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-rose-800 focus:outline-none" placeholder="Rak M-01" />
                 </div>

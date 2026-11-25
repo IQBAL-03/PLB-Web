@@ -174,58 +174,79 @@ func (r *Repository) CreateBorrow(req model.BorrowReq) (*model.Transaction, erro
 	}, nil
 }
 
-// ReturnLoan processes the return of a borrowed title and calculates overdue fines if applicable.
-func (r *Repository) ReturnLoan(trxID string) error {
+// ReturnLoan processes book return and calculates fines by overdue days (Rp 1.000/day), lost (book price), or damaged (admin input).
+func (r *Repository) ReturnLoan(trxID, condition string, customFine int) (int, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return fmt.Errorf("begin return: %w", err)
+		return 0, fmt.Errorf("begin return: %w", err)
 	}
 	defer tx.Rollback()
 
-	var nis, bookID string
-	var dueDateStr string
-	var currentStatus string
-	err = tx.QueryRow("SELECT nis, book_id, due_date, status FROM transactions WHERE id = ?", trxID).Scan(&nis, &bookID, &dueDateStr, &currentStatus)
+	var nis, bookID, dueDateStr, currentStatus string
+	var txPrice int
+	err = tx.QueryRow("SELECT nis, book_id, price, due_date, status FROM transactions WHERE id = ?", trxID).Scan(&nis, &bookID, &txPrice, &dueDateStr, &currentStatus)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return fmt.Errorf("transaksi %s tidak ditemukan", trxID)
+			return 0, fmt.Errorf("transaksi %s tidak ditemukan", trxID)
 		}
-		return fmt.Errorf("query transaksi: %w", err)
+		return 0, fmt.Errorf("query transaksi: %w", err)
 	}
 
 	if currentStatus == "Kembali" {
-		return nil // Already returned
+		return 0, nil
+	}
+
+	if txPrice <= 0 {
+		_ = tx.QueryRow("SELECT price FROM books WHERE id = ?", bookID).Scan(&txPrice)
 	}
 
 	today := time.Now()
 	todayStr := today.Format("2006-01-02")
-	fine := 0
-	finePaid := 1
-	status := "Kembali"
-
-	if dueTime, err := time.Parse("2006-01-02", dueDateStr); err == nil {
-		if today.After(dueTime) {
-			daysLate := int(today.Sub(dueTime).Hours() / 24)
-			if daysLate > 0 {
-				fine = daysLate * 1000 // Rp 1.000 / hari
-				finePaid = 0
-				status = "Terlambat"
+	lateFine := 0
+	if len(dueDateStr) >= 10 {
+		if dueTime, err := time.Parse("2006-01-02", dueDateStr[:10]); err == nil {
+			if today.After(dueTime) {
+				daysLate := int(today.Sub(dueTime).Hours() / 24)
+				if daysLate > 0 {
+					lateFine = daysLate * 1000
+				}
 			}
 		}
 	}
 
-	// Update transaction
-	updateQuery := "UPDATE transactions SET return_date = ?, status = ?, fine = ?, fine_paid = ? WHERE id = ?"
-	_, err = tx.Exec(updateQuery, todayStr, status, fine, finePaid, trxID)
-	if err != nil {
-		return fmt.Errorf("update pengembalian: %w", err)
+	fine := lateFine
+	cond := strings.ToLower(strings.TrimSpace(condition))
+	switch cond {
+	case "hilang":
+		fine = txPrice
+	case "rusak":
+		if customFine > 0 {
+			fine = customFine
+		} else {
+			fine = 0
+		}
 	}
 
-	// Decrement member's active loans
+	finePaid := 1
+	if fine > 0 {
+		finePaid = 0
+	}
+
+	updateQuery := "UPDATE transactions SET return_date = ?, status = 'Kembali', fine = ?, fine_paid = ? WHERE id = ?"
+	if _, err = tx.Exec(updateQuery, todayStr, fine, finePaid, trxID); err != nil {
+		return 0, fmt.Errorf("update pengembalian: %w", err)
+	}
+
 	_, _ = tx.Exec("UPDATE members SET active_loans = GREATEST(active_loans - 1, 0) WHERE nis = ?", nis)
+	if cond != "hilang" {
+		_, _ = tx.Exec("UPDATE books SET stock = stock + 1 WHERE id = ?", bookID)
+	}
 
-	// Increment book stock
-	_, _ = tx.Exec("UPDATE books SET stock = stock + 1 WHERE id = ?", bookID)
+	return fine, tx.Commit()
+}
 
-	return tx.Commit()
+// PayFine marks a transaction fine as settled.
+func (r *Repository) PayFine(trxID string) error {
+	_, err := r.db.Exec("UPDATE transactions SET fine_paid = 1 WHERE id = ?", trxID)
+	return err
 }
