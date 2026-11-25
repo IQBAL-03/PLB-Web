@@ -73,7 +73,19 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		b.Rating = 4.9
 	}
 
+	existing, _ := h.repo.List(b.ID, "")
+	for _, eb := range existing {
+		if strings.EqualFold(eb.ID, b.ID) {
+			response.Error(w, http.StatusConflict, fmt.Sprintf("ID buku %q sudah digunakan oleh buku %q. Gunakan ID lain.", b.ID, eb.Title))
+			return
+		}
+	}
+
 	if err := h.repo.Create(b); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "duplicate") {
+			response.Error(w, http.StatusConflict, fmt.Sprintf("ID buku %q sudah digunakan.", b.ID))
+			return
+		}
 		response.DBError(w, err)
 		return
 	}

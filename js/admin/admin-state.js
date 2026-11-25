@@ -28,7 +28,16 @@ class AdminStateManager {
           localStorage.removeItem(this.storagePrefix + key);
           return JSON.parse(JSON.stringify(fallback));
         }
-        return parsed.map((b) => ({ ...b, reviewsCount: b.reviews_count || b.reviewsCount || 0 }));
+        const seen = new Set();
+        return parsed
+          .filter((b) => {
+            if (!b || !b.id) return false;
+            const k = String(b.id).toLowerCase();
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          })
+          .map((b) => ({ ...b, reviewsCount: b.reviews_count || b.reviewsCount || 0 }));
       }
       if (key === 'members' && Array.isArray(parsed) && parsed.length === 0 && fallback.length > 0) {
         return JSON.parse(JSON.stringify(fallback));
@@ -185,44 +194,33 @@ class AdminStateManager {
   }
 
   async addBook(book) {
-    try {
-      const res = await fetch('/api/books', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(book),
-      });
-      if (res.ok) {
-        await this.syncBooksFromAPI();
-        return;
-      }
-    } catch {
-      // Keep local state
+    if (this.books.some((b) => String(b.id).toLowerCase() === String(book.id).toLowerCase())) {
+      throw new Error(`ID buku "${book.id}" sudah digunakan. Silakan gunakan ID lain.`);
     }
-    this.books.unshift(book);
-    this.save('books', this.books);
+    const res = await fetch('/api/books', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(book),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || data.message || `Gagal menambahkan buku (HTTP ${res.status}).`);
+    }
+    await this.syncBooksFromAPI();
   }
 
   async updateBook(id, updated) {
-    try {
-      const res = await fetch(`/api/books/update?id=${encodeURIComponent(id)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
-      });
-      if (res.ok) {
-        await this.syncBooksFromAPI();
-        return this.books.find((b) => b.id === id);
-      }
-    } catch {
-      // Keep local state
+    const res = await fetch(`/api/books/update?id=${encodeURIComponent(id)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || data.message || `Gagal memperbarui buku (HTTP ${res.status}).`);
     }
-    const idx = this.books.findIndex((b) => b.id === id);
-    if (idx !== -1) {
-      this.books[idx] = { ...this.books[idx], ...updated };
-      this.save('books', this.books);
-      return this.books[idx];
-    }
-    return null;
+    await this.syncBooksFromAPI();
+    return this.books.find((b) => b.id === id);
   }
 
   async deleteBook(id) {

@@ -167,6 +167,13 @@ export const bookActions = {
         e.preventDefault();
         const origId = $('#bookFormOriginalId').value;
         const id = $('#bookIdInput').value.trim();
+        const duplicate = adminState.books.find(
+          (b) => b.id.toLowerCase() === id.toLowerCase() && b.id.toLowerCase() !== origId.toLowerCase()
+        );
+        if (duplicate) {
+          showToast(`ID buku "${id}" sudah dipakai oleh "${duplicate.title}". Gunakan ID lain.`, 'error');
+          return;
+        }
         const title = $('#bookTitleInput').value.trim();
         const author = $('#bookAuthorInput').value.trim();
         const category = $('#bookCategoryInput').value;
@@ -231,15 +238,19 @@ export const bookActions = {
           volumes: volumes,
         };
 
-        if (origId) {
-          await adminState.updateBook(origId, payload);
-          showToast(`Katalog buku "${title}" berhasil diperbarui di TiDB.`, 'success');
-        } else {
-          await adminState.addBook(payload);
-          showToast(`Buku baru "${title}" berhasil ditambahkan ke TiDB.`, 'success');
+        try {
+          if (origId) {
+            await adminState.updateBook(origId, payload);
+            showToast(`Katalog buku "${title}" berhasil diperbarui di TiDB.`, 'success');
+          } else {
+            await adminState.addBook(payload);
+            showToast(`Buku baru "${title}" berhasil ditambahkan ke TiDB.`, 'success');
+          }
+          $('#bookModalDialog').classList.add('hidden');
+          switchTabFn('books');
+        } catch (err) {
+          showToast(err.message || 'Gagal menyimpan data buku ke TiDB.', 'error');
         }
-        $('#bookModalDialog').classList.add('hidden');
-        switchTabFn('books');
       }
     });
 
