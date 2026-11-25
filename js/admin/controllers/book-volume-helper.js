@@ -41,7 +41,7 @@ export const bookVolumeHelper = {
                 <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 <span>Pilih Foto Sampul Volume (Maks 2MB)</span>
               </button>
-              <span class="text-[11px] text-stone-500">Tersimpan di Cloudinary</span>
+              <span class="text-[11px] text-stone-500">Foto tersimpan</span>
             </div>
           </div>
         </div>
@@ -217,7 +217,7 @@ export const bookVolumeHelper = {
             coverInput.value = data.url;
             const thumb = row.querySelector('.volume-thumb-preview');
             if (thumb) thumb.src = data.url;
-            showToast('Foto sampul volume berhasil diunggah ke Cloudinary.', 'success');
+            showToast('Foto sampul volume berhasil diunggah.', 'success');
           } catch (err) {
             showToast(err.message || 'Gagal mengunggah foto volume.', 'error');
           } finally {

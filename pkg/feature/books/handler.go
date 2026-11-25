@@ -69,8 +69,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if b.Rating <= 0 {
-		b.Rating = 4.9
+	if b.Rating < 0 {
+		b.Rating = 0
 	}
 
 	existing, _ := h.repo.List(b.ID, "")
@@ -92,7 +92,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusCreated, map[string]interface{}{
 		"ok":      true,
-		"message": "Buku berhasil ditambahkan ke basis data TiDB.",
+		"message": "Buku berhasil ditambahkan.",
 		"book":    b,
 	})
 }
@@ -126,7 +126,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"ok":      true,
-		"message": "Data buku berhasil diperbarui di basis data TiDB.",
+		"message": "Data buku berhasil diperbarui.",
 	})
 }
 
@@ -158,7 +158,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"ok":      true,
-		"message": "Buku berhasil dihapus dari basis data TiDB.",
+		"message": "Buku berhasil dihapus.",
 	})
 }
 

@@ -75,7 +75,7 @@ func (h *Handler) Borrow(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusCreated, map[string]interface{}{
 		"ok":          true,
-		"message":     "Peminjaman buku berhasil dicatat di basis data TiDB.",
+		"message":     "Peminjaman buku berhasil dicatat.",
 		"transaction": trx,
 	})
 }
@@ -109,7 +109,7 @@ func (h *Handler) Return(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"ok":      true,
 		"fine":    fine,
-		"message": "Buku berhasil dikembalikan dan dicatat di basis data TiDB.",
+		"message": "Buku berhasil dikembalikan dan dicatat.",
 	})
 }
 

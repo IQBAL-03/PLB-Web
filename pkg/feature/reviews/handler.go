@@ -117,7 +117,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"ok":      true,
-		"message": "Ulasan dan penilaian buku berhasil disimpan ke database TiDB.",
+		"message": "Ulasan dan penilaian buku berhasil disimpan.",
 		"review":  rev,
 	})
 }

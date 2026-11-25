@@ -88,7 +88,7 @@ export const bookActions = {
           $('#bookCoverInput').value = cover;
           $('#bookCloudinaryIdInput').value = '';
           $('#bookModalCoverPreview').src = cover || 'img/placeholder-book.svg';
-          $('#bookCoverFileName').textContent = cover ? (cover.startsWith('http') ? 'Tersimpan di Cloudinary' : cover) : 'Belum ada foto (Maks 2MB)';
+          $('#bookCoverFileName').textContent = cover ? (cover.startsWith('http') ? 'Foto sampul tersimpan' : cover) : 'Belum ada foto (Maks 2MB)';
           $('#bookModalTitle').textContent = `Edit Buku & Sampul (${book.id})`;
           bookGenreHelper.setGenres(book.genres || []);
           const hasVols = Boolean(book.hasVolumes && book.volumes && book.volumes.length > 0);
@@ -119,10 +119,10 @@ export const bookActions = {
       const delBtn = e.target.closest('[data-book-action="delete"]');
       if (delBtn) {
         const id = delBtn.dataset.id;
-        if (confirm(`Yakin ingin menghapus buku ${id} dari katalog TiDB?`)) {
+        if (confirm(`Yakin ingin menghapus buku ${id} dari katalog?`)) {
           await adminState.deleteBook(id);
           switchTabFn('books');
-          showToast(`Buku ${id} berhasil dihapus dari sistem dan TiDB.`, 'success');
+          showToast(`Buku ${id} berhasil dihapus.`, 'success');
         }
       }
     });
@@ -160,11 +160,11 @@ export const bookActions = {
         try {
           const res = await fetch('/api/upload/cover', { method: 'POST', body: formData });
           const data = await res.json();
-          if (!res.ok || !data.success) throw new Error(data.error || data.message || 'Gagal mengunggah foto ke Cloudinary.');
+          if (!res.ok || !data.success) throw new Error(data.error || data.message || 'Gagal mengunggah foto.');
           if ($('#bookCoverInput')) $('#bookCoverInput').value = data.url;
           if ($('#bookCloudinaryIdInput')) $('#bookCloudinaryIdInput').value = data.public_id || '';
           if (preview) preview.src = data.url;
-          showToast('Foto sampul berhasil diunggah ke Cloudinary.', 'success');
+          showToast('Foto sampul berhasil diunggah.', 'success');
         } catch (err) {
           showToast(err.message || 'Terjadi kesalahan saat mengunggah foto.', 'error');
         } finally {
@@ -214,7 +214,7 @@ export const bookActions = {
             }
           });
         }
-        const rating = origBook && origBook.rating ? Number(origBook.rating) : 4.9;
+        const rating = origBook && origBook.rating ? Number(origBook.rating) : 0;
         const isPopular = origBook ? Boolean(origBook.isPopular) : true;
         const isSpotlight = origBook ? Boolean(origBook.isSpotlight) : false;
         const reviewsCount = origBook ? (origBook.reviewsCount || 0) : 0;

@@ -43,7 +43,7 @@ func NewService(cfg config.Config) *Service {
 // UploadImage signs and transmits image bytes to the specified Cloudinary folder.
 func (s *Service) UploadImage(fileBytes []byte, filename, folder string) (*UploadResult, error) {
 	if s.cfg.CloudinaryCloudName == "" || s.cfg.CloudinaryAPIKey == "" || s.cfg.CloudinaryAPISecret == "" {
-		return nil, errors.New("konfigurasi Cloudinary belum lengkap (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)")
+		return nil, errors.New("konfigurasi layanan penyimpanan gambar belum lengkap")
 	}
 
 	if folder == "" {
@@ -79,19 +79,19 @@ func (s *Service) UploadImage(fileBytes []byte, filename, folder string) (*Uploa
 	uploadURL := fmt.Sprintf("https://api.cloudinary.com/v1_1/%s/image/upload", s.cfg.CloudinaryCloudName)
 	req, err := http.NewRequest("POST", uploadURL, &body)
 	if err != nil {
-		return nil, fmt.Errorf("membuat request cloudinary: %w", err)
+		return nil, fmt.Errorf("membuat request unggah gambar: %w", err)
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("koneksi ke api cloudinary gagal: %w", err)
+		return nil, fmt.Errorf("koneksi ke layanan penyimpanan gambar gagal: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("membaca respons cloudinary: %w", err)
+		return nil, fmt.Errorf("membaca respons layanan penyimpanan gambar: %w", err)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -102,14 +102,14 @@ func (s *Service) UploadImage(fileBytes []byte, filename, folder string) (*Uploa
 		}
 		_ = json.Unmarshal(respBody, &errResp)
 		if errResp.Error.Message != "" {
-			return nil, fmt.Errorf("cloudinary error: %s", errResp.Error.Message)
+			return nil, fmt.Errorf("unggah gambar gagal: %s", errResp.Error.Message)
 		}
-		return nil, fmt.Errorf("cloudinary upload gagal dengan status code %d", resp.StatusCode)
+		return nil, fmt.Errorf("unggah gambar gagal dengan status code %d", resp.StatusCode)
 	}
 
 	var result UploadResult
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return nil, fmt.Errorf("parsing respons cloudinary: %w", err)
+		return nil, fmt.Errorf("parsing respons unggah gambar: %w", err)
 	}
 
 	return &result, nil

@@ -115,7 +115,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusCreated, map[string]interface{}{
 		"ok":      true,
-		"message": "Pendaftaran anggota berhasil dicatat di basis data TiDB.",
+		"message": "Pendaftaran anggota berhasil dicatat.",
 		"member":  m,
 	})
 }
@@ -179,6 +179,6 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"ok":      true,
-		"message": "Anggota berhasil dihapus dari basis data TiDB.",
+		"message": "Anggota berhasil dihapus.",
 	})
 }
