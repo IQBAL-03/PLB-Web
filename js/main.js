@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   navigation.init();
   spotlightView.init($('#spotlightContainer'));
   catalogController.init();
+  navigation.restoreScrollPosition();
   bookModalController.init();
   imagePreviewModal.init();
   memberModal.init();
