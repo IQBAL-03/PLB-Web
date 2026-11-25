@@ -5,6 +5,7 @@
 import { $, $$ } from '../../utils/dom.js';
 import { state } from '../../core/state.js';
 import { eventBus } from '../../core/events.js';
+import { navActive } from './nav-active.js';
 
 const SCROLL_STORAGE_KEY = 'sisperpus_scroll_state';
 const TRACKED_SECTIONS = ['beranda', 'sorotan', 'katalog', 'informasi', 'footer'];
@@ -22,6 +23,7 @@ export const navigation = {
     this.bindMobileMenu();
     this.bindScrollEffects();
     this.bindSearchShortcuts();
+    navActive.syncFromScroll();
   },
 
   setupScrollRestoration() {
@@ -58,7 +60,10 @@ export const navigation = {
           }
         }
         clearTimeout(scrollDebounce);
-        scrollDebounce = setTimeout(() => this.saveScrollState(), 60);
+        scrollDebounce = setTimeout(() => {
+          this.saveScrollState();
+          navActive.syncFromScroll();
+        }, 60);
       },
       { passive: true }
     );
@@ -140,6 +145,7 @@ export const navigation = {
     window.scrollTo({ top: safeTop, behavior: 'instant' });
     this.programmaticTimer = setTimeout(() => {
       this.isProgrammaticScroll = false;
+      navActive.syncFromScroll();
     }, 100);
   },
 
@@ -193,6 +199,8 @@ export const navigation = {
         this.hasUserInteracted = true;
         this.isRestoring = false;
         document.documentElement.style.overflowAnchor = '';
+        navActive.set(href.slice(1));
+        navActive.lockBriefly(800);
         target.scrollIntoView({ behavior: 'smooth' });
         history.pushState(null, '', href);
       }

@@ -49,6 +49,7 @@ export const bookActions = {
           if ($('#bookVolumesSection')) $('#bookVolumesSection').classList.add('hidden');
           if ($('#addNewVolumeItemBtn')) $('#addNewVolumeItemBtn').classList.add('hidden');
           if ($('#bookVolumesList')) $('#bookVolumesList').innerHTML = '';
+          bookVolumeHelper.syncTotalStock(false);
           modal.classList.remove('hidden');
         }
         return;
@@ -94,6 +95,7 @@ export const bookActions = {
           } else if ($('#bookVolumesList')) {
             $('#bookVolumesList').innerHTML = '';
           }
+          bookVolumeHelper.syncTotalStock(hasVols);
           $('#bookModalDialog').classList.remove('hidden');
         }
         return;
@@ -183,12 +185,14 @@ export const bookActions = {
         const category = $('#bookCategoryInput').value;
         const language = $('#bookLanguageInput').value;
         const price = Number($('#bookPriceInput').value) || 0;
-        const stock = Number($('#bookStockInput').value) || 0;
+        const hasVolumes = $('#bookHasVolumesCheckbox') ? $('#bookHasVolumesCheckbox').checked : false;
+        const volumes = hasVolumes ? bookVolumeHelper.collect() : [];
+        const stock = hasVolumes && volumes.length > 0
+          ? volumes.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
+          : (Number($('#bookStockInput').value) || 0);
         const shelf = $('#bookShelfInput').value.trim();
         const synopsis = $('#bookSynopsisInput').value.trim();
         const coverImg = $('#bookCoverInput').value.trim() || '';
-        const hasVolumes = $('#bookHasVolumesCheckbox') ? $('#bookHasVolumesCheckbox').checked : false;
-        const volumes = hasVolumes ? bookVolumeHelper.collect() : [];
         const genres = bookGenreHelper.getGenres();
 
         const origBook = origId ? adminState.books.find((b) => b.id === origId) : null;

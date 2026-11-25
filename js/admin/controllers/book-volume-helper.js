@@ -111,6 +111,26 @@ export const bookVolumeHelper = {
     return volumes;
   },
 
+  syncTotalStock(forceHasVolumes = null) {
+    const stockInput = $('#bookStockInput');
+    const checkbox = $('#bookHasVolumesCheckbox');
+    if (!stockInput) return;
+
+    const hasVols = forceHasVolumes !== null ? Boolean(forceHasVolumes) : Boolean(checkbox && checkbox.checked);
+    stockInput.readOnly = hasVols;
+    stockInput.classList.toggle('bg-stone-100', hasVols);
+    stockInput.classList.toggle('text-stone-500', hasVols);
+    stockInput.classList.toggle('cursor-not-allowed', hasVols);
+
+    if (hasVols) {
+      let total = 0;
+      document.querySelectorAll('#bookVolumesList .volume-stock-input').forEach((inp) => {
+        total += Math.max(0, Number(inp.value) || 0);
+      });
+      stockInput.value = total;
+    }
+  },
+
   bind() {
     document.addEventListener('change', (e) => {
       if (e.target.id === 'bookHasVolumesCheckbox') {
@@ -126,6 +146,7 @@ export const bookVolumeHelper = {
           const cover = $('#bookCoverInput') ? $('#bookCoverInput').value : 'img/placeholder-book.svg';
           list.innerHTML = this.renderRow({}, 0, cover);
         }
+        this.syncTotalStock(checked);
       }
     });
 
@@ -139,6 +160,7 @@ export const bookVolumeHelper = {
           const temp = document.createElement('div');
           temp.innerHTML = this.renderRow({}, count, cover);
           if (temp.firstElementChild) list.appendChild(temp.firstElementChild);
+          this.syncTotalStock(true);
         }
         return;
       }
@@ -147,7 +169,10 @@ export const bookVolumeHelper = {
       const delBtn = e.target.closest('.delete-volume-btn');
       if (delBtn) {
         const row = delBtn.closest('.volume-item-row');
-        if (row) row.remove();
+        if (row) {
+          row.remove();
+          this.syncTotalStock();
+        }
         return;
       }
 
@@ -205,6 +230,9 @@ export const bookVolumeHelper = {
     });
 
     document.addEventListener('input', (e) => {
+      if (e.target.classList.contains('volume-stock-input')) {
+        this.syncTotalStock();
+      }
       if (e.target.classList.contains('volume-cover-input')) {
         const row = e.target.closest('.volume-item-row');
         const thumb = row ? row.querySelector('.volume-thumb-preview') : null;

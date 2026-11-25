@@ -59,30 +59,6 @@ export const reportView = {
             </p>
           </div>
 
-          <!-- Summary Metric Boxes -->
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 text-xs">
-            <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 text-center">
-              <span class="text-stone-500 block text-[11px] font-bold uppercase">Total Transaksi</span>
-              <span class="font-serif font-black text-xl text-stone-900">${reportData.totalCount}</span>
-            </div>
-            <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 text-center">
-              <span class="text-stone-500 block text-[11px] font-bold uppercase">Nilai Aset Beredar</span>
-              <span class="font-serif font-black text-xl text-stone-900">${formatRp(reportData.totalBookValue || 0)}</span>
-            </div>
-            <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 text-center">
-              <span class="text-stone-500 block text-[11px] font-bold uppercase">Sedang Dipinjam</span>
-              <span class="font-serif font-black text-xl text-amber-900">${reportData.activeCount}</span>
-            </div>
-            <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 text-center">
-              <span class="text-stone-500 block text-[11px] font-bold uppercase">Selesai Kembali</span>
-              <span class="font-serif font-black text-xl text-emerald-800">${reportData.returnedCount}</span>
-            </div>
-            <div class="bg-stone-50 p-3.5 rounded-xl border border-stone-200 text-center col-span-2 sm:col-span-1">
-              <span class="text-stone-500 block text-[11px] font-bold uppercase">Denda Tertunggak</span>
-              <span class="font-serif font-black text-xl text-rose-900">${formatRp(reportData.unpaidFines)}</span>
-            </div>
-          </div>
-
           <!-- Itemized Transactions Table -->
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse border border-stone-300 text-xs">
@@ -120,12 +96,19 @@ export const reportView = {
                         .join('')
                 }
               </tbody>
-              <tfoot class="bg-stone-50 font-bold border-t-2 border-stone-300">
-                <tr>
-                  <td colspan="3" class="py-2.5 px-3 text-right border-r border-stone-300 uppercase text-[11px] text-stone-600">Total Akumulasi Sirkulasi:</td>
+              <tfoot class="bg-stone-50 font-bold border-t-2 border-stone-300 text-xs">
+                <tr class="border-b border-stone-200">
+                  <td colspan="3" class="py-2.5 px-3 text-right border-r border-stone-300 uppercase text-[11px] text-stone-600">Nilai Aset Beredar:</td>
                   <td class="py-2.5 px-3 text-right font-mono border-r border-stone-300 text-stone-900">${formatRp(reportData.totalBookValue || 0)}</td>
-                  <td colspan="3" class="py-2.5 px-3 border-r border-stone-300"></td>
-                  <td class="py-2.5 px-3 text-right font-mono text-rose-900">${reportData.totalFines > 0 ? formatRp(reportData.totalFines) : '-'}</td>
+                  <td colspan="3" class="py-2.5 px-3 text-right border-r border-stone-300 uppercase text-[11px] text-stone-600">Denda Tertunggak:</td>
+                  <td class="py-2.5 px-3 text-right font-mono text-rose-900">${formatRp(reportData.unpaidFines || 0)}</td>
+                </tr>
+                <tr>
+                  <td colspan="8" class="py-2.5 px-3 text-stone-700">
+                    Total Transaksi: <span class="text-stone-900">${reportData.totalCount}</span>
+                    &nbsp;&middot;&nbsp; Sedang Dipinjam: <span class="text-amber-900">${reportData.activeCount}</span>
+                    &nbsp;&middot;&nbsp; Selesai Kembali: <span class="text-emerald-800">${reportData.returnedCount}</span>
+                  </td>
                 </tr>
               </tfoot>
             </table>
