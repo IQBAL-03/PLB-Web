@@ -28,7 +28,9 @@ func (r *Repository) List(query, category string) ([]model.Book, error) {
 
 	sb.WriteString(`
 		SELECT id, title, author, category, language, price, year, shelf, stock,
-		       rating, reviews_count, badge, synopsis, cover_img, cloudinary_public_id,
+		       rating, reviews_count,
+		       COALESCE((SELECT COUNT(*) FROM transactions t WHERE t.book_id = books.id), 0) AS borrow_count,
+		       badge, synopsis, cover_img, cloudinary_public_id,
 		       is_popular, is_spotlight, has_volumes, volumes_json, genres_json, created_at, updated_at
 		FROM books
 		WHERE 1=1
@@ -61,7 +63,7 @@ func (r *Repository) List(query, category string) ([]model.Book, error) {
 
 		err := rows.Scan(
 			&b.ID, &b.Title, &b.Author, &b.Category, &b.Language, &b.Price, &b.Year, &b.Shelf, &b.Stock,
-			&b.Rating, &b.ReviewsCount, &b.Badge, &synopsis, &b.CoverImg, &cloudID,
+			&b.Rating, &b.ReviewsCount, &b.BorrowCount, &b.Badge, &synopsis, &b.CoverImg, &cloudID,
 			&isPop, &isSpot, &hasVol, &volJSON, &genJSON, &b.CreatedAt, &b.UpdatedAt,
 		)
 		if err != nil {

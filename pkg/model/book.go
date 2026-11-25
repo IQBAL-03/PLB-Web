@@ -24,6 +24,7 @@ type Book struct {
 	Stock              int      `json:"stock"`
 	Rating             float64  `json:"rating"`
 	ReviewsCount       int      `json:"reviews_count"`
+	BorrowCount        int      `json:"borrow_count"`
 	Badge              string   `json:"badge"`
 	Synopsis           string   `json:"synopsis"`
 	CoverImg           string   `json:"coverImg"`

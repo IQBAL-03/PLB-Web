@@ -58,11 +58,12 @@ export function resolveWeeklySpotlight(books = []) {
   const { year, weekNo } = getISOWeekInfo();
   const borrowCounts = getBorrowCountsByBook();
 
-  // Combine book metadata with local borrow statistics
+  // Combine book metadata with backend & local borrow statistics
   const candidates = books.map((b) => {
+    const apiBorrows = Number(b.borrow_count ?? b.borrowCount ?? 0) || 0;
     const countById = borrowCounts[b.id] || 0;
     const countByTitle = borrowCounts[b.title] || 0;
-    const totalBorrows = Math.max(countById, countByTitle);
+    const totalBorrows = Math.max(apiBorrows, countById, countByTitle);
     return {
       book: b,
       borrowCount: totalBorrows,
@@ -77,15 +78,20 @@ export function resolveWeeklySpotlight(books = []) {
     return null;
   }
 
-  // 1. Pick by highest rating
+  // 1. Filter by highest rating, 2. Tie-break by most borrowed, 3. Rotate weekly if still tied
   const topRated = sortedByRating.filter((item) => item.rating === highestRating);
-  const chosenIndex = weekNo % topRated.length;
-  const chosen = topRated[chosenIndex];
+  const highestBorrow = Math.max(...topRated.map((item) => item.borrowCount));
+  const topCandidates = topRated.filter((item) => item.borrowCount === highestBorrow);
+  const chosen = topCandidates[weekNo % topCandidates.length];
+
+  const detailSuffix = chosen.borrowCount > 0
+    ? `Dipinjam ${chosen.borrowCount} Kali`
+    : 'Penilaian Pembaca Teratas';
 
   return {
     book: chosen.book,
     reasonBadge: 'Rating Tertinggi Pekan Ini',
-    reasonDetail: `Skor ${chosen.rating.toFixed(1)} / 5 &middot; Penilaian Pembaca Teratas`,
+    reasonDetail: `Skor ${chosen.rating.toFixed(1)} / 5 &middot; ${detailSuffix}`,
     weekLabel: `Pekan ke-${weekNo} &middot; Tahun ${year}`,
     source: 'rating',
   };
