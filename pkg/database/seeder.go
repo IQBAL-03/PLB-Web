@@ -143,21 +143,11 @@ func SeedBooks(conn *sql.DB) error {
 	}
 
 	query := `
-		INSERT INTO books (
+		INSERT IGNORE INTO books (
 			id, title, author, category, language, price, year, shelf, stock,
 			rating, reviews_count, is_popular, is_spotlight,
 			badge, synopsis, cover_img, has_volumes, volumes_json, genres_json
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)
-		ON DUPLICATE KEY UPDATE
-			rating = VALUES(rating),
-			reviews_count = VALUES(reviews_count),
-			is_popular = VALUES(is_popular),
-			badge = VALUES(badge),
-			synopsis = VALUES(synopsis),
-			cover_img = IF(VALUES(cover_img) != '', VALUES(cover_img), cover_img),
-			has_volumes = VALUES(has_volumes),
-			volumes_json = VALUES(volumes_json),
-			genres_json = VALUES(genres_json)
 	`
 	stmt, err := conn.Prepare(query)
 	if err != nil {
