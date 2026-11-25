@@ -3,6 +3,7 @@
  */
 
 import { $, escapeHtml } from '../../utils/dom.js';
+import { CANONICAL_COVERS } from '../../utils/image-fallback.js';
 
 export const bookModalView = {
   get modal() {
@@ -25,8 +26,9 @@ export const bookModalView = {
     if (!this.content || !book) return;
 
     let activeCover = book.coverImg || 'img/placeholder-book.svg';
-    if (book.id === 'M002' && (!activeCover || activeCover.includes('eajdrhns4jrkwea8nksv'))) {
-      activeCover = 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png';
+    const canonical = CANONICAL_COVERS[book.id];
+    if (canonical && (!activeCover || activeCover.includes('eajdrhns4jrkwea8nksv'))) {
+      activeCover = canonical;
     }
     let activeVolume = null;
 

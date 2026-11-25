@@ -201,7 +201,7 @@ export const bookActions = {
             }
           });
         }
-        const rating = origBook && origBook.rating ? Number(origBook.rating) : (id === 'M003' ? 5 : 4.9);
+        const rating = origBook && origBook.rating ? Number(origBook.rating) : 4.9;
         const isPopular = origBook ? Boolean(origBook.isPopular) : true;
         const isSpotlight = origBook ? Boolean(origBook.isSpotlight) : false;
         const reviewsCount = origBook ? (origBook.reviewsCount || 0) : 0;

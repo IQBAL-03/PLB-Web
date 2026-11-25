@@ -2,7 +2,7 @@
  * @file Fallback handler for book cover images with canonical recovery and vector placeholder fallback.
  */
 
-const CANONICAL_COVERS = {
+export const CANONICAL_COVERS = {
   M001: 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795280539/sisperpus/covers/cz2u1ghpk1jwmw1f3raz.png',
   M002: 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png',
   M003: 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795281315/sisperpus/covers/euarfxor2hvjg0tlmwhx.jpg',

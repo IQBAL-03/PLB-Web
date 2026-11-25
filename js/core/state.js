@@ -4,6 +4,7 @@
 
 import { books, categories } from '../data/library-data.js';
 import { eventBus } from './events.js';
+import { CANONICAL_COVERS } from '../utils/image-fallback.js';
 
 class State {
   constructor() {
@@ -22,8 +23,9 @@ class State {
 
     this.books = initialBooks.map((b) => {
       let cover = b.coverImg;
-      if (b.id === 'M002' && (!cover || cover.includes('eajdrhns4jrkwea8nksv'))) {
-        cover = 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png';
+      const canonical = CANONICAL_COVERS[b.id];
+      if (canonical && (!cover || cover.includes('eajdrhns4jrkwea8nksv'))) {
+        cover = canonical;
       }
       return {
         ...b,
@@ -127,8 +129,9 @@ class State {
         if (data && data.ok && Array.isArray(data.books) && data.books.length > 0) {
           const newBooks = data.books.map((b) => {
             let cover = b.coverImg;
-            if (b.id === 'M002' && (!cover || cover.includes('eajdrhns4jrkwea8nksv'))) {
-              cover = 'https://res.cloudinary.com/tla0kvyw/image/upload/v1795284818/sisperpus/covers/mcutp4vwndlxvmvvp86g.png';
+            const canonical = CANONICAL_COVERS[b.id];
+            if (canonical && (!cover || cover.includes('eajdrhns4jrkwea8nksv'))) {
+              cover = canonical;
             }
             return {
               ...b,
