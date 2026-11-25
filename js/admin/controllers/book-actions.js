@@ -128,7 +128,8 @@ export const bookActions = {
           return;
         }
 
-        if (!file.type.startsWith('image/')) {
+        const isImg = file.type.startsWith('image/') || ((!file.type || file.type === 'application/octet-stream') && /\.(png|jpe?g|webp|gif|bmp|avif|jfif)$/i.test(file.name));
+        if (!isImg) {
           showToast('Hanya berkas foto (PNG, JPG, WEBP) yang diizinkan.', 'error');
           e.target.value = '';
           return;

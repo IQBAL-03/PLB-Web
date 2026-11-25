@@ -197,7 +197,8 @@ export const bookVolumeHelper = {
             return;
           }
 
-          if (!file.type.startsWith('image/')) {
+          const isImg = file.type.startsWith('image/') || ((!file.type || file.type === 'application/octet-stream') && /\.(png|jpe?g|webp|gif|bmp|avif|jfif)$/i.test(file.name));
+          if (!isImg) {
             showToast('Hanya berkas foto yang diizinkan.', 'error');
             return;
           }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"sisperpus/pkg/config"
@@ -65,8 +66,7 @@ func (h *Handler) UploadCover(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		detectedType := http.DetectContentType(fileBytes)
-		if !strings.HasPrefix(detectedType, "image/") {
+		if !isSupportedImage(fileBytes, req.Filename) {
 			response.Error(w, http.StatusBadRequest, "Hanya berkas foto (PNG, JPG, WEBP) yang diizinkan.")
 			return
 		}
@@ -125,8 +125,7 @@ func (h *Handler) UploadCover(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	detectedType := http.DetectContentType(fileBytes)
-	if !strings.HasPrefix(detectedType, "image/") {
+	if !isSupportedImage(fileBytes, header.Filename) {
 		response.Error(w, http.StatusBadRequest, "Hanya berkas foto (PNG, JPG, WEBP) yang diizinkan.")
 		return
 	}
@@ -145,4 +144,21 @@ func (h *Handler) UploadCover(w http.ResponseWriter, r *http.Request) {
 		"width":     result.Width,
 		"height":    result.Height,
 	})
+}
+
+func isSupportedImage(fileBytes []byte, filename string) bool {
+	detectedType := http.DetectContentType(fileBytes)
+	if strings.HasPrefix(detectedType, "image/") {
+		return true
+	}
+	if len(fileBytes) >= 12 && string(fileBytes[4:8]) == "ftyp" {
+		return true
+	}
+	if detectedType == "application/octet-stream" {
+		switch strings.ToLower(filepath.Ext(filename)) {
+		case ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".avif", ".jfif":
+			return true
+		}
+	}
+	return false
 }
