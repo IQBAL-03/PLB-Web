@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
 
 export interface ToastMessage {
   id: string;
@@ -30,30 +31,23 @@ export default function ToastContainer({ toasts, onDismiss }: ToastProps) {
           info: 'bg-stone-900 text-stone-100 border-stone-700/80',
         }[t.type];
 
-        const iconColor = {
-          success: 'text-emerald-400',
-          error: 'text-rose-400',
-          warning: 'text-amber-400',
-          info: 'text-blue-400',
-        }[t.type];
-
         return (
           <div
             key={t.id}
             className={`pointer-events-auto flex items-start justify-between p-3.5 rounded-xl border shadow-xl text-xs backdrop-blur-md transition-all duration-300 animate-in slide-in-from-bottom-2 ${bgStyles}`}
           >
             <div className="flex items-start gap-2.5">
-              <span className={`text-base font-bold ${iconColor}`}>
-                {t.type === 'success' && '✓'}
-                {t.type === 'error' && '✕'}
-                {t.type === 'warning' && '⚠'}
-                {t.type === 'info' && 'ℹ'}
+              <span className="shrink-0 mt-0.5">
+                {t.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                {t.type === 'error' && <XCircle className="w-4 h-4 text-rose-400" />}
+                {t.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-400" />}
+                {t.type === 'info' && <Info className="w-4 h-4 text-blue-400" />}
               </span>
               <div>
                 {t.title && (
                   <p className="font-bold text-white text-xs mb-0.5">{t.title}</p>
                 )}
-                <p className="leading-relaxed whitespace-pre-line">{t.message}</p>
+                <p className="leading-relaxed whitespace-pre-line text-stone-200">{t.message}</p>
               </div>
             </div>
             <button
