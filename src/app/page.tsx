@@ -1,69 +1,271 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useState, useMemo } from 'react';
+import Header from '@/components/Header';
+import HeroSection from '@/components/HeroSection';
+import SpotlightSection from '@/components/SpotlightSection';
+import BorrowingGuideSection from '@/components/BorrowingGuideSection';
+import LibraryProfileSection from '@/components/LibraryProfileSection';
+import CatalogSection from '@/components/CatalogSection';
+import Footer from '@/components/Footer';
+import BookModal from '@/components/BookModal';
+import MemberCardModal from '@/components/MemberCardModal';
+import ImagePreviewModal from '@/components/ImagePreviewModal';
+
+import { starterBooks } from '@/data/starter-books';
+import { starterMembers } from '@/data/starter-members';
+import { starterReviews } from '@/data/starter-reviews';
+import { starterTransactions } from '@/data/starter-transactions';
+import { Book, BookCategory } from '@/types/book';
+import { Member } from '@/types/member';
+import { BookReview } from '@/types/review';
+import { Transaction } from '@/types/transaction';
+import { resolveWeeklySpotlight } from '@/lib/spotlight';
+
+const categories: BookCategory[] = [
+  'Semua Koleksi',
+  'Komik & Manga',
+  'Fiksi & Sastra',
+  'Sains & Teknologi',
+  'Sejarah & Biografi',
+  'Pengembangan Diri',
+  'Buku Referensi',
+];
+
+export default function HomePage() {
+  const [books, setBooks] = useState<Book[]>(starterBooks);
+  const [members, setMembers] = useState<Member[]>(starterMembers);
+  const [reviews, setReviews] = useState<BookReview[]>(starterReviews);
+  const [transactions, setTransactions] = useState<Transaction[]>(starterTransactions);
+
+  // Filter & Search states
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [activeCategory, setActiveCategory] = useState<BookCategory>('Semua Koleksi');
+
+  // Modal states
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [isMemberCardOpen, setIsMemberCardOpen] = useState<boolean>(false);
+  const [previewCover, setPreviewCover] = useState<{ isOpen: boolean; url: string; title: string }>({
+    isOpen: false,
+    url: '',
+    title: '',
+  });
+
+  // Spotlight computation
+  const spotlight = useMemo(() => resolveWeeklySpotlight(books), [books]);
+
+  // Set of currently borrowed book IDs
+  const borrowedBookIds = useMemo(() => {
+    return new Set(
+      transactions
+        .filter((t) => t.status === 'Dipinjam')
+        .map((t) => t.bookId)
+    );
+  }, [transactions]);
+
+  // Handle borrowing
+  const handleBorrowBook = (
+    bookId: string,
+    volumeNumber: number | null,
+    nis: string,
+    studentName: string
+  ) => {
+    const today = new Date();
+    const dueDate = new Date();
+    dueDate.setDate(today.getDate() + 7);
+
+    const targetBook = books.find((b) => b.id === bookId);
+    if (!targetBook) return;
+
+    // Create new transaction
+    const newTx: Transaction = {
+      id: `TRX-${Date.now()}`,
+      nis,
+      studentName,
+      classRoom: members.find((m) => m.nis === nis)?.classRoom || 'XII-PPLG',
+      bookId,
+      bookTitle: targetBook.title,
+      volumeNumber,
+      price: targetBook.price,
+      loanDate: today.toISOString().split('T')[0],
+      dueDate: dueDate.toISOString().split('T')[0],
+      returnDate: null,
+      status: 'Dipinjam',
+      fine: 0,
+      finePaid: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    setTransactions((prev) => [newTx, ...prev]);
+
+    // Update book stock and borrow count
+    setBooks((prev) =>
+      prev.map((b) => {
+        if (b.id !== bookId) return b;
+        let updatedVolumes = b.volumes;
+        if (volumeNumber && b.hasVolumes && b.volumes) {
+          updatedVolumes = b.volumes.map((v) =>
+            v.volumeNumber === volumeNumber
+              ? { ...v, stock: Math.max(0, v.stock - 1) }
+              : v
+          );
+        }
+        return {
+          ...b,
+          stock: Math.max(0, b.stock - 1),
+          borrowCount: (b.borrowCount || 0) + 1,
+          volumes: updatedVolumes,
+        };
+      })
+    );
+
+    // Update member's active loan count
+    setMembers((prev) =>
+      prev.map((m) =>
+        m.nis === nis ? { ...m, activeLoans: m.activeLoans + 1 } : m
+      )
+    );
+
+    setSelectedBook(null);
+    alert(
+      `Peminjaman berhasil dicatat!\nBuku: ${targetBook.title}${
+        volumeNumber ? ` (Vol. ${volumeNumber})` : ''
+      }\nSiswa: ${studentName} (NIS: ${nis})\nBatas Kembali: ${newTx.dueDate} (7 Hari Kerja).`
+    );
+  };
+
+  // Handle submitting a review
+  const handleSubmitReview = (
+    bookId: string,
+    rating: number,
+    reviewText: string,
+    nis: string,
+    studentName: string
+  ) => {
+    const newReview: BookReview = {
+      id: `rev-${Date.now()}`,
+      bookId,
+      nis,
+      studentName,
+      rating,
+      reviewText,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedReviews = [newReview, ...reviews];
+    setReviews(updatedReviews);
+
+    // Recalculate book's rating and reviews count
+    const bookReviews = updatedReviews.filter((r) => r.bookId === bookId);
+    const avgRating =
+      bookReviews.reduce((acc, r) => acc + r.rating, 0) / bookReviews.length;
+
+    setBooks((prev) =>
+      prev.map((b) =>
+        b.id === bookId
+          ? {
+              ...b,
+              rating: Number(avgRating.toFixed(1)),
+              reviewsCount: bookReviews.length,
+            }
+          : b
+      )
+    );
+  };
+
+  // Handle register member
+  const handleRegisterMember = (nis: string, name: string, classRoom: string) => {
+    const newMember: Member = {
+      nis,
+      name,
+      classRoom,
+      activeLoans: 0,
+      status: 'Aktif',
+      createdAt: new Date().toISOString(),
+    };
+    setMembers((prev) => [newMember, ...prev]);
+  };
+
+  const handleOpenCoverPreview = (coverImg: string, title: string) => {
+    setPreviewCover({
+      isOpen: true,
+      url: coverImg,
+      title,
+    });
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      <Header
+        onOpenMemberCard={() => setIsMemberCardOpen(true)}
+        onOpenSearch={() => {
+          const catElem = document.getElementById('katalog');
+          if (catElem) catElem.scrollIntoView({ behavior: 'smooth' });
+        }}
+      />
+
+      <main className="flex-grow">
+        <HeroSection
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onCategoryFilter={(cat) => setActiveCategory(cat as BookCategory)}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        <SpotlightSection
+          spotlight={spotlight}
+          onSelectBook={setSelectedBook}
+          onPreviewCover={handleOpenCoverPreview}
+        />
+
+        {/* 4 Steps Borrowing Guide (Option A) */}
+        <BorrowingGuideSection />
+
+        {/* School Profile & 4 Facilities (Option A) */}
+        <LibraryProfileSection />
+
+        <CatalogSection
+          books={books}
+          categories={categories}
+          activeCategory={activeCategory}
+          searchQuery={searchQuery}
+          borrowedBookIds={borrowedBookIds}
+          onSelectCategory={setActiveCategory}
+          onSelectBook={setSelectedBook}
+          onPreviewCover={handleOpenCoverPreview}
+        />
       </main>
-    </div>
+
+      <Footer />
+
+      {/* Book Detail & Borrow Modal */}
+      <BookModal
+        book={selectedBook}
+        isOpen={Boolean(selectedBook)}
+        isBorrowed={selectedBook ? borrowedBookIds.has(selectedBook.id) : false}
+        reviews={reviews}
+        members={members}
+        onClose={() => setSelectedBook(null)}
+        onBorrow={handleBorrowBook}
+        onSubmitReview={handleSubmitReview}
+        onPreviewCover={handleOpenCoverPreview}
+      />
+
+      {/* Member Card & Digital ID Modal */}
+      <MemberCardModal
+        isOpen={isMemberCardOpen}
+        members={members}
+        transactions={transactions}
+        onClose={() => setIsMemberCardOpen(false)}
+        onRegisterMember={handleRegisterMember}
+      />
+
+      {/* Full-size Image Preview Lightbox */}
+      <ImagePreviewModal
+        isOpen={previewCover.isOpen}
+        imageUrl={previewCover.url}
+        title={previewCover.title}
+        onClose={() => setPreviewCover({ isOpen: false, url: '', title: '' })}
+      />
+    </>
   );
 }
