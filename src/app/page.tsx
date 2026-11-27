@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import SpotlightSection from '@/components/SpotlightSection';
@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import BookModal from '@/components/BookModal';
 import MemberCardModal from '@/components/MemberCardModal';
 import ImagePreviewModal from '@/components/ImagePreviewModal';
+import ToastContainer, { ToastMessage } from '@/components/Toast';
 
 import { starterBooks } from '@/data/starter-books';
 import { starterMembers } from '@/data/starter-members';
@@ -37,6 +38,7 @@ export default function HomePage() {
   const [members, setMembers] = useState<Member[]>(starterMembers);
   const [reviews, setReviews] = useState<BookReview[]>(starterReviews);
   const [transactions, setTransactions] = useState<Transaction[]>(starterTransactions);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -51,6 +53,48 @@ export default function HomePage() {
     title: '',
   });
 
+  // Toast helper
+  const addToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', title?: string) => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    setToasts((prev) => [...prev, { id, message, type, title }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  };
+
+  // Load persisted local storage or fetch from API on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const storedBooks = localStorage.getItem('sisperpus_books');
+        if (storedBooks) setBooks(JSON.parse(storedBooks));
+
+        const storedMembers = localStorage.getItem('sisperpus_members');
+        if (storedMembers) setMembers(JSON.parse(storedMembers));
+
+        const storedReviews = localStorage.getItem('sisperpus_reviews');
+        if (storedReviews) setReviews(JSON.parse(storedReviews));
+
+        const storedTx = localStorage.getItem('sisperpus_transactions');
+        if (storedTx) setTransactions(JSON.parse(storedTx));
+      } catch (e) {
+        console.error('Error loading stored state:', e);
+      }
+    }
+  }, []);
+
+  // Sync to local storage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('sisperpus_books', JSON.stringify(books));
+        localStorage.setItem('sisperpus_members', JSON.stringify(members));
+        localStorage.setItem('sisperpus_reviews', JSON.stringify(reviews));
+        localStorage.setItem('sisperpus_transactions', JSON.stringify(transactions));
+      } catch {}
+    }
+  }, [books, members, reviews, transactions]);
+
   // Spotlight computation
   const spotlight = useMemo(() => resolveWeeklySpotlight(books), [books]);
 
@@ -63,7 +107,7 @@ export default function HomePage() {
     );
   }, [transactions]);
 
-  // Handle borrowing
+  // Handle borrowing a book
   const handleBorrowBook = (
     bookId: string,
     volumeNumber: number | null,
@@ -77,12 +121,23 @@ export default function HomePage() {
     const targetBook = books.find((b) => b.id === bookId);
     if (!targetBook) return;
 
+    // Check fine status
+    const targetMember = members.find((m) => m.nis === nis);
+    if (targetMember && targetMember.status === 'Ada Denda') {
+      addToast(
+        'Peminjaman ditolak: Siswa memiliki denda keterlambatan buku yang belum dilunasi di perpustakaan.',
+        'error',
+        'Peminjaman Ditolak'
+      );
+      return;
+    }
+
     // Create new transaction
     const newTx: Transaction = {
       id: `TRX-${Date.now()}`,
       nis,
       studentName,
-      classRoom: members.find((m) => m.nis === nis)?.classRoom || 'XII-PPLG',
+      classRoom: targetMember?.classRoom || 'XII-PPLG',
       bookId,
       bookTitle: targetBook.title,
       volumeNumber,
@@ -127,10 +182,11 @@ export default function HomePage() {
     );
 
     setSelectedBook(null);
-    alert(
-      `Peminjaman berhasil dicatat!\nBuku: ${targetBook.title}${
-        volumeNumber ? ` (Vol. ${volumeNumber})` : ''
-      }\nSiswa: ${studentName} (NIS: ${nis})\nBatas Kembali: ${newTx.dueDate} (7 Hari Kerja).`
+
+    addToast(
+      `Buku "${targetBook.title}${volumeNumber ? ` (Vol. ${volumeNumber})` : ''}" berhasil dipinjam atas nama ${studentName}. Batas pengembalian: ${newTx.dueDate}.`,
+      'success',
+      'Peminjaman Berhasil!'
     );
   };
 
@@ -171,6 +227,12 @@ export default function HomePage() {
           : b
       )
     );
+
+    addToast(
+      `Terima kasih ${studentName}! Penilaian bintang ${rating}/5 dan ulasan Anda telah disimpan.`,
+      'success',
+      'Ulasan Terkirim'
+    );
   };
 
   // Handle register member
@@ -184,6 +246,11 @@ export default function HomePage() {
       createdAt: new Date().toISOString(),
     };
     setMembers((prev) => [newMember, ...prev]);
+    addToast(
+      `Pendaftaran anggota dengan NIS ${nis} (${name}) berhasil dibuat dan langsung berstatus Aktif.`,
+      'success',
+      'Anggota Baru Terdaftar'
+    );
   };
 
   const handleOpenCoverPreview = (coverImg: string, title: string) => {
@@ -217,12 +284,13 @@ export default function HomePage() {
           onPreviewCover={handleOpenCoverPreview}
         />
 
-        {/* 4 Steps Borrowing Guide (Option A) */}
+        {/* 4 Steps Borrowing Guide (Option A - Polished) */}
         <BorrowingGuideSection />
 
-        {/* School Profile & 4 Facilities (Option A) */}
+        {/* School Profile & 4 Facilities (Option A - Theme Matched) */}
         <LibraryProfileSection />
 
+        {/* Catalog Section with Clickable Cards & Clean Visual Hierarchy */}
         <CatalogSection
           books={books}
           categories={categories}
@@ -237,7 +305,7 @@ export default function HomePage() {
 
       <Footer />
 
-      {/* Book Detail & Borrow Modal */}
+      {/* Book Detail & Rating / Borrow Modal */}
       <BookModal
         book={selectedBook}
         isOpen={Boolean(selectedBook)}
@@ -265,6 +333,12 @@ export default function HomePage() {
         imageUrl={previewCover.url}
         title={previewCover.title}
         onClose={() => setPreviewCover({ isOpen: false, url: '', title: '' })}
+      />
+
+      {/* Sleek Toast Notifications */}
+      <ToastContainer
+        toasts={toasts}
+        onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
       />
     </>
   );

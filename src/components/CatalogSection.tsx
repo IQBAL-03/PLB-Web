@@ -48,9 +48,14 @@ export default function CatalogSection({
           Koleksi Terpadu
         </span>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-stone-200">
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
-            Katalog Buku Sekolah
-          </h2>
+          <div>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+              Katalog Buku Sekolah
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+              Klik pada kartu buku untuk melihat detail lengkap, memberi rating, atau meminjam
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             {searchQuery && (
               <span className="text-xs font-medium text-stone-500">
@@ -110,41 +115,47 @@ export default function CatalogSection({
             return (
               <div
                 key={book.id}
-                className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+                onClick={() => onSelectBook(book)}
+                className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+                title={`Klik untuk melihat detail & ulasan "${book.title}"`}
               >
                 <div>
                   {/* Cover image container */}
-                  <div
-                    onClick={() => onPreviewCover && onPreviewCover(book.coverImg, book.title)}
-                    className="relative aspect-[3/4] bg-stone-100 overflow-hidden cursor-zoom-in group/cover"
-                    title="Klik untuk memperbesar foto sampul"
-                  >
+                  <div className="relative aspect-[3/4] bg-stone-100 overflow-hidden">
                     <img
                       src={book.coverImg || '/img/placeholder-book.svg'}
                       alt={`Sampul buku ${book.title}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
 
-                    {/* Zoom overlay on hover */}
-                    <div className="absolute inset-0 bg-stone-950/25 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <span className="bg-stone-900/85 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-md backdrop-blur-xs flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                        </svg>
-                        <span>Perbesar</span>
-                      </span>
-                    </div>
+                    {/* Magnifying Glass Zoom Icon on top-right */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onPreviewCover) {
+                          onPreviewCover(book.coverImg || '/img/placeholder-book.svg', book.title);
+                        }
+                      }}
+                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-stone-900/75 hover:bg-stone-950 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md backdrop-blur-xs cursor-pointer z-10"
+                      title="Perbesar foto sampul"
+                      aria-label="Perbesar foto sampul"
+                    >
+                      <svg className="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                      </svg>
+                    </button>
 
                     {/* Badge top-left */}
                     <div className="absolute top-2.5 left-2.5 pointer-events-none">
-                      <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-rose-100 text-rose-950 border-rose-200">
+                      <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-rose-100/90 text-rose-950 border-rose-200 shadow-2xs backdrop-blur-xs">
                         {book.badge || book.category}
                       </span>
                     </div>
 
-                    {/* Star rating overlay bottom-right */}
-                    <div className="absolute bottom-2.5 right-2.5 bg-stone-900/85 backdrop-blur-xs text-white text-[11px] px-2 py-0.5 rounded-md font-semibold flex items-center gap-1 pointer-events-none">
+                    {/* Star rating overlay badge bottom-right of cover (Visual hierarchy preserved) */}
+                    <div className="absolute bottom-2.5 right-2.5 bg-stone-900/85 backdrop-blur-xs text-white text-[11px] px-2 py-0.5 rounded-md font-semibold flex items-center gap-1 pointer-events-none shadow-sm">
                       <svg
                         className={`w-3 h-3 ${ratingVal > 0 ? 'text-amber-400' : 'text-stone-400'} fill-current`}
                         viewBox="0 0 20 20"
@@ -157,18 +168,17 @@ export default function CatalogSection({
 
                   {/* Book Card Info */}
                   <div className="p-3 sm:p-4">
-                    <div className="flex items-center gap-1 text-[10px] text-stone-500 mb-1">
+                    <div className="flex items-center gap-1.5 text-[10px] text-stone-500 mb-1">
                       <span>{book.language}</span>
                       {book.hasVolumes && (
-                        <span className="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-semibold">
+                        <span className="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-bold text-[9px]">
                           {book.volumes?.length || 0} Vol
                         </span>
                       )}
                     </div>
 
                     <h3
-                      onClick={() => onSelectBook(book)}
-                      className="font-serif font-bold text-xs sm:text-sm text-stone-900 group-hover:text-rose-900 transition-colors line-clamp-1 cursor-pointer"
+                      className="font-serif font-bold text-xs sm:text-sm text-stone-900 group-hover:text-rose-900 transition-colors line-clamp-1"
                       title={book.title}
                     >
                       {book.title}
@@ -178,22 +188,7 @@ export default function CatalogSection({
                       {book.author} &bull; {book.year}
                     </p>
 
-                    <div className="flex items-center gap-1 mb-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg
-                          key={star}
-                          className={`w-3 h-3 ${
-                            ratingVal >= star ? 'text-amber-500' : 'text-stone-300'
-                          } fill-current shrink-0`}
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                      <span className="text-[10px] text-stone-500 ml-1">
-                        ({book.reviewsCount || 0})
-                      </span>
-                    </div>
+                    {/* NOTE: Bintang di card telah dihapus sesuai permintaan agar visual hierarchy bersih! */}
 
                     <p className="text-[11px] text-stone-600 line-clamp-2 leading-relaxed mb-3">
                       {book.synopsis}
@@ -213,7 +208,10 @@ export default function CatalogSection({
                   <button
                     type="button"
                     disabled={isBorrowed || isOutOfStock}
-                    onClick={() => onSelectBook(book)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectBook(book);
+                    }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                       isBorrowed || isOutOfStock
                         ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
