@@ -19,7 +19,7 @@ export default function LibraryProfileSection() {
     },
     {
       title: 'JAM LAYANAN OPERASIONAL',
-      desc: 'Layanan sirkulasi peminjaman, pengembalian buku fisik, dan konsultasi literasi akademik di Gedung Literasi Lt. 2 buka setiap hari sekolah dengan jadwal:',
+      desc: 'Layanan peminjaman dan pengembalian buku di Gedung Literasi Lantai 2 buka setiap hari sekolah sesuai jadwal:',
       btnText: 'TATA CARA PINJAM',
       btnHref: '#panduan',
       image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80',
@@ -43,6 +43,17 @@ export default function LibraryProfileSection() {
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const handleScrollToTarget = (e: React.MouseEvent, href: string) => {
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      const targetId = href.replace('#', '');
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   };
 
   const active = slides[currentSlide];
@@ -84,36 +95,37 @@ export default function LibraryProfileSection() {
 
               {/* Clean & Elegant Operating Hours Schedule (Khusus Slide 2) */}
               {active.isScheduleSlide && (
-                <div className="grid grid-cols-2 gap-2.5 sm:gap-3 max-w-md mb-4">
-                  <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-2.5 sm:p-3 border border-white/15 transition-colors">
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-amber-300 mb-1">
-                      <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3 max-w-sm mb-4">
+                  <div className="bg-black/25 hover:bg-black/35 backdrop-blur-md rounded-xl p-3 border border-white/20 shadow-xs transition-colors">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-amber-300 mb-1">
+                      <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                       <span>Senin – Kamis</span>
                     </div>
-                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                      07.00 – 15.00 <span className="text-[10px] font-normal text-stone-300">WIB</span>
+                    <div className="text-xs sm:text-sm font-extrabold text-white tracking-tight">
+                      07.00 – 15.00 <span className="text-[10px] font-semibold text-amber-200/90 ml-0.5">WIB</span>
                     </div>
                   </div>
 
-                  <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-2.5 sm:p-3 border border-white/15 transition-colors">
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-amber-300 mb-1">
-                      <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                  <div className="bg-black/25 hover:bg-black/35 backdrop-blur-md rounded-xl p-3 border border-white/20 shadow-xs transition-colors">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-amber-300 mb-1">
+                      <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                       <span>Jumat</span>
                     </div>
-                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                      07.00 – 13.15 <span className="text-[10px] font-normal text-stone-300">WIB</span>
+                    <div className="text-xs sm:text-sm font-extrabold text-white tracking-tight">
+                      07.00 – 13.15 <span className="text-[10px] font-semibold text-amber-200/90 ml-0.5">WIB</span>
                     </div>
                   </div>
                 </div>
               )}
 
               <div>
-                <Link
+                <a
                   href={active.btnHref}
-                  className="inline-block border border-white/90 text-white hover:bg-white hover:text-rose-950 font-bold uppercase tracking-wider text-xs px-5 py-2.5 rounded-lg transition-colors duration-200 cursor-pointer shadow-xs"
+                  onClick={(e) => handleScrollToTarget(e, active.btnHref)}
+                  className="inline-block bg-white text-rose-950 hover:bg-stone-100 font-bold uppercase tracking-wider text-xs px-6 py-2.5 rounded-lg transition-all duration-200 cursor-pointer shadow-md active:scale-98"
                 >
                   {active.btnText}
-                </Link>
+                </a>
               </div>
             </div>
 
