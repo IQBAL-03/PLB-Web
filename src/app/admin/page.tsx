@@ -28,6 +28,10 @@ import {
   UserCheck,
   Coins,
   ShieldCheck,
+  Sparkles,
+  Inbox,
+  Clock,
+  BookCopy,
 } from 'lucide-react';
 import { Book } from '@/types/book';
 import { Member, MemberStatus } from '@/types/member';
@@ -249,7 +253,7 @@ export default function AdminPage() {
   };
 
   // Metric computations
-  const totalStock = books.reduce((acc, b) => acc + b.stock, 0);
+  const totalStock = books.reduce((acc, b) => acc + (b.stock || 0), 0);
   const activeLoansCount = transactions.filter((t) => t.status === 'Dipinjam').length;
   const returnedCount = transactions.filter((t) => t.status === 'Kembali').length;
   const overdueCount = transactions.filter((t) => t.status === 'Terlambat').length;
@@ -288,34 +292,51 @@ export default function AdminPage() {
     );
   });
 
+  // Initials generator
+  const getInitials = (name: string) => {
+    if (!name) return 'S';
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  };
+
   return (
-    <div className="bg-[#F8F6F0] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-950 selection:text-white">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/90 shadow-xs">
+    <div className="bg-[#FAF8F5] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-950 selection:text-white">
+      {/* Top Navbar: Quiet Luxury Executive Style */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-16 sm:h-18">
             {/* Logo & Navigation */}
-            <div className="flex items-center gap-7">
+            <div className="flex items-center gap-6 lg:gap-8">
               <Link href="/admin" className="flex items-center gap-3 focus:outline-none rounded-xl p-1 group">
-                <div className="w-9 h-9 rounded-xl bg-rose-950 text-amber-300 flex items-center justify-center font-serif font-black text-lg shadow-sm border border-rose-900 transition-transform group-hover:scale-105">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-950 text-amber-300 flex items-center justify-center font-serif font-black text-lg shadow-sm border border-rose-800/80 transition-transform group-hover:scale-105">
                   S
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-serif font-bold text-base text-stone-900 tracking-tight leading-none group-hover:text-rose-950 transition-colors">
-                    SISPERPUS
-                  </span>
-                  <span className="text-[10px] text-rose-900 font-bold uppercase tracking-wider mt-0.5">
-                    Panel Admin
+                  <div className="flex items-center gap-2">
+                    <span className="font-serif font-black text-base tracking-tight text-stone-900 leading-none group-hover:text-rose-950 transition-colors">
+                      SISPERPUS
+                    </span>
+                    <span className="text-[10px] bg-rose-50 text-rose-950 font-bold px-2 py-0.5 rounded-full border border-rose-200/80 uppercase tracking-wider">
+                      ADMIN
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-stone-400 font-medium mt-1">
+                    Sistem Perpustakaan Sekolah
                   </span>
                 </div>
               </Link>
 
-              {/* Desktop Segmented Tabs */}
-              <nav className="hidden md:flex items-center gap-1.5 p-1 bg-stone-100/80 rounded-xl border border-stone-200/70 text-xs">
+              {/* Desktop Segmented Pill Tabs */}
+              <nav className="hidden md:flex items-center gap-1 p-1 bg-stone-100/80 rounded-2xl border border-stone-200/70 text-xs">
                 <button
                   type="button"
                   onClick={() => setActiveTab('dashboard')}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === 'dashboard'
                       ? 'bg-rose-950 text-white shadow-xs'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
@@ -327,7 +348,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('members')}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === 'members'
                       ? 'bg-rose-950 text-white shadow-xs'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
@@ -339,7 +360,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('books')}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === 'books'
                       ? 'bg-rose-950 text-white shadow-xs'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
@@ -351,7 +372,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('report')}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === 'report'
                       ? 'bg-rose-950 text-white shadow-xs'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
@@ -369,7 +390,7 @@ export default function AdminPage() {
                 type="button"
                 onClick={loadAdminData}
                 disabled={isLoadingData}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-stone-700 bg-white hover:bg-stone-50 border border-stone-200/90 shadow-2xs transition-all cursor-pointer disabled:opacity-60 active:scale-95"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-stone-700 bg-white hover:bg-stone-50 border border-stone-200/90 shadow-2xs transition-all cursor-pointer disabled:opacity-60 active:scale-95"
                 title="Segarkan data dari server"
               >
                 <RotateCw className={`w-3.5 h-3.5 text-stone-500 ${isLoadingData ? 'animate-spin' : ''}`} />
@@ -378,7 +399,7 @@ export default function AdminPage() {
 
               <Link
                 href="/"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-stone-700 bg-white hover:bg-stone-50 border border-stone-200/90 shadow-2xs transition-all active:scale-95"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-stone-700 bg-white hover:bg-stone-50 border border-stone-200/90 shadow-2xs transition-all active:scale-95"
               >
                 <ArrowLeft className="w-3.5 h-3.5 text-stone-500" />
                 <span>Katalog Publik</span>
@@ -386,21 +407,21 @@ export default function AdminPage() {
 
               <div className="flex items-center gap-3 pl-3 border-l border-stone-200">
                 <div className="hidden sm:flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-100 border border-rose-200 text-rose-950 flex items-center justify-center font-bold text-xs">
+                  <div className="w-8 h-8 rounded-full bg-rose-100 border border-rose-200 text-rose-950 flex items-center justify-center font-bold text-xs shadow-2xs">
                     AP
                   </div>
                   <div className="flex flex-col text-left">
                     <span className="text-xs font-bold text-stone-900 leading-none">
                       {currentUser?.name || 'Administrator'}
                     </span>
-                    <span className="text-[10px] text-stone-500 font-medium mt-0.5">Petugas Perpustakaan</span>
+                    <span className="text-[10px] text-stone-400 font-medium mt-0.5">Petugas Perpustakaan</span>
                   </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="p-2 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
                   title="Keluar dari Panel Admin"
                 >
                   <LogOut className="w-4 h-4" />
@@ -410,11 +431,11 @@ export default function AdminPage() {
           </div>
 
           {/* Mobile Tab Strip */}
-          <div className="flex md:hidden items-center gap-1.5 overflow-x-auto py-2 border-t border-stone-100 scrollbar-none text-xs">
+          <div className="flex md:hidden items-center gap-1.5 overflow-x-auto py-2.5 border-t border-stone-100 scrollbar-none text-xs">
             <button
               type="button"
               onClick={() => setActiveTab('dashboard')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                 activeTab === 'dashboard' ? 'bg-rose-950 text-white shadow-xs' : 'text-stone-600 bg-stone-100'
               }`}
             >
@@ -423,7 +444,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setActiveTab('members')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                 activeTab === 'members' ? 'bg-rose-950 text-white shadow-xs' : 'text-stone-600 bg-stone-100'
               }`}
             >
@@ -432,7 +453,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setActiveTab('books')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                 activeTab === 'books' ? 'bg-rose-950 text-white shadow-xs' : 'text-stone-600 bg-stone-100'
               }`}
             >
@@ -441,7 +462,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={() => setActiveTab('report')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                 activeTab === 'report' ? 'bg-rose-950 text-white shadow-xs' : 'text-stone-600 bg-stone-100'
               }`}
             >
@@ -452,107 +473,147 @@ export default function AdminPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         {/* ========================================================= */}
         {/* TAB 1: DASHBOARD SIRKULASI & STATS */}
         {/* ========================================================= */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-7 animate-in fade-in duration-200">
+          <div className="space-y-8 animate-in fade-in duration-200">
             {/* Header Section */}
-            <div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
-                Dashboard Sirkulasi &amp; Koleksi
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                Ringkasan data operasional dan pemantauan peredaran buku perpustakaan secara terintegrasi
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+                  Dashboard Sirkulasi &amp; Koleksi
+                </h1>
+                <p className="text-xs sm:text-sm text-stone-500 mt-1">
+                  Ringkasan data operasional dan pemantauan peredaran buku perpustakaan secara terpadu
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Sistem Realtime Aktif
+                </span>
+              </div>
             </div>
 
             {/* 4 Stat Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              <div className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md hover:border-stone-300 transition-all duration-200 group">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {/* Card 1: Judul Buku */}
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-md hover:border-stone-300 transition-all duration-200 relative overflow-hidden group">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">
                     Judul Buku
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center group-hover:bg-rose-50 group-hover:text-rose-900 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-stone-100 text-stone-600 flex items-center justify-center group-hover:bg-rose-50 group-hover:text-rose-950 transition-colors">
                     <BookOpen className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif font-black text-2xl sm:text-3xl text-stone-900 tracking-tight">
+                <div className="font-serif font-black text-3xl sm:text-4xl text-stone-900 tracking-tight">
                   {books.length}
                 </div>
-                <span className="text-xs text-stone-400 font-medium block mt-1">Koleksi Terdaftar</span>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="text-xs text-stone-500 font-medium">Koleksi Terdaftar</span>
+                  <span className="text-stone-300">&bull;</span>
+                  <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded">Katalog</span>
+                </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md hover:border-stone-300 transition-all duration-200 group">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
+              {/* Card 2: Total Eksemplar */}
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-md hover:border-stone-300 transition-all duration-200 relative overflow-hidden group">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">
                     Total Eksemplar
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center group-hover:bg-stone-200 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-stone-100 text-stone-600 flex items-center justify-center group-hover:bg-stone-200 transition-colors">
                     <Layers className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif font-black text-2xl sm:text-3xl text-stone-900 tracking-tight">
+                <div className="font-serif font-black text-3xl sm:text-4xl text-stone-900 tracking-tight">
                   {totalStock}
                 </div>
-                <span className="text-xs text-stone-400 font-medium block mt-1">Fisik di Rak Perpustakaan</span>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="text-xs text-stone-500 font-medium">Fisik di Rak</span>
+                  <span className="text-stone-300">&bull;</span>
+                  <span className="text-[11px] text-stone-600 font-bold bg-stone-100 px-1.5 py-0.2 rounded">Stok Aktif</span>
+                </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md hover:border-rose-200 transition-all duration-200 group">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-rose-900 uppercase tracking-wider">
+              {/* Card 3: Peminjaman Aktif */}
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-md hover:border-rose-300 transition-all duration-200 relative overflow-hidden group">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[11px] font-bold text-rose-900 uppercase tracking-wider">
                     Peminjaman Aktif
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-900 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-900 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
                     <Activity className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif font-black text-2xl sm:text-3xl text-rose-900 tracking-tight">
+                <div className="font-serif font-black text-3xl sm:text-4xl text-rose-950 tracking-tight">
                   {activeLoansCount}
                 </div>
-                <span className="text-xs text-stone-400 font-medium block mt-1">Buku di Tangan Siswa</span>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="text-xs text-stone-500 font-medium">Di Tangan Siswa</span>
+                  {overdueCount > 0 && (
+                    <>
+                      <span className="text-stone-300">&bull;</span>
+                      <span className="text-[11px] text-rose-700 font-bold bg-rose-50 px-1.5 py-0.2 rounded">
+                        {overdueCount} Terlambat
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md hover:border-stone-300 transition-all duration-200 group">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
+              {/* Card 4: Siswa Terdaftar */}
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-md hover:border-stone-300 transition-all duration-200 relative overflow-hidden group">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">
                     Siswa Terdaftar
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                     <UserCheck className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif font-black text-2xl sm:text-3xl text-stone-900 tracking-tight">
+                <div className="font-serif font-black text-3xl sm:text-4xl text-stone-900 tracking-tight">
                   {members.length}
                 </div>
-                <span className="text-xs text-stone-400 font-medium block mt-1">Kartu Anggota Digital</span>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="text-xs text-stone-500 font-medium">Kartu Digital</span>
+                  <span className="text-stone-300">&bull;</span>
+                  <span className="text-[11px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.2 rounded">Terverifikasi</span>
+                </div>
               </div>
             </div>
 
             {/* Transactions Circulation Table Card */}
-            <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
               <div className="p-5 sm:p-6 border-b border-stone-200/80 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                  <h2 className="font-serif font-bold text-lg text-stone-900">
-                    Sirkulasi Peminjaman Buku
-                  </h2>
-                  <p className="text-xs text-stone-500 mt-0.5">
-                    Daftar peminjaman fisik buku sekolah beserta jatuh tempo pengembalian
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-serif font-bold text-lg text-stone-900">
+                      Sirkulasi Peminjaman Buku
+                    </h2>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-200/60">
+                      {transactions.length} Total
+                    </span>
+                  </div>
+                  <p className="text-xs text-stone-500 mt-1">
+                    Daftar peminjaman fisik buku sekolah beserta batas jatuh tempo pengembalian
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
                   {/* Search Bar */}
                   <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={txSearch}
                       onChange={(e) => setTxSearch(e.target.value)}
                       placeholder="Cari siswa, NIS, judul..."
-                      className="text-xs pl-8 pr-3.5 py-2 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all w-60 max-w-full"
+                      className="text-xs pl-9 pr-3.5 py-2 rounded-xl border border-stone-200 bg-stone-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-950/20 focus:border-rose-950 transition-all w-60 max-w-full"
                     />
                   </div>
 
@@ -580,7 +641,7 @@ export default function AdminPage() {
                         >
                           <span>{st}</span>
                           <span
-                            className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                            className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                               txStatusFilter === st
                                 ? 'bg-rose-900 text-rose-100'
                                 : 'bg-stone-200/80 text-stone-600'
@@ -598,61 +659,68 @@ export default function AdminPage() {
               {/* Table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50/80 text-stone-500 font-bold uppercase tracking-wider text-[11px] border-b border-stone-200/80">
+                  <thead className="bg-[#FAF8F5] text-stone-500 font-bold uppercase tracking-wider text-[11px] border-b border-stone-200/80">
                     <tr>
-                      <th className="px-6 py-3.5">NIS &amp; Siswa</th>
-                      <th className="px-6 py-3.5">Judul Buku</th>
-                      <th className="px-6 py-3.5">Tgl Pinjam</th>
-                      <th className="px-6 py-3.5">Jatuh Tempo</th>
-                      <th className="px-6 py-3.5">Status</th>
-                      <th className="px-6 py-3.5 text-right">Aksi Petugas</th>
+                      <th className="px-6 py-4">NIS &amp; Siswa</th>
+                      <th className="px-6 py-4">Judul Koleksi</th>
+                      <th className="px-6 py-4">Tgl Pinjam</th>
+                      <th className="px-6 py-4">Jatuh Tempo</th>
+                      <th className="px-6 py-4">Status Sirkulasi</th>
+                      <th className="px-6 py-4 text-right">Aksi Petugas</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
                     {filteredTransactions.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-stone-50/60 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className="font-bold text-stone-900 block">{tx.studentName}</span>
-                          <span className="text-[11px] text-stone-400 font-mono mt-0.5 block">
-                            NIS: {tx.nis} &bull; {tx.classRoom}
-                          </span>
+                      <tr key={tx.id} className="hover:bg-[#FCFBF8] transition-colors">
+                        <td className="px-6 py-4.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-stone-100 border border-stone-200 text-stone-800 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                              {getInitials(tx.studentName)}
+                            </div>
+                            <div>
+                              <span className="font-bold text-stone-900 block text-xs">{tx.studentName}</span>
+                              <span className="text-[11px] text-stone-400 font-mono mt-0.5 block">
+                                NIS: {tx.nis} &bull; {tx.classRoom}
+                              </span>
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="font-semibold text-stone-800 block text-xs">{tx.bookTitle}</span>
+                        <td className="px-6 py-4.5">
+                          <span className="font-serif font-bold text-stone-900 block text-xs">{tx.bookTitle}</span>
                           {tx.volumeNumber && (
-                            <span className="inline-block mt-1 text-[10px] bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                            <span className="inline-block mt-1 text-[10px] bg-amber-50 text-amber-900 border border-amber-200/80 px-2 py-0.5 rounded-md font-bold">
                               Vol. {tx.volumeNumber}
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-stone-600">{tx.loanDate}</td>
-                        <td className="px-6 py-4 font-semibold text-stone-800">{tx.dueDate}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4.5 text-stone-600 font-medium">{tx.loanDate}</td>
+                        <td className="px-6 py-4.5 font-semibold text-stone-800">{tx.dueDate}</td>
+                        <td className="px-6 py-4.5">
                           {tx.status === 'Dipinjam' ? (
-                            <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-900 border border-blue-200 font-semibold px-2.5 py-1 rounded-full text-[11px]">
+                            <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-900 border border-blue-200/80 font-bold px-2.5 py-1 rounded-full text-[11px]">
                               <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                               Dipinjam
                             </span>
                           ) : tx.status === 'Kembali' ? (
-                            <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 border border-emerald-200 font-semibold px-2.5 py-1 rounded-full text-[11px]">
+                            <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 border border-emerald-200/80 font-bold px-2.5 py-1 rounded-full text-[11px]">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
                               Kembali
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-900 border border-rose-200 font-semibold px-2.5 py-1 rounded-full text-[11px]">
+                            <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-900 border border-rose-200/80 font-bold px-2.5 py-1 rounded-full text-[11px]">
                               <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
                               Terlambat
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4.5 text-right">
                           {tx.status === 'Dipinjam' ? (
                             <button
                               type="button"
                               onClick={() => handleReturnBook(tx.id)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-950 hover:bg-rose-900 text-white rounded-lg font-semibold text-xs shadow-2xs transition-all cursor-pointer active:scale-95"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-950 hover:bg-rose-900 text-white rounded-xl font-semibold text-xs shadow-xs transition-all cursor-pointer active:scale-95"
                             >
-                              <RotateCcw className="w-3 h-3" />
+                              <RotateCcw className="w-3.5 h-3.5" />
                               <span>Kembalikan Buku</span>
                             </button>
                           ) : (
@@ -663,8 +731,16 @@ export default function AdminPage() {
                     ))}
                     {filteredTransactions.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-10 text-center text-stone-400">
-                          Tidak ditemukan data transaksi peminjaman yang cocok.
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mb-3">
+                              <Inbox className="w-6 h-6" />
+                            </div>
+                            <p className="font-serif font-bold text-stone-800 text-sm">Tidak Ada Sirkulasi</p>
+                            <p className="text-xs text-stone-400 mt-1">
+                              Tidak ditemukan data transaksi yang sesuai filter atau pencarian Anda.
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -679,7 +755,7 @@ export default function AdminPage() {
         {/* TAB 2: MANAJEMEN ANGGOTA SISWA */}
         {/* ========================================================= */}
         {activeTab === 'members' && (
-          <div className="space-y-7 animate-in fade-in duration-200">
+          <div className="space-y-8 animate-in fade-in duration-200">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -687,68 +763,77 @@ export default function AdminPage() {
                   Manajemen Anggota Siswa
                 </h1>
                 <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                  Verifikasi keaktifan kartu anggota perpustakaan digital dan pengelolaan status bebas denda
+                  Verifikasi keaktifan kartu perpustakaan digital siswa dan pengelolaan status bebas denda
                 </p>
               </div>
 
               <div className="relative">
-                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
                   placeholder="Cari siswa, NIS, kelas..."
-                  className="text-xs pl-8 pr-3.5 py-2 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all w-64 max-w-full shadow-2xs"
+                  className="text-xs pl-9 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-rose-950/20 focus:border-rose-950 transition-all w-64 max-w-full shadow-2xs"
                 />
               </div>
             </div>
 
             {/* Table Card */}
-            <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50/80 text-stone-500 font-bold uppercase tracking-wider text-[11px] border-b border-stone-200/80">
+                  <thead className="bg-[#FAF8F5] text-stone-500 font-bold uppercase tracking-wider text-[11px] border-b border-stone-200/80">
                     <tr>
-                      <th className="px-6 py-3.5">NIS</th>
-                      <th className="px-6 py-3.5">Nama Siswa</th>
-                      <th className="px-6 py-3.5">Kelas</th>
-                      <th className="px-6 py-3.5">Pinjaman Aktif</th>
-                      <th className="px-6 py-3.5">Status Kartu</th>
-                      <th className="px-6 py-3.5 text-right">Tindakan Admin</th>
+                      <th className="px-6 py-4">NIS</th>
+                      <th className="px-6 py-4">Nama Siswa</th>
+                      <th className="px-6 py-4">Kelas</th>
+                      <th className="px-6 py-4">Pinjaman Aktif</th>
+                      <th className="px-6 py-4">Status Kartu</th>
+                      <th className="px-6 py-4 text-right">Tindakan Admin</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
                     {filteredMembers.map((m) => (
-                      <tr key={m.nis} className="hover:bg-stone-50/60 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className="font-mono font-bold text-stone-900 bg-stone-100 px-2 py-0.5 rounded text-[11px] border border-stone-200">
+                      <tr key={m.nis} className="hover:bg-[#FCFBF8] transition-colors">
+                        <td className="px-6 py-4.5">
+                          <span className="font-mono font-bold text-stone-900 bg-stone-100/80 px-2.5 py-1 rounded-md text-[11px] border border-stone-200">
                             {m.nis}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="font-bold text-stone-900 block text-xs">{m.name}</span>
-                          <span className="text-[11px] text-stone-400">Siswa Perpustakaan</span>
+                        <td className="px-6 py-4.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-rose-50 border border-rose-200 text-rose-950 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                              {getInitials(m.name)}
+                            </div>
+                            <div>
+                              <span className="font-bold text-stone-900 block text-xs">{m.name}</span>
+                              <span className="text-[11px] text-stone-400">Anggota Perpustakaan</span>
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="font-medium text-stone-700 bg-stone-50 border border-stone-200 px-2 py-0.5 rounded text-[11px]">
+                        <td className="px-6 py-4.5">
+                          <span className="font-semibold text-stone-700 bg-stone-50 border border-stone-200 px-2.5 py-1 rounded-md text-[11px]">
                             {m.classRoom}
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-bold text-stone-800">
+                        <td className="px-6 py-4.5 font-bold text-stone-800">
                           {m.activeLoans > 0 ? (
-                            <span className="text-rose-900">{m.activeLoans} Buku</span>
+                            <span className="inline-flex items-center gap-1 text-rose-900 font-bold bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">
+                              {m.activeLoans} Buku
+                            </span>
                           ) : (
-                            <span className="text-stone-400">0 Buku</span>
+                            <span className="text-stone-400 font-medium">0 Buku</span>
                           )}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4.5">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${
                               m.status === 'Aktif'
-                                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200/80'
                                 : m.status === 'Ada Denda'
-                                ? 'bg-rose-50 text-rose-900 border border-rose-200'
-                                : 'bg-amber-50 text-amber-900 border border-amber-200'
+                                ? 'bg-rose-50 text-rose-900 border border-rose-200/80'
+                                : 'bg-amber-50 text-amber-900 border border-amber-200/80'
                             }`}
                           >
                             <span
@@ -763,13 +848,13 @@ export default function AdminPage() {
                             {m.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4.5 text-right">
                           <div className="inline-flex items-center justify-end gap-2">
                             {m.status === 'Menunggu Verifikasi' && (
                               <button
                                 type="button"
                                 onClick={() => handleUpdateMemberStatus(m.nis, 'Aktif')}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                 <span>Verifikasi</span>
@@ -779,7 +864,7 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => handleUpdateMemberStatus(m.nis, 'Aktif')}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-stone-800 hover:bg-stone-900 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
                               >
                                 <CheckCheck className="w-3.5 h-3.5" />
                                 <span>Lunaskan Denda</span>
@@ -789,7 +874,7 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => handleUpdateMemberStatus(m.nis, 'Ada Denda')}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 border border-rose-200 text-rose-900 hover:bg-rose-50 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-rose-200 text-rose-900 hover:bg-rose-50 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95"
                               >
                                 <AlertTriangle className="w-3.5 h-3.5 text-rose-700" />
                                 <span>Beri Denda</span>
@@ -798,7 +883,7 @@ export default function AdminPage() {
                             <button
                               type="button"
                               onClick={() => handleDeleteMember(m.nis, m.name)}
-                              className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
+                              className="p-2 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-xl border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
                               title={`Hapus Anggota ${m.name}`}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -809,8 +894,16 @@ export default function AdminPage() {
                     ))}
                     {filteredMembers.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-10 text-center text-stone-400">
-                          Tidak ada data anggota siswa yang sesuai pencarian.
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mb-3">
+                              <Users className="w-6 h-6" />
+                            </div>
+                            <p className="font-serif font-bold text-stone-800 text-sm">Tidak Ada Anggota</p>
+                            <p className="text-xs text-stone-400 mt-1">
+                              Tidak ditemukan data siswa yang cocok dengan pencarian Anda.
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -825,7 +918,7 @@ export default function AdminPage() {
         {/* TAB 3: KELOLA KOLEKSI BUKU PERPUSTAKAAN */}
         {/* ========================================================= */}
         {activeTab === 'books' && (
-          <div className="space-y-7 animate-in fade-in duration-200">
+          <div className="space-y-8 animate-in fade-in duration-200">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -833,19 +926,19 @@ export default function AdminPage() {
                   Kelola Koleksi Buku Perpustakaan
                 </h1>
                 <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                  Katalog buku, seri manga multi-volume, moderasi komentar pembaca, dan pembaruan stok fisik
+                  Katalog buku, seri manga multi-volume, moderasi komentar pembaca, dan stok fisik perpustakaan
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={bookSearch}
                     onChange={(e) => setBookSearch(e.target.value)}
                     placeholder="Cari judul, penulis, rak..."
-                    className="text-xs pl-8 pr-3.5 py-2 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all w-56 max-w-full shadow-2xs"
+                    className="text-xs pl-9 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-rose-950/20 focus:border-rose-950 transition-all w-56 max-w-full shadow-2xs"
                   />
                 </div>
 
@@ -855,48 +948,50 @@ export default function AdminPage() {
                     setEditingBook(null);
                     setIsBookFormOpen(true);
                   }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-950 hover:bg-rose-900 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-950 hover:bg-rose-900 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Tambah Buku Baru</span>
+                  <span>Tambah Buku / Series</span>
                 </button>
               </div>
             </div>
 
             {/* Books Table Card */}
-            <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50/80 text-stone-500 font-bold uppercase tracking-wider text-[11px] border-b border-stone-200/80">
+                  <thead className="bg-[#FAF8F5] text-stone-500 font-bold uppercase tracking-wider text-[11px] border-b border-stone-200/80">
                     <tr>
-                      <th className="px-6 py-3.5">Sampul &amp; Judul</th>
-                      <th className="px-6 py-3.5">Kategori &amp; Tag</th>
-                      <th className="px-6 py-3.5">Penulis</th>
-                      <th className="px-6 py-3.5">Lokasi Rak</th>
-                      <th className="px-6 py-3.5">Stok Fisik</th>
-                      <th className="px-6 py-3.5">Rating &amp; Ulasan</th>
-                      <th className="px-6 py-3.5 text-right">Aksi</th>
+                      <th className="px-6 py-4">Sampul &amp; Judul</th>
+                      <th className="px-6 py-4">Kategori &amp; Tag</th>
+                      <th className="px-6 py-4">Penulis</th>
+                      <th className="px-6 py-4">Lokasi Rak</th>
+                      <th className="px-6 py-4">Stok Fisik</th>
+                      <th className="px-6 py-4">Rating</th>
+                      <th className="px-6 py-4 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
                     {filteredBooks.map((b) => (
-                      <tr key={b.id} className="hover:bg-stone-50/60 transition-colors">
+                      <tr key={b.id} className="hover:bg-[#FCFBF8] transition-colors">
                         {/* Sampul & Judul */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
+                        <td className="px-6 py-4.5">
+                          <div className="flex items-center gap-3.5">
                             <img
                               src={b.coverImg || '/img/placeholder-book.svg'}
                               alt={b.title}
-                              className="w-11 h-15 object-cover rounded-lg shadow-2xs border border-stone-200 shrink-0 bg-stone-100"
+                              className="w-12 h-16 object-cover rounded-lg shadow-sm border border-stone-200/80 shrink-0 bg-stone-100"
                             />
                             <div className="min-w-0">
-                              <span className="font-bold text-stone-900 block text-xs line-clamp-1">{b.title}</span>
-                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span className="text-[10px] font-mono text-stone-500 bg-stone-100 border border-stone-200 px-1.5 py-0.2 rounded">
+                              <span className="font-serif font-bold text-stone-900 block text-xs hover:text-rose-950 transition-colors line-clamp-1">
+                                {b.title}
+                              </span>
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                <span className="text-[10px] font-mono text-stone-500 bg-stone-100 border border-stone-200/80 px-1.5 py-0.2 rounded font-medium">
                                   ID: {b.id}
                                 </span>
                                 {b.hasVolumes && b.volumes && b.volumes.length > 0 && (
-                                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-900 border border-amber-200">
+                                  <span className="text-[10px] font-bold px-2 py-0.2 rounded bg-amber-50 text-amber-900 border border-amber-200/80">
                                     Series {b.volumes.length} Vol
                                   </span>
                                 )}
@@ -906,46 +1001,53 @@ export default function AdminPage() {
                         </td>
 
                         {/* Kategori & Tag */}
-                        <td className="px-6 py-4">
-                          <span className="font-semibold text-stone-800 block">{b.category}</span>
+                        <td className="px-6 py-4.5">
+                          <span className="font-medium text-stone-800 block text-xs">{b.category}</span>
                           {b.badge && (
-                            <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-950 border border-rose-200">
+                            <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-950 border border-rose-200/80">
                               {b.badge}
                             </span>
                           )}
                         </td>
 
                         {/* Penulis */}
-                        <td className="px-6 py-4 text-stone-600 font-medium">{b.author}</td>
+                        <td className="px-6 py-4.5 text-stone-600 font-medium">{b.author}</td>
 
                         {/* Lokasi Rak */}
-                        <td className="px-6 py-4">
-                          <span className="font-mono text-stone-700 bg-stone-50 border border-stone-200 px-2 py-0.5 rounded text-[11px]">
+                        <td className="px-6 py-4.5">
+                          <span className="font-mono text-stone-700 bg-stone-50 border border-stone-200 px-2.5 py-1 rounded-md text-[11px]">
                             {b.shelf || 'Rak Utama'}
                           </span>
                         </td>
 
                         {/* Stok */}
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4.5">
                           <span className={`font-bold text-xs ${b.stock > 0 ? 'text-stone-900' : 'text-rose-700'}`}>
                             {b.stock} Eks
                           </span>
-                          <span className="text-[10px] text-stone-400 block mt-0.5">
+                          <span className="flex items-center gap-1 text-[10px] text-stone-400 mt-0.5">
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${b.stock > 0 ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                            ></span>
                             {b.stock > 0 ? 'Tersedia' : 'Habis'}
                           </span>
                         </td>
 
                         {/* Rating */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-1">
+                        <td className="px-6 py-4.5">
+                          <div className="flex items-center gap-1.5">
                             <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
-                            <span className="font-bold text-stone-900 text-xs">{(Number(b.rating) || 0).toFixed(1)}</span>
+                            <span className="font-bold text-stone-900 text-xs">
+                              {(Number(b.rating) || 0).toFixed(1)}
+                            </span>
                           </div>
-                          <span className="text-[10px] text-stone-400 block mt-0.5">({b.reviewsCount || 0} ulasan)</span>
+                          <span className="text-[10px] text-stone-400 block mt-0.5">
+                            ({b.reviewsCount || 0} ulasan)
+                          </span>
                         </td>
 
                         {/* Aksi Inline Tidy Row */}
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4.5 text-right">
                           <div className="inline-flex items-center justify-end gap-1.5">
                             <button
                               type="button"
@@ -953,7 +1055,7 @@ export default function AdminPage() {
                                 setEditingBook(b);
                                 setIsBookFormOpen(true);
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-stone-700 hover:text-stone-900 hover:bg-stone-100 bg-white border border-stone-200/90 rounded-lg text-xs font-semibold cursor-pointer shadow-2xs transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-stone-700 hover:text-stone-900 hover:bg-stone-50 bg-white border border-stone-200/90 rounded-xl text-xs font-semibold cursor-pointer shadow-2xs transition-all active:scale-95"
                               title="Edit Data Buku"
                             >
                               <Pencil className="w-3.5 h-3.5 text-stone-500" />
@@ -963,7 +1065,7 @@ export default function AdminPage() {
                             <button
                               type="button"
                               onClick={() => setReviewsModalBook({ id: b.id, title: b.title })}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-amber-900 hover:bg-amber-100/80 bg-amber-50 border border-amber-200/80 rounded-lg text-xs font-semibold cursor-pointer shadow-2xs transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-amber-900 hover:bg-amber-100/70 bg-amber-50 border border-amber-200/80 rounded-xl text-xs font-semibold cursor-pointer shadow-2xs transition-all active:scale-95"
                               title="Lihat & Moderasi Ulasan"
                             >
                               <MessageSquare className="w-3.5 h-3.5 text-amber-700" />
@@ -973,7 +1075,7 @@ export default function AdminPage() {
                             <button
                               type="button"
                               onClick={() => handleDeleteBook(b.id, b.title)}
-                              className="p-1.5 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
+                              className="p-2 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded-xl border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
                               title={`Hapus buku "${b.title}"`}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -984,8 +1086,16 @@ export default function AdminPage() {
                     ))}
                     {filteredBooks.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="px-6 py-10 text-center text-stone-400">
-                          Tidak ditemukan data buku yang sesuai pencarian.
+                        <td colSpan={7} className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mb-3">
+                              <BookMarked className="w-6 h-6" />
+                            </div>
+                            <p className="font-serif font-bold text-stone-800 text-sm">Tidak Ada Koleksi Buku</p>
+                            <p className="text-xs text-stone-400 mt-1">
+                              Tidak ditemukan data buku yang cocok dengan kata kunci pencarian.
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -1000,7 +1110,7 @@ export default function AdminPage() {
         {/* TAB 4: LAPORAN & DENDA */}
         {/* ========================================================= */}
         {activeTab === 'report' && (
-          <div className="space-y-7 animate-in fade-in duration-200">
+          <div className="space-y-8 animate-in fade-in duration-200">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -1014,7 +1124,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95"
               >
                 <Printer className="w-4 h-4 text-stone-300" />
                 <span>Cetak / Simpan PDF</span>
@@ -1022,111 +1132,118 @@ export default function AdminPage() {
             </div>
 
             {/* 3 Metric Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
-              <div className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-md transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">
                     Total Peminjaman
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-xl bg-stone-100 text-stone-600 flex items-center justify-center">
                     <FileText className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif font-black text-2xl sm:text-3xl text-stone-900">
+                <div className="font-serif font-black text-3xl sm:text-4xl text-stone-900 tracking-tight">
                   {transactions.length}
                 </div>
-                <span className="text-xs text-stone-400 font-medium block mt-1">Rekapitulasi Keseluruhan</span>
+                <span className="text-xs text-stone-400 font-medium block mt-2">Rekapitulasi Sirkulasi Keseluruhan</span>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-rose-900 uppercase tracking-wider">
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-md transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[11px] font-bold text-rose-900 uppercase tracking-wider">
                     Total Akumulasi Denda
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-900 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-900 flex items-center justify-center">
                     <Coins className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif font-black text-2xl sm:text-3xl text-rose-900">
+                <div className="font-serif font-black text-3xl sm:text-4xl text-rose-900 tracking-tight">
                   Rp {totalFines.toLocaleString('id-ID')}
                 </div>
-                <span className="text-xs text-stone-400 font-medium block mt-1">Denda Terhitung Sistem</span>
+                <span className="text-xs text-stone-400 font-medium block mt-2">Denda Terhitung Sistem</span>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-emerald-900 uppercase tracking-wider">
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-md transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider">
                     Tarif Denda Resmi
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="font-serif font-black text-2xl sm:text-3xl text-emerald-900">
+                <div className="font-serif font-black text-3xl sm:text-4xl text-emerald-900 tracking-tight">
                   Rp 1.000 <span className="text-sm font-sans font-normal text-stone-500">/ Hari</span>
                 </div>
-                <span className="text-xs text-stone-400 font-medium block mt-1">Sesuai Kebijakan Perpustakaan</span>
+                <span className="text-xs text-stone-400 font-medium block mt-2">Kebijakan Perpustakaan Sekolah</span>
               </div>
             </div>
 
             {/* Fines Details Table Card */}
-            <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs overflow-hidden">
+            <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
               <div className="p-5 sm:p-6 border-b border-stone-200/80">
                 <h3 className="font-serif font-bold text-lg text-stone-900">
                   Rincian Transaksi yang Terkena Denda
                 </h3>
-                <p className="text-xs text-stone-500 mt-0.5">
+                <p className="text-xs text-stone-500 mt-1">
                   Daftar keterlambatan dan status pelunasan denda sirkulasi siswa
                 </p>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-stone-50/80 text-stone-500 font-bold uppercase tracking-wider text-[11px] border-b border-stone-200/80">
+                  <thead className="bg-[#FAF8F5] text-stone-500 font-bold uppercase tracking-wider text-[11px] border-b border-stone-200/80">
                     <tr>
-                      <th className="px-6 py-3.5">NIS &amp; Siswa</th>
-                      <th className="px-6 py-3.5">Judul Buku</th>
-                      <th className="px-6 py-3.5">Jatuh Tempo</th>
-                      <th className="px-6 py-3.5">Denda</th>
-                      <th className="px-6 py-3.5">Status Denda</th>
-                      <th className="px-6 py-3.5 text-right">Aksi Petugas</th>
+                      <th className="px-6 py-4">NIS &amp; Siswa</th>
+                      <th className="px-6 py-4">Judul Buku</th>
+                      <th className="px-6 py-4">Jatuh Tempo</th>
+                      <th className="px-6 py-4">Denda</th>
+                      <th className="px-6 py-4">Status Denda</th>
+                      <th className="px-6 py-4 text-right">Aksi Petugas</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
                     {transactions
                       .filter((t) => (t.fine || 0) > 0)
                       .map((tx) => (
-                        <tr key={tx.id} className="hover:bg-stone-50/60 transition-colors">
-                          <td className="px-6 py-4">
-                            <span className="font-bold text-stone-900 block">{tx.studentName}</span>
-                            <span className="text-[11px] text-stone-400 font-mono mt-0.5 block">
-                              NIS: {tx.nis} &bull; {tx.classRoom}
-                            </span>
+                        <tr key={tx.id} className="hover:bg-[#FCFBF8] transition-colors">
+                          <td className="px-6 py-4.5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-rose-50 border border-rose-200 text-rose-950 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                                {getInitials(tx.studentName)}
+                              </div>
+                              <div>
+                                <span className="font-bold text-stone-900 block text-xs">{tx.studentName}</span>
+                                <span className="text-[11px] text-stone-400 font-mono mt-0.5 block">
+                                  NIS: {tx.nis} &bull; {tx.classRoom}
+                                </span>
+                              </div>
+                            </div>
                           </td>
-                          <td className="px-6 py-4 font-semibold text-stone-800 text-xs">{tx.bookTitle}</td>
-                          <td className="px-6 py-4 text-stone-600">{tx.dueDate}</td>
-                          <td className="px-6 py-4 font-bold text-rose-900 text-xs">
+                          <td className="px-6 py-4.5 font-serif font-bold text-stone-800 text-xs">{tx.bookTitle}</td>
+                          <td className="px-6 py-4.5 text-stone-600 font-medium">{tx.dueDate}</td>
+                          <td className="px-6 py-4.5 font-bold text-rose-900 text-xs">
                             Rp {(tx.fine || 0).toLocaleString('id-ID')}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4.5">
                             {tx.finePaid ? (
-                              <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 border border-emerald-200 font-semibold px-2.5 py-1 rounded-full text-[11px]">
+                              <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 border border-emerald-200/80 font-bold px-2.5 py-1 rounded-full text-[11px]">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
                                 Lunas
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-900 border border-rose-200 font-semibold px-2.5 py-1 rounded-full text-[11px] animate-pulse">
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                              <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-900 border border-rose-200/80 font-bold px-2.5 py-1 rounded-full text-[11px]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span>
                                 Belum Dibayar
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-right">
+                          <td className="px-6 py-4.5 text-right">
                             {!tx.finePaid && (
                               <button
                                 type="button"
                                 onClick={() => handlePayFine(tx.id, tx.nis)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-semibold text-xs shadow-2xs transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-semibold text-xs shadow-xs transition-all cursor-pointer active:scale-95"
                               >
                                 <CheckCheck className="w-3.5 h-3.5" />
                                 <span>Lunaskan Denda</span>
@@ -1137,8 +1254,16 @@ export default function AdminPage() {
                       ))}
                     {transactions.filter((t) => (t.fine || 0) > 0).length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-10 text-center text-stone-400">
-                          Tidak ada catatan denda saat ini. Seluruh peminjaman tertib bebas denda.
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
+                              <ShieldCheck className="w-6 h-6" />
+                            </div>
+                            <p className="font-serif font-bold text-stone-800 text-sm">Tidak Ada Denda Aktif</p>
+                            <p className="text-xs text-stone-400 mt-1">
+                              Seluruh sirkulasi peminjaman tertib dan bebas tunggakan denda.
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -1151,8 +1276,8 @@ export default function AdminPage() {
       </main>
 
       {/* Clean Admin Footer */}
-      <footer className="mt-auto py-5 border-t border-stone-200 bg-white/80 text-xs text-stone-500 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+      <footer className="mt-auto py-6 border-t border-stone-200/80 bg-white/80 text-xs text-stone-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="font-medium text-stone-600">
             &copy; 2026 SISPERPUS &bull; Panel Pengelolaan Perpustakaan Sekolah. Hak Cipta Dilindungi.
           </p>
@@ -1160,7 +1285,7 @@ export default function AdminPage() {
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
             <span>Sesi Petugas Aktif</span>
             <span>&bull;</span>
-            <span>Sistem Informasi Digital</span>
+            <span>SMK Praktik Lintas Bidang</span>
           </div>
         </div>
       </footer>
