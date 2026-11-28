@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
 export default function LibraryProfileSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -10,27 +10,30 @@ export default function LibraryProfileSection() {
   const slides = [
     {
       title: 'PERPUSTAKAAN SEKOLAH',
-      desc: 'Ruang temu gagasan dan pusat literasi yang nyaman bagi seluruh siswa dan bapak/ibu guru. Menyediakan ribuan koleksi buku fisik berkualitas, ruang baca tenang ber-AC, serta suasana belajar yang inspiratif.',
+      desc: 'Ruang temu gagasan dan pusat literasi yang nyaman bagi seluruh siswa dan guru. Menyediakan ribuan koleksi buku fisik berkualitas, ruang baca tenang ber-AC, serta suasana belajar yang inspiratif.',
       btnText: 'JELAJAHI KOLEKSI',
       btnHref: '#katalog',
       image: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80',
       alt: 'Gedung dan Ruang Baca Perpustakaan Sekolah',
+      isScheduleSlide: false,
     },
     {
       title: 'JAM LAYANAN OPERASIONAL',
-      desc: 'Buka setiap hari sekolah, Senin – Kamis pukul 07.30 – 15.30 WIB dan Jumat pukul 07.30 – 14.30 WIB. Pustakawan siap melayani peminjaman buku mandiri serta konsultasi literasi akademik.',
+      desc: 'Layanan sirkulasi peminjaman, pengembalian buku fisik, dan konsultasi literasi akademik di Gedung Literasi Lt. 2 buka setiap hari sekolah dengan jadwal:',
       btnText: 'TATA CARA PINJAM',
       btnHref: '#panduan',
       image: 'https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=1200&q=80',
       alt: 'Meja Sirkulasi Perpustakaan',
+      isScheduleSlide: true,
     },
     {
       title: 'RUANG BACA & DISKUSI',
-      desc: 'Dilengkapi area baca hening berpendingin udara, meja bundar diskusi kelompok, Wi-Fi sekolah, serta terminal pencarian katalog mandiri untuk kemudahan penelusuran bahan pustaka.',
+      desc: 'Dilengkapi area baca hening berpendingin udara, meja bundar diskusi kelompok, Wi-Fi sekolah, serta terminal pencarian katalog mandiri untuk kemudahan riset materi pelajaran.',
       btnText: 'LIHAT KATALOG',
       btnHref: '#katalog',
       image: 'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=1200&q=80',
       alt: 'Ruang Diskusi dan Belajar Mandiri',
+      isScheduleSlide: false,
     },
   ];
 
@@ -45,42 +48,67 @@ export default function LibraryProfileSection() {
   const active = slides[currentSlide];
 
   return (
-    <section id="profil" className="py-8 sm:py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Outer Card with Matching Border & Radius */}
+    <section id="profil" className="py-6 sm:py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Outer Card with Sleek Border & Proportional Radius */}
       <div className="relative rounded-3xl shadow-xl overflow-hidden border border-rose-900/30">
-        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[460px] lg:min-h-[480px]">
+        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[360px] lg:min-h-[380px]">
           
-          {/* Left Column: High-Impact Library Photo (Clean, No Overlay Text) */}
-          <div className="md:col-span-7 relative bg-stone-900 overflow-hidden">
+          {/* Left Column: Proportional Library Photo */}
+          <div className="md:col-span-6 lg:col-span-7 relative bg-stone-900 overflow-hidden">
             <img
               src={active.image}
               alt={active.alt}
-              className="w-full h-64 md:h-full object-cover transition-all duration-700 hover:scale-105"
+              className="w-full h-56 md:h-full object-cover transition-all duration-700 hover:scale-105"
             />
             {/* Subtle Gradient Shadow for depth */}
-            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/30 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/35 via-transparent to-transparent pointer-events-none" />
           </div>
 
-          {/* Right Column: Matched Deep Maroon-Amber Gradient (Selaras dengan Card Sorotan) */}
-          <div className="md:col-span-5 bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 text-white p-7 sm:p-10 lg:p-12 flex flex-col justify-between relative overflow-hidden border-t md:border-t-0 md:border-l border-rose-800/40">
+          {/* Right Column: Balanced Deep Maroon Gradient without excessive empty space */}
+          <div className="md:col-span-6 lg:col-span-5 bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 text-white p-6 sm:p-7 lg:p-8 flex flex-col justify-between relative overflow-hidden border-t md:border-t-0 md:border-l border-rose-800/40">
             
             {/* Ambient glow accent matching Card Sorotan */}
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-16 -right-16 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Content Top: Direct to Title (No badge, no kicker) */}
-            <div className="relative z-10 pt-2">
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight uppercase leading-tight mb-4">
+            {/* Content Top: Direct to Title & Info */}
+            <div className="relative z-10 pt-1">
+              <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight uppercase leading-snug mb-2.5">
                 {active.title}
               </h2>
 
-              <p className="text-xs sm:text-sm text-stone-200 leading-relaxed font-normal mb-8 max-w-md">
+              <p className="text-xs sm:text-[13px] text-stone-200 leading-relaxed font-normal mb-3 max-w-md">
                 {active.desc}
               </p>
+
+              {/* Exact Operating Hours Highlight */}
+              {active.isScheduleSlide ? (
+                <div className="bg-black/35 backdrop-blur-xs rounded-xl p-3 border border-amber-400/25 mb-4 max-w-md">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-2">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Jadwal Buka Perpustakaan</span>
+                  </div>
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between text-stone-200 border-b border-white/10 pb-1.5">
+                      <span className="font-medium text-stone-300">Senin – Kamis</span>
+                      <span className="font-bold text-amber-200">07.00 – 15.00 WIB</span>
+                    </div>
+                    <div className="flex items-center justify-between text-stone-200 pt-0.5">
+                      <span className="font-medium text-stone-300">Jumat</span>
+                      <span className="font-bold text-amber-200">07.00 – 13.15 WIB</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 bg-black/25 backdrop-blur-xs border border-white/15 px-3 py-1.5 rounded-lg text-xs mb-4 text-amber-200">
+                  <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span className="font-medium">Senin–Kamis 07.00–15.00 • Jumat 07.00–13.15 WIB</span>
+                </div>
+              )}
 
               <div>
                 <Link
                   href={active.btnHref}
-                  className="inline-block border-2 border-white/90 text-white hover:bg-white hover:text-rose-950 font-bold uppercase tracking-wider text-xs px-6 py-3 rounded-lg transition-colors duration-200 cursor-pointer shadow-sm"
+                  className="inline-block border border-white/90 text-white hover:bg-white hover:text-rose-950 font-bold uppercase tracking-wider text-xs px-5 py-2.5 rounded-lg transition-colors duration-200 cursor-pointer shadow-xs"
                 >
                   {active.btnText}
                 </Link>
@@ -88,18 +116,18 @@ export default function LibraryProfileSection() {
             </div>
 
             {/* Content Bottom: Pagination Arrows & Indicators */}
-            <div className="relative z-10 flex items-center gap-3 pt-8 mt-4 border-t border-rose-800/50">
+            <div className="relative z-10 flex items-center gap-2.5 pt-4 mt-3 border-t border-rose-800/50">
               <button
                 onClick={prevSlide}
                 aria-label="Slide sebelumnya"
-                className="w-9 h-9 rounded-full border border-white/40 text-white flex items-center justify-center hover:bg-white hover:text-rose-950 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full border border-white/40 text-white flex items-center justify-center hover:bg-white hover:text-rose-950 transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={nextSlide}
                 aria-label="Slide berikutnya"
-                className="w-9 h-9 rounded-full border border-white/40 text-white flex items-center justify-center hover:bg-white hover:text-rose-950 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full border border-white/40 text-white flex items-center justify-center hover:bg-white hover:text-rose-950 transition-colors cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
