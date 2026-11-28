@@ -1,285 +1,157 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import {
-  Library,
-  BookOpen,
-  Clock,
-  MapPin,
-  ShieldCheck,
-  Users,
-  Wind,
-  Award,
-  Layers,
-  ArrowRight,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function LibraryProfileSection() {
-  const stats = [
-    { label: 'Koleksi Bahan Pustaka', value: '5.000+', sub: 'Judul Referensi & Sastra', icon: BookOpen },
-    { label: 'Kapasitas Ruang Baca', value: '80+', sub: 'Kursi Baca Berpendingin', icon: Users },
-    { label: 'Zona Belajar', value: '2 Lantai', sub: 'Zona Hening & Zona Diskusi', icon: Layers },
-    { label: 'Status Perpustakaan', value: 'Terakreditasi A', sub: 'Standar Nasional Sekolah', icon: Award },
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      kicker: 'GEDUNG LITERASI LT. 2',
+      title: 'PERPUSTAKAAN SEKOLAH',
+      desc: 'Ruang temu gagasan dan pusat literasi yang nyaman bagi seluruh siswa dan bapak/ibu guru. Menyediakan ribuan koleksi buku fisik berkualitas, ruang baca tenang ber-AC, serta suasana belajar yang inspiratif.',
+      btnText: 'JELAJAHI KOLEKSI',
+      btnHref: '#katalog',
+      badge: 'Profil',
+      badgeColor: 'bg-amber-600',
+      image: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80',
+      alt: 'Gedung dan Ruang Baca Perpustakaan Sekolah',
+    },
+    {
+      kicker: 'LAYANAN SIRKULASI & WAKTU',
+      title: 'JAM LAYANAN OPERASIONAL',
+      desc: 'Buka setiap hari sekolah, Senin – Kamis pukul 07.30 – 15.30 WIB dan Jumat pukul 07.30 – 14.30 WIB. Pustakawan siap melayani peminjaman buku mandiri serta konsultasi literasi akademik.',
+      btnText: 'TATA CARA PINJAM',
+      btnHref: '#panduan',
+      badge: 'Layanan',
+      badgeColor: 'bg-rose-700',
+      image: 'https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=1200&q=80',
+      alt: 'Meja Sirkulasi Perpustakaan',
+    },
+    {
+      kicker: 'FASILITAS & ZONA RUANG',
+      title: 'RUANG BACA & DISKUSI',
+      desc: 'Dilengkapi area baca hening berpendingin udara, meja bundar diskusi kelompok, Wi-Fi sekolah, serta terminal pencarian katalog mandiri untuk kemudahan penelusuran bahan pustaka.',
+      btnText: 'LIHAT KATALOG',
+      btnHref: '#katalog',
+      badge: 'Fasilitas',
+      badgeColor: 'bg-emerald-700',
+      image: 'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=1200&q=80',
+      alt: 'Ruang Diskusi dan Belajar Mandiri',
+    },
   ];
 
-  const collections = [
-    {
-      title: 'Buku Pelajaran & Kurikulum',
-      desc: 'Buku teks utama mata pelajaran umum serta kejuruan untuk penunjang belajar harian siswa.',
-    },
-    {
-      title: 'Karya Sastra & Fiksi Populer',
-      desc: 'Novel klasik Indonesia, sastra dunia, komik edukatif, dan antologi cerita pendek pilihan.',
-    },
-    {
-      title: 'Referensi Umum & Ensiklopedia',
-      desc: 'Kamus bahasa lengkap, buku sains populer, biografi tokoh nasional, serta ensiklopedia tematik.',
-    },
-    {
-      title: 'Karya Tulis & Proyek Siswa',
-      desc: 'Dokumentasi laporan projek karya ilmiah siswa, modul pembelajaran mandiri, dan arsip literasi.',
-    },
-  ];
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
 
-  const facilities = [
-    {
-      title: 'Ruang Baca Hening Ber-AC',
-      desc: 'Suasana tenang dengan pendingin udara dan pencahayaan optimal untuk membaca mandiri serta fokus belajar.',
-      icon: Wind,
-    },
-    {
-      title: 'Area Diskusi & Meja Kelompok',
-      desc: 'Dilengkapi meja bundar dan papan catatan untuk kerja kelompok, bedah buku, dan klub literasi.',
-      icon: Users,
-    },
-    {
-      title: 'Meja Layanan Sirkulasi',
-      desc: 'Layanan peminjaman, pengembalian fisik, serta pendampingan pencarian bahan pustaka oleh pustakawan.',
-      icon: Library,
-    },
-  ];
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const active = slides[currentSlide];
 
   return (
-    <section id="profil" className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Outer Dark Stone Container */}
-      <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-10 lg:p-12 border border-stone-800 shadow-xl relative overflow-hidden">
+    <section id="profil" className="py-8 sm:py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Outer Card with Side Accent Bar matching the reference style */}
+      <div className="relative bg-white rounded-3xl shadow-xl overflow-hidden border border-stone-200">
         
-        {/* Ambient atmospheric gradients */}
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-rose-900/20 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+        {/* Left vertical decorative accent bar */}
+        <div className="absolute left-0 top-0 bottom-0 w-3 bg-rose-900 z-20 hidden md:block" />
 
-        {/* Header Section: Real School Library Profile */}
-        <div className="relative z-10 border-b border-stone-800 pb-8 mb-8">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Library className="w-4 h-4 text-amber-400" />
-              <span>Profil Perpustakaan Sekolah</span>
-            </span>
-            <span className="text-xs text-stone-500">•</span>
-            <span className="text-xs text-stone-400 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-stone-400" />
-              <span>Gedung Literasi Lt. 2</span>
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className="lg:col-span-8">
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight">
-                Pusat Sumber Belajar, Riset Mandiri &amp; Pengembangan Karakter Siswa
-              </h2>
-              <p className="text-xs sm:text-sm text-stone-300 mt-3 leading-relaxed max-w-3xl">
-                Perpustakaan sekolah didirikan sebagai sarana vital pendidikan dalam menumbuhkan kecintaan membaca, memperluas wawasan keilmuan, dan memfasilitasi kebutuhan riset akademik seluruh siswa serta bapak/ibu guru. Menghadirkan lingkungan belajar yang kondusif, nyaman, dan kaya akan bahan bacaan bermutu.
-              </p>
-            </div>
-
-            <div className="lg:col-span-4 lg:text-right flex flex-col lg:items-end justify-between self-stretch">
-              <div className="bg-stone-800/80 border border-stone-700/80 rounded-2xl p-4 text-left w-full max-w-sm mb-4">
-                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block mb-1">
-                  Visi Perpustakaan
-                </span>
-                <p className="text-xs text-stone-200 italic leading-relaxed">
-                  &ldquo;Menjadi jantung peradaban ilmu sekolah yang unggul, inspiratif, dan menumbuhkan karakter pembelajar sepanjang hayat.&rdquo;
-                </p>
-              </div>
-
-              <Link
-                href="#katalog"
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm transition-all shadow-md group w-full sm:w-auto"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Cek Katalog Koleksi</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* 4 Quick Stat Pills */}
-        <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          {stats.map((s) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={s.label}
-                className="bg-stone-800/60 border border-stone-800 rounded-2xl p-4 flex items-center gap-3.5"
-              >
-                <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-700 text-amber-400 flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="font-serif font-black text-lg sm:text-xl text-white tracking-tight">
-                    {s.value}
-                  </div>
-                  <div className="text-[11px] font-semibold text-stone-300">
-                    {s.label}
-                  </div>
-                  <div className="text-[10px] text-stone-400">
-                    {s.sub}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* 3 Pillars Bento Layout: Koleksi Pustaka, Fasilitas Ruang, & Layanan Operasional */}
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[460px] lg:min-h-[500px]">
           
-          {/* Card 1: Koleksi & Sumber Belajar (5 Cols) */}
-          <div className="lg:col-span-5 bg-stone-800/50 border border-stone-800/90 rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-rose-950 border border-rose-900 text-rose-300 flex items-center justify-center">
-                  <BookOpen className="w-4 h-4" />
-                </div>
-                <h3 className="font-serif font-bold text-base sm:text-lg text-white">
-                  Koleksi Bahan Pustaka
-                </h3>
+          {/* Left Column: High-Impact Library Photo */}
+          <div className="md:col-span-7 relative bg-stone-100 overflow-hidden md:pl-3">
+            {/* Background Image with smooth transition */}
+            <img
+              src={active.image}
+              alt={active.alt}
+              className="w-full h-64 md:h-full object-cover transition-all duration-700 hover:scale-105"
+            />
+            {/* Subtle Gradient Shadow */}
+            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/40 via-transparent to-transparent pointer-events-none" />
+            
+            {/* Location Tag Overlay */}
+            <div className="absolute bottom-4 left-6 md:left-9 bg-stone-900/80 backdrop-blur-xs text-white text-[11px] font-medium px-3 py-1.5 rounded-full border border-white/20 shadow-md">
+              📍 Gedung Literasi Lt. 2 • Perpustakaan Sekolah
+            </div>
+          </div>
+
+          {/* Right Column: Deep Solid Maroon Card */}
+          <div className="md:col-span-5 bg-rose-900 text-white p-7 sm:p-10 lg:p-12 flex flex-col justify-between relative overflow-hidden">
+            
+            {/* Top-Right Circular Sticker Badge */}
+            <div className="absolute top-6 right-6">
+              <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full ${active.badgeColor} text-white flex items-center justify-center font-serif italic text-sm sm:text-base font-bold shadow-lg transform -rotate-12 select-none border-2 border-white/40`}>
+                {active.badge}
               </div>
-              <p className="text-xs text-stone-300 leading-relaxed mb-4">
-                Dikelola secara rapi sesuai klasifikasi baku untuk memudahkan penelusuran bahan bacaan dan tugas sekolah:
+            </div>
+
+            {/* Content Top */}
+            <div className="pr-12 md:pr-14">
+              <span className="text-xs font-bold tracking-widest uppercase text-amber-300 block mb-3">
+                {active.kicker}
+              </span>
+
+              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight uppercase leading-tight mb-4">
+                {active.title}
+              </h2>
+
+              <p className="text-xs sm:text-sm text-stone-100 leading-relaxed font-normal mb-8 max-w-md opacity-95">
+                {active.desc}
               </p>
 
-              <div className="space-y-3">
-                {collections.map((c) => (
-                  <div key={c.title} className="pb-2.5 border-b border-stone-800 last:border-0 last:pb-0">
-                    <h4 className="text-xs font-bold text-amber-400 mb-0.5">
-                      {c.title}
-                    </h4>
-                    <p className="text-[11px] text-stone-300 leading-relaxed">
-                      {c.desc}
-                    </p>
-                  </div>
+              <div>
+                <Link
+                  href={active.btnHref}
+                  className="inline-block border-2 border-white text-white hover:bg-white hover:text-rose-950 font-bold uppercase tracking-wider text-xs px-6 py-3 transition-colors duration-200 cursor-pointer shadow-xs"
+                >
+                  {active.btnText}
+                </Link>
+              </div>
+            </div>
+
+            {/* Content Bottom: Pagination Arrows & Indicators */}
+            <div className="flex items-center gap-3 pt-8 mt-4 border-t border-rose-800/80">
+              <button
+                onClick={prevSlide}
+                aria-label="Slide sebelumnya"
+                className="w-9 h-9 rounded-full border border-white/60 text-white flex items-center justify-center hover:bg-white hover:text-rose-900 transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={nextSlide}
+                aria-label="Slide berikutnya"
+                className="w-9 h-9 rounded-full border border-white/60 text-white flex items-center justify-center hover:bg-white hover:text-rose-900 transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-1.5 ml-3">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentSlide(i)}
+                    aria-label={`Buka slide ${i + 1}`}
+                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                      i === currentSlide ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+                    }`}
+                  />
                 ))}
               </div>
+
+              <span className="text-[11px] text-white/70 ml-auto font-medium">
+                0{currentSlide + 1} / 0{slides.length}
+              </span>
             </div>
 
-            <div className="mt-5 pt-3 border-t border-stone-800 text-[11px] text-stone-400 flex items-center justify-between">
-              <span>Klasifikasi Desimal Dewey (DDC)</span>
-              <span className="text-amber-400 font-semibold">Tersusun Teratur</span>
-            </div>
-          </div>
-
-          {/* Card 2: Fasilitas Fisik Perpustakaan (4 Cols) */}
-          <div className="lg:col-span-4 bg-stone-800/50 border border-stone-800/90 rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-900/80 text-amber-300 flex items-center justify-center">
-                  <Layers className="w-4 h-4" />
-                </div>
-                <h3 className="font-serif font-bold text-base sm:text-lg text-white">
-                  Fasilitas &amp; Zona Ruang
-                </h3>
-              </div>
-              <p className="text-xs text-stone-300 leading-relaxed mb-4">
-                Ruang perpustakaan dirancang representatif guna mendukung kenyamanan membaca dan aktivitas diskusi:
-              </p>
-
-              <div className="space-y-4">
-                {facilities.map((f) => {
-                  const Icon = f.icon;
-                  return (
-                    <div key={f.title} className="flex gap-3">
-                      <div className="w-7 h-7 rounded-md bg-stone-900 border border-stone-700 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-white mb-0.5">
-                          {f.title}
-                        </h4>
-                        <p className="text-[11px] text-stone-300 leading-relaxed">
-                          {f.desc}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-5 pt-3 border-t border-stone-800 text-[11px] text-stone-400">
-              Kapasitas terdistribusi di Gedung Literasi Lt. 2
-            </div>
-          </div>
-
-          {/* Card 3: Jam Layanan & Ketentuan Kunjungan (3 Cols) */}
-          <div className="lg:col-span-3 bg-stone-800/50 border border-stone-800/90 rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-stone-900 border border-stone-700 text-stone-300 flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <h3 className="font-serif font-bold text-base sm:text-lg text-white">
-                  Layanan &amp; Waktu
-                </h3>
-              </div>
-
-              {/* Jadwal Buka */}
-              <div className="bg-stone-900/90 rounded-xl p-3.5 border border-stone-800 mb-4">
-                <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-2">
-                  Jam Buka Operasional
-                </div>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between text-stone-200">
-                    <span>Senin – Kamis</span>
-                    <span className="font-bold text-white">07.30 – 15.30</span>
-                  </div>
-                  <div className="flex justify-between text-stone-200">
-                    <span>Jumat</span>
-                    <span className="font-bold text-white">07.30 – 14.30</span>
-                  </div>
-                  <div className="flex justify-between text-stone-400 text-[11px] pt-1 border-t border-stone-800">
-                    <span>Sabtu, Minggu &amp; Libur</span>
-                    <span className="text-rose-400 font-semibold">Tutup</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ketentuan Ringkas */}
-              <div className="space-y-2.5">
-                <div className="flex items-start gap-2 text-xs text-stone-300">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Wajib menjaga keheningan &amp; ketertiban ruang baca.</span>
-                </div>
-                <div className="flex items-start gap-2 text-xs text-stone-300">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Maksimal peminjaman 2 buku selama 7 hari kerja.</span>
-                </div>
-                <div className="flex items-start gap-2 text-xs text-stone-300">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Bawa kartu pelajar / sebutkan NIS saat ke sirkulasi.</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 pt-3 border-t border-stone-800 text-[10px] text-stone-400">
-              Pustakawan siap mendampingi kebutuhan literasi Anda.
-            </div>
           </div>
 
         </div>
-
       </div>
     </section>
   );
