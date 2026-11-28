@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
 export default function LibraryProfileSection() {
@@ -44,18 +45,15 @@ export default function LibraryProfileSection() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
-  const handleButtonClick = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
+  const handleActionClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
+      e.preventDefault();
       const targetId = href.substring(1);
-      const targetElement = document.getElementById(targetId);
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth' });
-        window.history.pushState(null, '', href);
-        return;
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
-    window.location.href = href;
   };
 
   const active = slides[currentSlide];
@@ -95,35 +93,37 @@ export default function LibraryProfileSection() {
                 {active.desc}
               </p>
 
-              {/* Clean, Elegant & Proportional Operating Hours Schedule (Khusus Slide 2) */}
+              {/* Clean & Elegant Operating Hours Schedule (Khusus Slide 2) */}
               {active.isScheduleSlide && (
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 sm:p-3.5 border border-white/15 max-w-sm mb-4 shadow-sm">
-                  <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-white/15 text-[11px] font-bold tracking-wider uppercase text-amber-300">
+                <div className="bg-black/30 backdrop-blur-md rounded-2xl p-3 sm:p-3.5 border border-white/15 max-w-md mb-4 shadow-sm">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>Jadwal Buka Perpustakaan</span>
+                      <Clock className="w-3.5 h-3.5 text-amber-300" />
+                      <span className="text-[11px] font-bold text-amber-200 tracking-wider uppercase">
+                        Jadwal Buka Perpustakaan
+                      </span>
                     </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                      Buka Hari Sekolah
+                    <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                      Hari Sekolah
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-black/25 rounded-xl p-2 sm:p-2.5 border border-white/5 flex flex-col justify-between">
-                      <span className="text-[10px] font-semibold text-stone-300 uppercase tracking-wider block mb-1">
+                    <div className="bg-white/5 rounded-xl p-2.5 border border-white/10">
+                      <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-0.5">
                         Senin – Kamis
                       </span>
-                      <span className="font-bold text-white text-xs sm:text-[13px] tracking-tight">
-                        07.00 – 15.00 <span className="text-[10px] font-normal text-stone-300">WIB</span>
+                      <span className="font-bold text-white text-xs sm:text-sm">
+                        07.00 – 15.00 <span className="text-[10px] text-amber-200 font-normal">WIB</span>
                       </span>
                     </div>
 
-                    <div className="bg-black/25 rounded-xl p-2 sm:p-2.5 border border-white/5 flex flex-col justify-between">
-                      <span className="text-[10px] font-semibold text-stone-300 uppercase tracking-wider block mb-1">
+                    <div className="bg-white/5 rounded-xl p-2.5 border border-white/10">
+                      <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-0.5">
                         Jumat
                       </span>
-                      <span className="font-bold text-white text-xs sm:text-[13px] tracking-tight">
-                        07.00 – 13.15 <span className="text-[10px] font-normal text-stone-300">WIB</span>
+                      <span className="font-bold text-white text-xs sm:text-sm">
+                        07.00 – 13.15 <span className="text-[10px] text-amber-200 font-normal">WIB</span>
                       </span>
                     </div>
                   </div>
@@ -131,13 +131,13 @@ export default function LibraryProfileSection() {
               )}
 
               <div>
-                <button
-                  type="button"
-                  onClick={(e) => handleButtonClick(e, active.btnHref)}
-                  className="inline-block border-2 border-white/90 text-white hover:bg-white hover:text-rose-950 font-bold uppercase tracking-wider text-xs px-5 py-2.5 rounded-lg transition-colors duration-200 cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-white"
+                <Link
+                  href={active.btnHref}
+                  onClick={(e) => handleActionClick(e, active.btnHref)}
+                  className="inline-block border border-white/90 text-white hover:bg-white hover:text-rose-950 font-bold uppercase tracking-wider text-xs px-5 py-2.5 rounded-lg transition-colors duration-200 cursor-pointer shadow-xs"
                 >
                   {active.btnText}
-                </button>
+                </Link>
               </div>
             </div>
 
