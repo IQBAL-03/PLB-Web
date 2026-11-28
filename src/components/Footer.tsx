@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { MapPin, Mail, Clock, ShieldCheck, ArrowRight, BookOpen } from 'lucide-react';
+import { MapPin, Mail, Clock, ArrowRight, BookOpen } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -28,13 +28,9 @@ export default function Footer() {
                 </span>
               </div>
             </Link>
-            <p className="text-xs leading-relaxed text-stone-400 mb-4 max-w-sm">
+            <p className="text-xs leading-relaxed text-stone-400 max-w-sm">
               Sistem Informasi Perpustakaan Sekolah Digital. Mewujudkan ekosistem literasi mandiri, terbuka, dan terstruktur bagi seluruh siswa, guru, serta tenaga pendidik.
             </p>
-            <div className="inline-flex items-center gap-2 text-[11px] text-rose-300/90 bg-rose-950/60 border border-rose-800/40 px-3 py-1.5 rounded-lg w-fit">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-              <span>Praktik Lintas Bidang (PLB) Informatika</span>
-            </div>
           </div>
 
           {/* Layanan Siswa (Col 2: 3 cols) */}
@@ -129,12 +125,9 @@ export default function Footer() {
         </div>
 
         {/* Bottom Centered Copyright Bar */}
-        <div className="pt-8 flex flex-col items-center justify-center text-center gap-2 text-xs">
+        <div className="pt-8 flex flex-col items-center justify-center text-center text-xs">
           <p className="text-stone-300 font-medium tracking-wide">
             &copy; 2026 SISPERPUS &bull; Sistem Informasi Perpustakaan Sekolah. Hak Cipta Dilindungi.
-          </p>
-          <p className="text-stone-500 text-[11px]">
-            Praktik Lintas Bidang (PLB) Informatika &bull; SMK Kelas 12 PPLG
           </p>
         </div>
       </div>
