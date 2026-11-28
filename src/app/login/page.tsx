@@ -13,38 +13,55 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg('');
 
-    // Default admin credential or env configured
-    const validUser = 'admin';
-    const validPass = 'admin123';
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password }),
+      });
 
-    setTimeout(() => {
-      if (
-        (username.trim().toLowerCase() === validUser && password === validPass) ||
-        (username.trim().toLowerCase() === 'iqbal' && password === 'admin123') ||
-        (username.trim().toLowerCase() === 'haniin' && password === 'admin123')
-      ) {
-        const sessionUser = {
-          name: username.trim() === 'admin' ? 'Administrator' : username.trim(),
-          username: username.trim(),
-          role: 'admin',
-        };
+      const data = await res.json().catch(() => ({}));
 
+      if (res.ok && data.success) {
         if (typeof window !== 'undefined') {
-          localStorage.setItem('sisperpus_token', `tok_${Date.now()}`);
-          localStorage.setItem('sisperpus_user', JSON.stringify(sessionUser));
+          localStorage.setItem('sisperpus_token', data.token || `tok_${Date.now()}`);
+          localStorage.setItem('sisperpus_user', JSON.stringify(data.user));
         }
-
         router.push('/admin');
-      } else {
-        setErrorMsg('Username atau kata sandi tidak valid. Coba: admin / admin123');
-        setIsLoading(false);
+        return;
       }
-    }, 400);
+    } catch {
+      // Network fallback below
+    }
+
+    // Default admin credential fallback
+    const cleanUser = username.trim().toLowerCase();
+    if (
+      (cleanUser === 'admin' && password === 'admin123') ||
+      (cleanUser === 'iqbal' && password === 'admin123') ||
+      (cleanUser === 'haniin' && password === 'admin123')
+    ) {
+      const sessionUser = {
+        name: cleanUser === 'admin' ? 'Administrator' : cleanUser,
+        username: cleanUser,
+        role: 'admin',
+      };
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sisperpus_token', `tok_${Date.now()}`);
+        localStorage.setItem('sisperpus_user', JSON.stringify(sessionUser));
+      }
+
+      router.push('/admin');
+    } else {
+      setErrorMsg('Username atau kata sandi tidak valid. Coba: admin / admin123');
+      setIsLoading(false);
+    }
   };
 
   return (

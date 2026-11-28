@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { nis, name, classRoom = 'XII-PPLG-1' } = body;
+    const { nis, name, classRoom = 'XII-PPLG-1', status = 'Menunggu Verifikasi' } = body;
 
     if (!nis || !name) {
       return NextResponse.json(
@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
 
     const trimmedNis = String(nis).trim();
     const trimmedName = String(name).trim();
+    const memberStatus = status || 'Menunggu Verifikasi';
 
     // Check duplicate
     if (isTiDBConfigured()) {
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
 
       await queryTiDB(
         'INSERT INTO members (nis, name, class_room, active_loans, status) VALUES (?, ?, ?, 0, ?)',
-        [trimmedNis, trimmedName, classRoom, 'Aktif']
+        [trimmedNis, trimmedName, classRoom, memberStatus]
       );
     } else {
       const existing = memoryDb.members.find((m) => m.nis === trimmedNis);
@@ -104,14 +105,18 @@ export async function POST(req: NextRequest) {
       name: trimmedName,
       classRoom,
       activeLoans: 0,
-      status: 'Aktif',
+      status: memberStatus,
       createdAt: new Date().toISOString(),
     };
 
     memoryDb.members.push(newMember);
 
     return NextResponse.json(
-      { success: true, message: 'Pendaftaran anggota berhasil', data: newMember },
+      {
+        success: true,
+        message: `Pendaftaran anggota berhasil (${memberStatus === 'Menunggu Verifikasi' ? 'Menunggu Verifikasi Petugas' : 'Aktif'})`,
+        data: newMember,
+      },
       { status: 201 }
     );
   } catch (error: any) {

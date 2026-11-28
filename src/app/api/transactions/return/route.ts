@@ -5,7 +5,9 @@ import { isTiDBConfigured, queryTiDB, memoryDb } from '@/lib/db';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { transactionId } = body;
+    const transactionId = body.transactionId || body.id;
+    const condition = (body.condition || 'normal').toLowerCase();
+    const customFine = Number(body.customFine || body.fine) || 0;
 
     if (!transactionId) {
       return NextResponse.json(
@@ -61,7 +63,15 @@ export async function POST(req: NextRequest) {
     const diffTime = returnDate.getTime() - dueDate.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const lateDays = Math.max(0, diffDays);
-    const fineAmount = lateDays * 1000; // Rp 1.000 / hari keterlambatan
+
+    let fineAmount = 0;
+    if (condition === 'hilang') {
+      fineAmount = tx.price || 60000;
+    } else if (condition === 'rusak') {
+      fineAmount = customFine > 0 ? customFine : 15000;
+    } else {
+      fineAmount = lateDays * 1000; // Rp 1.000 / hari keterlambatan
+    }
 
     const newStatus = lateDays > 0 ? 'Terlambat' : 'Kembali';
 
@@ -73,8 +83,10 @@ export async function POST(req: NextRequest) {
         [newStatus, todayStr, fineAmount, fineAmount === 0 ? 1 : 0, tx.id]
       );
 
-      // Restore book stock
-      await queryTiDB('UPDATE books SET stock = stock + 1 WHERE id = ?', [tx.bookId]);
+      // Restore book stock only if NOT lost
+      if (condition !== 'hilang') {
+        await queryTiDB('UPDATE books SET stock = stock + 1 WHERE id = ?', [tx.bookId]);
+      }
 
       // Decrement member active loans
       await queryTiDB(
@@ -94,8 +106,10 @@ export async function POST(req: NextRequest) {
     tx.fine = fineAmount;
     tx.finePaid = fineAmount === 0;
 
-    const book = memoryDb.books.find((b) => b.id === tx!.bookId);
-    if (book) book.stock += 1;
+    if (condition !== 'hilang') {
+      const book = memoryDb.books.find((b) => b.id === tx!.bookId);
+      if (book) book.stock += 1;
+    }
 
     const member = memoryDb.members.find((m) => m.nis === tx!.nis);
     if (member) {
@@ -105,14 +119,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    let detailMsg = 'Pengembalian tepat waktu tanpa denda.';
+    if (condition === 'hilang') {
+      detailMsg = `Buku dinyatakan hilang. Ganti rugi senilai Rp ${fineAmount.toLocaleString('id-ID')}.`;
+    } else if (condition === 'rusak') {
+      detailMsg = `Buku mengalami kerusakan fisik. Biaya perbaikan: Rp ${fineAmount.toLocaleString('id-ID')}.`;
+    } else if (fineAmount > 0) {
+      detailMsg = `Terlambat ${lateDays} hari. Denda keterlambatan: Rp ${fineAmount.toLocaleString('id-ID')}.`;
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Buku "${tx.bookTitle}" berhasil dikembalikan.${
-        fineAmount > 0 ? ` Denda keterlambatan: Rp ${fineAmount.toLocaleString('id-ID')}` : ''
-      }`,
+      message: `Buku "${tx.bookTitle}" berhasil dikembalikan. ${detailMsg}`,
       data: {
         transactionId: tx.id,
         returnDate: todayStr,
+        condition,
         lateDays,
         fine: fineAmount,
         status: newStatus,

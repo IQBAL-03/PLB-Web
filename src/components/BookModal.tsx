@@ -16,6 +16,7 @@ interface BookModalProps {
   onBorrow: (bookId: string, volumeNumber: number | null, nis: string, studentName: string) => void;
   onSubmitReview: (bookId: string, rating: number, reviewText: string, nis: string, studentName: string) => void;
   onPreviewCover?: (coverImg: string, title: string) => void;
+  onOpenRegister?: (nis: string) => void;
 }
 
 export default function BookModal({
@@ -28,6 +29,7 @@ export default function BookModal({
   onBorrow,
   onSubmitReview,
   onPreviewCover,
+  onOpenRegister,
 }: BookModalProps) {
   const [selectedVolumeNum, setSelectedVolumeNum] = useState<number>(1);
   const [activeModalAction, setActiveModalAction] = useState<'pinjam' | 'ulasan'>('pinjam');
@@ -36,7 +38,7 @@ export default function BookModal({
   const [borrowerNis, setBorrowerNis] = useState<string>('');
   const [borrowerName, setBorrowerName] = useState<string>('');
   const [nisStatusMessage, setNisStatusMessage] = useState<{
-    type: 'success' | 'warning' | 'error' | '';
+    type: 'success' | 'warning' | 'error' | 'not_found' | '';
     text: string;
   }>({ type: '', text: '' });
 
@@ -65,8 +67,8 @@ export default function BookModal({
   const currentStock = activeVolume ? activeVolume.stock : book.stock;
   const isOutOfStock = currentStock <= 0;
 
-  // Real-time NIS verification for borrowing
-  const handleNisChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Real-time NIS verification for borrowing with live API check
+  const handleNisChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.trim();
     setBorrowerNis(val);
 
@@ -76,7 +78,22 @@ export default function BookModal({
       return;
     }
 
-    const foundMember = members.find((m) => m.nis === val);
+    // 1. Check local members first
+    let foundMember = members.find((m) => String(m.nis) === val);
+
+    // 2. If not found locally, query live API
+    if (!foundMember && val.length >= 3) {
+      try {
+        const res = await fetch(`/api/members?nis=${encodeURIComponent(val)}`);
+        const resJson = await res.json();
+        if (resJson && resJson.success && resJson.data) {
+          foundMember = resJson.data;
+        }
+      } catch {
+        // network fallback
+      }
+    }
+
     if (foundMember) {
       setBorrowerName(foundMember.name);
       if (foundMember.status === 'Ada Denda') {
@@ -87,19 +104,24 @@ export default function BookModal({
       } else if (foundMember.status === 'Menunggu Verifikasi') {
         setNisStatusMessage({
           type: 'warning',
-          text: 'Status anggota Anda sedang menunggu verifikasi oleh pustakawan di Lt. 2.',
+          text: 'Status anggota Anda sedang "Menunggu Verifikasi" oleh pustakawan di Gedung Literasi Lt. 2.',
+        });
+      } else if (foundMember.activeLoans >= 2) {
+        setNisStatusMessage({
+          type: 'error',
+          text: 'Batas maksimal peminjaman (2 buku aktif) telah tercapai.',
         });
       } else {
         setNisStatusMessage({
           type: 'success',
-          text: `Siswa terverifikasi: ${foundMember.name} (${foundMember.classRoom}) - Status: ${foundMember.status}`,
+          text: `Siswa terverifikasi: ${foundMember.name} (${foundMember.classRoom}) - Status Kartu: ${foundMember.status}`,
         });
       }
     } else {
       setBorrowerName('');
       setNisStatusMessage({
-        type: 'error',
-        text: 'NIS tidak ditemukan di sistem. Silakan mendaftar anggota baru terlebih dahulu.',
+        type: 'not_found',
+        text: 'NIS tidak ditemukan di sistem perpustakaan.',
       });
     }
   };
@@ -368,15 +390,29 @@ export default function BookModal({
                           />
                           {nisStatusMessage.text && (
                             <div
-                              className={`mt-1.5 text-xs p-2 rounded font-medium ${
+                              className={`mt-1.5 text-xs p-2.5 rounded-lg font-medium flex flex-wrap items-center justify-between gap-1.5 ${
                                 nisStatusMessage.type === 'success'
                                   ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                                   : nisStatusMessage.type === 'error'
                                   ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                                  : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  : nisStatusMessage.type === 'warning'
+                                  ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  : 'bg-rose-50 text-rose-900 border border-rose-200'
                               }`}
                             >
-                              {nisStatusMessage.text}
+                              <span>{nisStatusMessage.text}</span>
+                              {nisStatusMessage.type === 'not_found' && onOpenRegister && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onClose();
+                                    onOpenRegister(borrowerNis);
+                                  }}
+                                  className="underline font-bold text-rose-900 hover:text-rose-950 cursor-pointer"
+                                >
+                                  Daftar Anggota Sekarang &rarr;
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -398,11 +434,19 @@ export default function BookModal({
 
                         <button
                           type="submit"
-                          disabled={nisStatusMessage.type === 'error'}
-                          className={`w-full font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-lg transition-colors cursor-pointer shadow-sm mt-1 ${
-                            nisStatusMessage.type === 'error'
+                          disabled={
+                            nisStatusMessage.type === 'error' ||
+                            nisStatusMessage.type === 'not_found' ||
+                            !borrowerNis ||
+                            !borrowerName
+                          }
+                          className={`w-full font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-lg transition-colors shadow-sm mt-1 ${
+                            nisStatusMessage.type === 'error' ||
+                            nisStatusMessage.type === 'not_found' ||
+                            !borrowerNis ||
+                            !borrowerName
                               ? 'bg-stone-300 text-stone-500 cursor-not-allowed'
-                              : 'bg-rose-900 hover:bg-rose-950 text-white'
+                              : 'bg-rose-900 hover:bg-rose-950 text-white cursor-pointer'
                           }`}
                         >
                           Konfirmasi Pinjam {book.hasVolumes && activeVolume ? `(Vol. ${activeVolume.volumeNumber})` : ''} (7 Hari)

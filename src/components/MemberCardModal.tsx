@@ -10,6 +10,8 @@ interface MemberCardModalProps {
   transactions: Transaction[];
   onClose: () => void;
   onRegisterMember: (nis: string, name: string, classRoom: string) => void;
+  initialNis?: string;
+  initialTab?: 'cek' | 'daftar';
 }
 
 export default function MemberCardModal({
@@ -18,43 +20,88 @@ export default function MemberCardModal({
   transactions,
   onClose,
   onRegisterMember,
+  initialNis = '',
+  initialTab = 'cek',
 }: MemberCardModalProps) {
-  const [searchNis, setSearchNis] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'cek' | 'daftar'>('cek');
+  const [searchNis, setSearchNis] = useState<string>(initialNis);
+  const [activeTab, setActiveTab] = useState<'cek' | 'daftar'>(initialTab);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   // New registration fields
-  const [regNis, setRegNis] = useState<string>('');
+  const [regNis, setRegNis] = useState<string>(initialNis);
   const [regName, setRegName] = useState<string>('');
   const [regClass, setRegClass] = useState<string>('XII-PPLG-1');
   const [regSuccess, setRegSuccess] = useState<boolean>(false);
 
+  React.useEffect(() => {
+    if (initialNis) {
+      setSearchNis(initialNis);
+      setRegNis(initialNis);
+      // Auto-check if initialNis is provided
+      const local = members.find((m) => m.nis === initialNis);
+      if (local) {
+        setSelectedMember(local);
+        setHasSearched(true);
+      }
+    }
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialNis, initialTab, members]);
+
   if (!isOpen) return null;
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const query = searchNis.trim();
     if (!query) return;
 
-    const found = members.find((m) => m.nis === query);
-    setSelectedMember(found || null);
+    setIsSearching(true);
     setHasSearched(true);
+
+    // 1. Try local first
+    let found = members.find((m) => m.nis === query) || null;
+
+    // 2. Fetch live from API for latest state
+    try {
+      const res = await fetch(`/api/members?nis=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (data && data.success && data.data) {
+        found = data.data;
+      }
+    } catch (err) {
+      console.warn('Could not query members API:', err);
+    }
+
+    setSelectedMember(found);
+    setIsSearching(false);
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     if (!regNis.trim() || !regName.trim()) return;
 
-    onRegisterMember(regNis.trim(), regName.trim(), regClass);
+    const trimmedNis = regNis.trim();
+    const trimmedName = regName.trim();
+    onRegisterMember(trimmedNis, trimmedName, regClass);
     setRegSuccess(true);
-    setSearchNis(regNis.trim());
+    setSearchNis(trimmedNis);
+
     setTimeout(() => {
       setRegSuccess(false);
       setActiveTab('cek');
-      const found = members.find((m) => m.nis === regNis.trim());
-      if (found) setSelectedMember(found);
-    }, 1500);
+      setSelectedMember({
+        nis: trimmedNis,
+        name: trimmedName,
+        classRoom: regClass,
+        activeLoans: 0,
+        status: 'Menunggu Verifikasi',
+        createdAt: new Date().toISOString(),
+      });
+      setHasSearched(true);
+    }, 1200);
   };
 
   const memberLoans = selectedMember

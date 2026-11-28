@@ -86,16 +86,36 @@ export default function AdminPage() {
     router.push('/login');
   };
 
-  // Return book action (API-connected)
+  // Search & Filter states
+  const [txSearch, setTxSearch] = useState('');
+  const [txStatusFilter, setTxStatusFilter] = useState<'Semua' | 'Dipinjam' | 'Kembali' | 'Terlambat'>('Semua');
+  const [memberSearch, setMemberSearch] = useState('');
+  const [bookSearch, setBookSearch] = useState('');
+
+  // Return book action with condition (Normal, Rusak, Hilang)
   const handleReturnBook = async (txId: string) => {
     const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
+
+    const conditionInput = prompt(
+      `Pengembalian Buku "${tx.bookTitle}" (Peminjam: ${tx.studentName})\n\nPilih kondisi buku:\n- Ketik "normal" : Pengembalian biasa (denda dihitung Rp 1.000 / hari jika terlambat)\n- Ketik "rusak"  : Ada kerusakan fisik buku\n- Ketik "hilang" : Buku hilang (denda seharga buku, stok tidak bertambah)\n\nMasukkan kondisi:`,
+      'normal'
+    );
+
+    if (conditionInput === null) return;
+
+    const condition = conditionInput.trim().toLowerCase();
+    let customFine = 0;
+    if (condition === 'rusak') {
+      const finePrompt = prompt('Masukkan nominal denda kerusakan buku (Rp):', '15000');
+      customFine = Number(finePrompt) || 15000;
+    }
 
     try {
       const res = await fetch('/api/transactions/return', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactionId: txId }),
+        body: JSON.stringify({ transactionId: txId, condition, customFine }),
       });
 
       const result = await res.json();
@@ -108,6 +128,28 @@ export default function AdminPage() {
       await loadAdminData();
     } catch (err: any) {
       alert(err.message || 'Terjadi kesalahan saat memproses pengembalian');
+    }
+  };
+
+  // Settle / Pay fine action (API-connected)
+  const handlePayFine = async (txId?: string, nis?: string) => {
+    try {
+      const res = await fetch('/api/transactions/pay-fine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionId: txId, nis }),
+      });
+
+      const result = await res.json();
+      if (!result.success) {
+        alert(result.error || 'Gagal melunaskan denda');
+        return;
+      }
+
+      alert(result.message || 'Denda berhasil dilunaskan!');
+      await loadAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat melunaskan denda');
     }
   };
 
@@ -129,8 +171,34 @@ export default function AdminPage() {
       setMembers((prev) =>
         prev.map((m) => (m.nis === nis ? { ...m, status: newStatus } : m))
       );
+
+      // If status cleared to 'Aktif', also pay fine in transactions
+      if (newStatus === 'Aktif') {
+        await handlePayFine(undefined, nis);
+      }
     } catch (err: any) {
       alert(err.message || 'Terjadi kesalahan saat memperbarui status anggota');
+    }
+  };
+
+  // Delete member (API-connected)
+  const handleDeleteMember = async (nis: string, name: string) => {
+    if (!confirm(`Hapus anggota "${name}" (NIS: ${nis}) dari sistem perpustakaan?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/members/${nis}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (!result.success) {
+        alert(result.error || 'Gagal menghapus anggota');
+        return;
+      }
+
+      alert(`Anggota ${name} (${nis}) berhasil dihapus.`);
+      setMembers((prev) => prev.filter((m) => m.nis !== nis));
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat menghapus anggota');
     }
   };
 
@@ -207,6 +275,39 @@ export default function AdminPage() {
   const totalStock = books.reduce((acc, b) => acc + b.stock, 0);
   const activeLoansCount = transactions.filter((t) => t.status === 'Dipinjam').length;
   const totalFines = transactions.reduce((acc, t) => acc + (t.fine || 0), 0);
+
+  // Filtered lists for admin tables
+  const filteredTransactions = transactions.filter((t) => {
+    const matchStatus = txStatusFilter === 'Semua' ? true : t.status === txStatusFilter;
+    const q = txSearch.toLowerCase().trim();
+    const matchQuery =
+      !q ||
+      t.studentName.toLowerCase().includes(q) ||
+      t.nis.toLowerCase().includes(q) ||
+      t.bookTitle.toLowerCase().includes(q);
+    return matchStatus && matchQuery;
+  });
+
+  const filteredMembers = members.filter((m) => {
+    const q = memberSearch.toLowerCase().trim();
+    return (
+      !q ||
+      m.name.toLowerCase().includes(q) ||
+      m.nis.toLowerCase().includes(q) ||
+      m.classRoom.toLowerCase().includes(q)
+    );
+  });
+
+  const filteredBooks = books.filter((b) => {
+    const q = bookSearch.toLowerCase().trim();
+    return (
+      !q ||
+      b.title.toLowerCase().includes(q) ||
+      b.author.toLowerCase().includes(q) ||
+      b.shelf.toLowerCase().includes(q) ||
+      b.id.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="bg-[#F6F2EA] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-900 selection:text-white">
@@ -432,18 +533,41 @@ export default function AdminPage() {
 
             {/* Recent Transactions Table */}
             <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
-              <div className="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
+              <div className="px-6 py-4 border-b border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="font-serif font-bold text-base text-stone-900">
-                    Sirkulasi Peminjaman Terbaru
+                    Sirkulasi Peminjaman Buku
                   </h2>
                   <p className="text-xs text-stone-500">
                     Daftar peminjaman buku oleh siswa
                   </p>
                 </div>
-                <span className="text-xs font-semibold text-stone-600 bg-stone-100 px-3 py-1 rounded-full">
-                  {transactions.length} Riwayat
-                </span>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    value={txSearch}
+                    onChange={(e) => setTxSearch(e.target.value)}
+                    placeholder="Cari siswa, NIS, judul..."
+                    className="text-xs px-3 py-1.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-rose-800"
+                  />
+                  <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-lg text-xs font-semibold">
+                    {(['Semua', 'Dipinjam', 'Kembali', 'Terlambat'] as const).map((st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        onClick={() => setTxStatusFilter(st)}
+                        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                          txStatusFilter === st
+                            ? 'bg-rose-900 text-white shadow-xs'
+                            : 'text-stone-600 hover:text-stone-900'
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -459,7 +583,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
-                    {transactions.map((tx) => (
+                    {filteredTransactions.map((tx) => (
                       <tr key={tx.id} className="hover:bg-stone-50/50">
                         <td className="px-6 py-3.5">
                           <span className="font-bold text-stone-900 block">{tx.studentName}</span>
@@ -513,13 +637,23 @@ export default function AdminPage() {
         {/* Tab 2: Members */}
         {activeTab === 'members' && (
           <div className="space-y-6">
-            <div>
-              <h1 className="font-serif text-2xl font-bold text-stone-900">
-                Manajemen Anggota Siswa
-              </h1>
-              <p className="text-xs text-stone-500">
-                Verifikasi keaktifan kartu anggota dan status bebas denda
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-serif text-2xl font-bold text-stone-900">
+                  Manajemen Anggota Siswa
+                </h1>
+                <p className="text-xs text-stone-500">
+                  Verifikasi keaktifan kartu anggota dan status bebas denda
+                </p>
+              </div>
+
+              <input
+                type="text"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Cari siswa, NIS, kelas..."
+                className="text-xs px-3.5 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-rose-800 w-64 max-w-full"
+              />
             </div>
 
             <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
@@ -536,7 +670,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
-                    {members.map((m) => (
+                    {filteredMembers.map((m) => (
                       <tr key={m.nis} className="hover:bg-stone-50/50">
                         <td className="px-6 py-3.5 font-mono font-bold text-stone-900">{m.nis}</td>
                         <td className="px-6 py-3.5 font-semibold text-stone-800">{m.name}</td>
@@ -583,6 +717,14 @@ export default function AdminPage() {
                               Beri Denda
                             </button>
                           )}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMember(m.nis, m.name)}
+                            className="px-2 py-1 text-stone-400 hover:text-rose-700 hover:bg-rose-50 rounded text-[11px] cursor-pointer"
+                            title="Hapus Anggota"
+                          >
+                            Hapus
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -605,6 +747,14 @@ export default function AdminPage() {
                   Katalog, volume seri manga, dan ketersediaan stok fisik
                 </p>
               </div>
+
+              <input
+                type="text"
+                value={bookSearch}
+                onChange={(e) => setBookSearch(e.target.value)}
+                placeholder="Cari judul, penulis, rak..."
+                className="text-xs px-3.5 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-rose-800 w-64 max-w-full"
+              />
             </div>
 
             {/* Add Book Form */}
@@ -717,7 +867,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
-                    {books.map((b) => (
+                    {filteredBooks.map((b) => (
                       <tr key={b.id} className="hover:bg-stone-50/50">
                         <td className="px-6 py-3.5 flex items-center gap-3">
                           <img
@@ -791,6 +941,79 @@ export default function AdminPage() {
               <div className="bg-white p-5 rounded-xl border border-stone-200">
                 <span className="text-[10px] font-bold text-emerald-800 uppercase block">Tarif Denda Resmi</span>
                 <span className="font-serif font-black text-2xl text-emerald-900">Rp 1.000 / Hari</span>
+              </div>
+            </div>
+
+            {/* Fines Details Table */}
+            <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
+              <div className="px-6 py-4 border-b border-stone-200">
+                <h3 className="font-serif font-bold text-base text-stone-900">
+                  Rincian Transaksi yang Terkena Denda
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Daftar keterlambatan dan status pelunasan denda sirkulasi siswa
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-stone-50 text-stone-600 font-bold uppercase tracking-wider border-b border-stone-200">
+                    <tr>
+                      <th className="px-6 py-3">NIS &amp; Siswa</th>
+                      <th className="px-6 py-3">Judul Buku</th>
+                      <th className="px-6 py-3">Jatuh Tempo</th>
+                      <th className="px-6 py-3">Denda</th>
+                      <th className="px-6 py-3">Status Denda</th>
+                      <th className="px-6 py-3 text-right">Aksi Petugas</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {transactions
+                      .filter((t) => (t.fine || 0) > 0)
+                      .map((tx) => (
+                        <tr key={tx.id} className="hover:bg-stone-50/50">
+                          <td className="px-6 py-3.5">
+                            <span className="font-bold text-stone-900 block">{tx.studentName}</span>
+                            <span className="text-[11px] text-stone-400">NIS: {tx.nis} &bull; {tx.classRoom}</span>
+                          </td>
+                          <td className="px-6 py-3.5 font-medium text-stone-800">{tx.bookTitle}</td>
+                          <td className="px-6 py-3.5 text-stone-600">{tx.dueDate}</td>
+                          <td className="px-6 py-3.5 font-bold text-rose-900">
+                            Rp {(tx.fine || 0).toLocaleString('id-ID')}
+                          </td>
+                          <td className="px-6 py-3.5">
+                            {tx.finePaid ? (
+                              <span className="inline-block bg-emerald-100 text-emerald-900 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
+                                Lunas
+                              </span>
+                            ) : (
+                              <span className="inline-block bg-rose-100 text-rose-900 font-bold px-2.5 py-0.5 rounded-full text-[10px] animate-pulse">
+                                Belum Dibayar
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-3.5 text-right">
+                            {!tx.finePaid && (
+                              <button
+                                type="button"
+                                onClick={() => handlePayFine(tx.id, tx.nis)}
+                                className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded font-semibold text-[11px] transition-colors cursor-pointer"
+                              >
+                                Lunaskan Denda
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    {transactions.filter((t) => (t.fine || 0) > 0).length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-8 text-center text-stone-400">
+                          Tidak ada catatan denda saat ini. Seluruh peminjaman tertib bebas denda.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

@@ -42,10 +42,19 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export function isTiDBConfigured(): boolean {
+  const host = process.env.TIDB_HOST?.trim();
+  const user = process.env.TIDB_USER?.trim();
+  const pass = process.env.TIDB_PASSWORD?.trim();
+
+  // Ensure it's not the default placeholder template
   return Boolean(
-    process.env.TIDB_HOST &&
-    process.env.TIDB_USER &&
-    process.env.TIDB_PASSWORD
+    host &&
+    user &&
+    pass &&
+    user !== 'your_tidb_username' &&
+    pass !== 'your_tidb_password' &&
+    !user.includes('your_') &&
+    !pass.includes('your_')
   );
 }
 
@@ -261,17 +270,20 @@ export function getTiDBPool(): Pool | null {
 
 /**
  * Generic query function that queries TiDB if configured, or returns null to indicate
- * that the in-memory fallback should be used.
+ * that the in-memory fallback should be used. Catches database errors gracefully so the app
+ * continues working even if the cloud database is unreachable or offline.
  */
 export async function queryTiDB<T = any>(sql: string, params: any[] = []): Promise<T[] | null> {
-  const pool = getTiDBPool();
-  if (!pool) return null;
+  if (!isTiDBConfigured()) return null;
 
   try {
+    const pool = getTiDBPool();
+    if (!pool) return null;
+
     const [rows] = await pool.query(sql, params);
     return rows as T[];
-  } catch (error) {
-    console.error('[TiDB Error]', error);
-    throw error;
+  } catch (error: any) {
+    console.warn('[TiDB Fallback -> In-Memory Active]:', error.message || error);
+    return null;
   }
 }

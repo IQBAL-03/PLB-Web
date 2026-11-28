@@ -47,6 +47,8 @@ export default function HomePage() {
   // Modal states
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isMemberCardOpen, setIsMemberCardOpen] = useState<boolean>(false);
+  const [memberModalNis, setMemberModalNis] = useState<string>('');
+  const [memberModalTab, setMemberModalTab] = useState<'cek' | 'daftar'>('cek');
   const [previewCover, setPreviewCover] = useState<{ isOpen: boolean; url: string; title: string }>({
     isOpen: false,
     url: '',
@@ -60,6 +62,14 @@ export default function HomePage() {
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
+  };
+
+  // Quick switch from Book Borrowing Modal to Member Registration
+  const handleOpenRegisterFromBorrow = (nis: string) => {
+    setSelectedBook(null);
+    setMemberModalNis(nis);
+    setMemberModalTab('daftar');
+    setIsMemberCardOpen(true);
   };
 
   // Fetch live data from API on mount with localStorage & starter fallback
@@ -116,8 +126,20 @@ export default function HomePage() {
 
     loadLiveApiData();
 
+    // Auto-sync when user returns to window / tab
+    const handleFocus = () => {
+      if (document.visibilityState === 'visible') {
+        loadLiveApiData();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
     };
   }, []);
 
@@ -365,6 +387,7 @@ export default function HomePage() {
         onBorrow={handleBorrowBook}
         onSubmitReview={handleSubmitReview}
         onPreviewCover={handleOpenCoverPreview}
+        onOpenRegister={handleOpenRegisterFromBorrow}
       />
 
       {/* Member Card & Digital ID Modal */}
@@ -372,7 +395,12 @@ export default function HomePage() {
         isOpen={isMemberCardOpen}
         members={members}
         transactions={transactions}
-        onClose={() => setIsMemberCardOpen(false)}
+        initialNis={memberModalNis}
+        initialTab={memberModalTab}
+        onClose={() => {
+          setIsMemberCardOpen(false);
+          setMemberModalNis('');
+        }}
         onRegisterMember={handleRegisterMember}
       />
 
