@@ -19,10 +19,17 @@
 
 # production
 /build
+dist/
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 *.pem
+*.log
+*.tmp
+*.bak
 
 # debug
 npm-debug.log*
@@ -33,14 +40,38 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# vercel
+# vercel & caches
 .vercel
+.vercel/
+.turbo/
+.cache/
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
+# IDE and Editor Directories
+.idea/
+*.swp
+*.swo
+*~
+
+# AI Agents & Planning Docs
 .agents
+.agents/
 Agent.md
-image.png
+AGENTS.md
+plan.md
+PLAN.md
 pw-db.md
+
+# Screenshots and Binary Media
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.bmp
+*.ico
+!cover-sementara/
+!cover-sementara/**
