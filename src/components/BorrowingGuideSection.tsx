@@ -35,22 +35,14 @@ export default function BorrowingGuideSection() {
     <section id="panduan" className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Outer Solid Container */}
       <div className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-stone-200 shadow-md relative overflow-hidden">
-        {/* Section Header: Clean without 'Panduan Siswa' badge */}
-        <div className="mb-8 pb-5 border-b-2 border-stone-100 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
-              Tata Cara Peminjaman Buku
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-xl font-medium">
-              Alur peminjaman buku sekolah digital yang mudah dan cepat untuk seluruh siswa
-            </p>
-          </div>
-          <div className="flex items-center self-start sm:self-auto">
-            <span className="text-xs font-bold text-stone-800 bg-amber-100 border border-amber-300 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-rose-900" />
-              <span>4 Langkah Peminjaman</span>
-            </span>
-          </div>
+        {/* Section Header: Clean title without extra badges */}
+        <div className="mb-8 pb-5 border-b-2 border-stone-100">
+          <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
+            Tata Cara Peminjaman Buku
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-xl font-medium">
+            Alur peminjaman buku sekolah digital yang mudah dan cepat untuk seluruh siswa
+          </p>
         </div>
 
         {/* 4 Steps Grid: Polos, Solid Default (Tidak Fading), dengan Efek Hover Halus */}
