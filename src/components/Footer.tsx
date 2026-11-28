@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { MapPin, Mail, Clock, ArrowRight, BookOpen } from 'lucide-react';
+import { MapPin, Mail, Clock, BookOpen } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -38,27 +38,23 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5 text-stone-400">
               <li>
-                <Link href="#katalog" className="hover:text-white transition-colors flex items-center gap-1.5 group">
-                  <ArrowRight className="w-3 h-3 text-stone-500 group-hover:text-stone-300 group-hover:translate-x-0.5 transition-all" />
-                  <span>Pencarian Buku Mandiri</span>
+                <Link href="#katalog" className="hover:text-white transition-colors block">
+                  Pencarian Buku Mandiri
                 </Link>
               </li>
               <li>
-                <Link href="#sorotan" className="hover:text-white transition-colors flex items-center gap-1.5 group">
-                  <ArrowRight className="w-3 h-3 text-stone-500 group-hover:text-stone-300 group-hover:translate-x-0.5 transition-all" />
-                  <span>Buku Pilihan Pekan Ini</span>
+                <Link href="#sorotan" className="hover:text-white transition-colors block">
+                  Buku Pilihan Pekan Ini
                 </Link>
               </li>
               <li>
-                <Link href="#panduan" className="hover:text-white transition-colors flex items-center gap-1.5 group">
-                  <ArrowRight className="w-3 h-3 text-stone-500 group-hover:text-stone-300 group-hover:translate-x-0.5 transition-all" />
-                  <span>Tata Cara Peminjaman</span>
+                <Link href="#panduan" className="hover:text-white transition-colors block">
+                  Tata Cara Peminjaman
                 </Link>
               </li>
               <li>
-                <Link href="#profil" className="hover:text-white transition-colors flex items-center gap-1.5 group">
-                  <ArrowRight className="w-3 h-3 text-stone-500 group-hover:text-stone-300 group-hover:translate-x-0.5 transition-all" />
-                  <span>Jam Layanan Perpustakaan</span>
+                <Link href="#profil" className="hover:text-white transition-colors block">
+                  Jam Layanan Perpustakaan
                 </Link>
               </li>
               <li className="pt-1.5">
