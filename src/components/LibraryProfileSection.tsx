@@ -19,7 +19,7 @@ export default function LibraryProfileSection() {
     },
     {
       title: 'JAM LAYANAN OPERASIONAL',
-      desc: 'Layanan sirkulasi peminjaman, pengembalian buku fisik, dan konsultasi literasi akademik di Gedung Literasi Lt. 2 buka setiap hari sekolah dengan jadwal:',
+      desc: 'Layanan sirkulasi buku fisik dan ruang baca Gedung Literasi Lt. 2 buka setiap hari sekolah:',
       btnText: 'TATA CARA PINJAM',
       btnHref: '#panduan',
       image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80',
@@ -48,10 +48,10 @@ export default function LibraryProfileSection() {
   const handleActionClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       e.preventDefault();
-      const targetId = href.substring(1);
-      const element = document.getElementById(targetId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const targetId = href.replace('#', '');
+      const elem = document.getElementById(targetId);
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
   };
@@ -62,7 +62,7 @@ export default function LibraryProfileSection() {
     <section id="profil" className="py-6 sm:py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Outer Card with Sleek Border & Proportional Radius */}
       <div className="relative rounded-3xl shadow-xl overflow-hidden border border-rose-900/30">
-        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[360px] md:h-[370px] lg:h-[380px]">
+        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[360px] md:h-[390px] lg:h-[400px]">
           
           {/* Left Column: Proportional Library Photo */}
           <div className="md:col-span-6 lg:col-span-7 relative bg-stone-900 overflow-hidden h-52 sm:h-60 md:h-full">
@@ -88,43 +88,31 @@ export default function LibraryProfileSection() {
               </h2>
 
               <p className={`text-xs sm:text-[13px] text-stone-200 leading-relaxed font-normal max-w-md ${
-                active.isScheduleSlide ? 'mb-3' : 'mb-6 sm:mb-8'
+                active.isScheduleSlide ? 'mb-2.5' : 'mb-6 sm:mb-8'
               }`}>
                 {active.desc}
               </p>
 
               {/* Clean & Elegant Operating Hours Schedule (Khusus Slide 2) */}
               {active.isScheduleSlide && (
-                <div className="bg-black/30 backdrop-blur-md rounded-2xl p-3 sm:p-3.5 border border-white/15 max-w-md mb-4 shadow-sm">
-                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-amber-300" />
-                      <span className="text-[11px] font-bold text-amber-200 tracking-wider uppercase">
-                        Jadwal Buka Perpustakaan
-                      </span>
+                <div className="grid grid-cols-2 gap-2 sm:gap-2.5 max-w-md mb-3">
+                  <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-2 sm:p-2.5 border border-white/15 transition-colors">
+                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-amber-300 mb-0.5">
+                      <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                      <span>Senin – Kamis</span>
                     </div>
-                    <span className="text-[10px] font-semibold text-emerald-300 bg-emerald-950/70 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                      Hari Sekolah
-                    </span>
+                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                      07.00 – 15.00 <span className="text-[10px] font-normal text-stone-300">WIB</span>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-white/5 rounded-xl p-2.5 border border-white/10">
-                      <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-0.5">
-                        Senin – Kamis
-                      </span>
-                      <span className="font-bold text-white text-xs sm:text-sm">
-                        07.00 – 15.00 <span className="text-[10px] text-amber-200 font-normal">WIB</span>
-                      </span>
+                  <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-2 sm:p-2.5 border border-white/15 transition-colors">
+                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-amber-300 mb-0.5">
+                      <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                      <span>Jumat</span>
                     </div>
-
-                    <div className="bg-white/5 rounded-xl p-2.5 border border-white/10">
-                      <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-0.5">
-                        Jumat
-                      </span>
-                      <span className="font-bold text-white text-xs sm:text-sm">
-                        07.00 – 13.15 <span className="text-[10px] text-amber-200 font-normal">WIB</span>
-                      </span>
+                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                      07.00 – 13.15 <span className="text-[10px] font-normal text-stone-300">WIB</span>
                     </div>
                   </div>
                 </div>
