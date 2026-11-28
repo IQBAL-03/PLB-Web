@@ -116,10 +116,10 @@ export default function CatalogSection({
             const displayYear = hasValidYear
               ? book.year
               : book.id === 'N001'
-              ? '2023'
-              : book.id === 'M004'
-              ? '2004'
-              : '';
+                ? '2023'
+                : book.id === 'M004'
+                  ? '2004'
+                  : '';
 
             return (
               <div
@@ -138,23 +138,26 @@ export default function CatalogSection({
                       loading="lazy"
                     />
 
-                    {/* Magnifying Glass Zoom Icon on top-right */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (onPreviewCover) {
-                          onPreviewCover(book.coverImg || '/img/placeholder-book.svg', book.title);
-                        }
-                      }}
-                      className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-stone-900/75 hover:bg-stone-950 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md backdrop-blur-xs cursor-pointer z-10"
-                      title="Perbesar foto sampul"
-                      aria-label="Perbesar foto sampul"
-                    >
-                      <svg className="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                      </svg>
-                    </button>
+                    {/* Center "Perbesar Foto" Pill Button on Hover (Sesuai Desain Acuan) */}
+                    <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none z-10">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onPreviewCover) {
+                            onPreviewCover(book.coverImg || '/img/placeholder-book.svg', book.title);
+                          }
+                        }}
+                        className="pointer-events-auto bg-stone-900/90 hover:bg-black text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 transition-all duration-200 hover:scale-105 cursor-pointer backdrop-blur-xs"
+                        title="Klik untuk memperbesar foto"
+                        aria-label={`Perbesar foto sampul ${book.title}`}
+                      >
+                        <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                        </svg>
+                        <span>Perbesar Foto</span>
+                      </button>
+                    </div>
 
                     {/* Badge top-left */}
                     <div className="absolute top-2.5 left-2.5 pointer-events-none">
