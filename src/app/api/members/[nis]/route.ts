@@ -44,3 +44,37 @@ export async function PUT(
     );
   }
 }
+
+// DELETE /api/members/[nis] - Delete a member (Admin)
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ nis: string }> }
+) {
+  try {
+    const { nis } = await params;
+
+    if (!nis) {
+      return NextResponse.json(
+        { success: false, error: 'NIS anggota wajib disertakan' },
+        { status: 400 }
+      );
+    }
+
+    if (isTiDBConfigured()) {
+      await queryTiDB('DELETE FROM members WHERE nis = ?', [nis]);
+    }
+
+    memoryDb.members = memoryDb.members.filter((m) => m.nis !== nis);
+
+    return NextResponse.json({
+      success: true,
+      message: `Anggota dengan NIS ${nis} berhasil dihapus`,
+    });
+  } catch (error: any) {
+    console.error('Error deleting member:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Gagal menghapus anggota' },
+      { status: 500 }
+    );
+  }
+}

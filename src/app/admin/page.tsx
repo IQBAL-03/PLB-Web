@@ -21,6 +21,8 @@ export default function AdminPage() {
   const [books, setBooks] = useState<Book[]>(starterBooks);
   const [members, setMembers] = useState<Member[]>(starterMembers);
   const [transactions, setTransactions] = useState<Transaction[]>(starterTransactions);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // New book form states
   const [newBookTitle, setNewBookTitle] = useState('');
@@ -31,7 +33,33 @@ export default function AdminPage() {
   const [newBookCover, setNewBookCover] = useState('');
   const [newBookSynopsis, setNewBookSynopsis] = useState('');
 
-  // Check auth
+  // Fetch live data from backend APIs
+  const loadAdminData = async () => {
+    setIsLoadingData(true);
+    try {
+      const [booksRes, membersRes, txRes] = await Promise.allSettled([
+        fetch('/api/books').then((r) => r.json()),
+        fetch('/api/members').then((r) => r.json()),
+        fetch('/api/transactions').then((r) => r.json()),
+      ]);
+
+      if (booksRes.status === 'fulfilled' && booksRes.value?.success && Array.isArray(booksRes.value.data)) {
+        setBooks(booksRes.value.data);
+      }
+      if (membersRes.status === 'fulfilled' && membersRes.value?.success && Array.isArray(membersRes.value.data)) {
+        setMembers(membersRes.value.data);
+      }
+      if (txRes.status === 'fulfilled' && txRes.value?.success && Array.isArray(txRes.value.data)) {
+        setTransactions(txRes.value.data);
+      }
+    } catch (err) {
+      console.error('Failed to load admin data from API:', err);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  // Check auth & load data on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('sisperpus_token');
@@ -47,6 +75,7 @@ export default function AdminPage() {
         router.replace('/login');
       }
     }
+    loadAdminData();
   }, [router]);
 
   const handleLogout = () => {
@@ -57,102 +86,121 @@ export default function AdminPage() {
     router.push('/login');
   };
 
-  // Return book action
+  // Return book action (API-connected)
   const handleReturnBook = async (txId: string) => {
-    const todayStr = new Date().toISOString().split('T')[0];
     const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
 
-    const dueDate = new Date(tx.dueDate);
-    const returnDate = new Date(todayStr);
-    const diffDays = Math.max(
-      0,
-      Math.ceil((returnDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24))
-    );
-    const fineAmount = diffDays * 1000;
+    try {
+      const res = await fetch('/api/transactions/return', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionId: txId }),
+      });
 
-    // Update transactions
-    setTransactions((prev) =>
-      prev.map((t) =>
-        t.id === txId
-          ? {
-              ...t,
-              status: diffDays > 0 ? 'Terlambat' : 'Kembali',
-              returnDate: todayStr,
-              fine: fineAmount,
-              finePaid: fineAmount === 0,
-            }
-          : t
-      )
-    );
+      const result = await res.json();
+      if (!result.success) {
+        alert(result.error || 'Gagal memproses pengembalian buku');
+        return;
+      }
 
-    // Update book stock
-    setBooks((prev) =>
-      prev.map((b) => (b.id === tx.bookId ? { ...b, stock: b.stock + 1 } : b))
-    );
-
-    // Update member loans & status
-    setMembers((prev) =>
-      prev.map((m) =>
-        m.nis === tx.nis
-          ? {
-              ...m,
-              activeLoans: Math.max(0, m.activeLoans - 1),
-              status: fineAmount > 0 ? 'Ada Denda' : m.status,
-            }
-          : m
-      )
-    );
-
-    alert(
-      `Buku "${tx.bookTitle}" berhasil dikembalikan!${
-        fineAmount > 0
-          ? `\nKeterlambatan: ${diffDays} hari.\nDenda yang harus dibayar: Rp ${fineAmount.toLocaleString('id-ID')}`
-          : '\nPengembalian tepat waktu tanpa denda.'
-      }`
-    );
+      alert(result.message || `Buku "${tx.bookTitle}" berhasil dikembalikan.`);
+      await loadAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat memproses pengembalian');
+    }
   };
 
-  // Verify member
-  const handleUpdateMemberStatus = (nis: string, newStatus: MemberStatus) => {
-    setMembers((prev) =>
-      prev.map((m) => (m.nis === nis ? { ...m, status: newStatus } : m))
-    );
+  // Verify / Update member status (API-connected)
+  const handleUpdateMemberStatus = async (nis: string, newStatus: MemberStatus) => {
+    try {
+      const res = await fetch(`/api/members/${nis}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const result = await res.json();
+      if (!result.success) {
+        alert(result.error || 'Gagal memperbarui status anggota');
+        return;
+      }
+
+      setMembers((prev) =>
+        prev.map((m) => (m.nis === nis ? { ...m, status: newStatus } : m))
+      );
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat memperbarui status anggota');
+    }
   };
 
-  // Add new book
-  const handleAddBook = (e: React.FormEvent) => {
+  // Add new book (API-connected)
+  const handleAddBook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBookTitle.trim() || !newBookAuthor.trim()) return;
 
-    const newBook: Book = {
-      id: `B-${Date.now()}`,
-      title: newBookTitle.trim(),
-      author: newBookAuthor.trim(),
-      category: newBookCategory,
-      language: 'Bahasa Indonesia',
-      price: 60000,
-      year: new Date().getFullYear().toString(),
-      shelf: newBookShelf,
-      stock: Number(newBookStock),
-      rating: 0,
-      reviewsCount: 0,
-      borrowCount: 0,
-      badge: 'Buku Baru',
-      synopsis: newBookSynopsis || 'Sinopsis buku perpustakaan sekolah.',
-      coverImg: newBookCover || '/img/placeholder-book.svg',
-      isPopular: false,
-      hasVolumes: false,
-      volumes: [],
-      genres: [],
-    };
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        title: newBookTitle.trim(),
+        author: newBookAuthor.trim(),
+        category: newBookCategory,
+        language: 'Bahasa Indonesia',
+        price: 60000,
+        year: new Date().getFullYear().toString(),
+        shelf: newBookShelf,
+        stock: Number(newBookStock),
+        synopsis: newBookSynopsis || 'Sinopsis buku perpustakaan sekolah.',
+        coverImg: newBookCover || '',
+        badge: 'Buku Baru',
+      };
 
-    setBooks((prev) => [newBook, ...prev]);
-    setNewBookTitle('');
-    setNewBookAuthor('');
-    setNewBookCover('');
-    setNewBookSynopsis('');
-    alert(`Buku "${newBook.title}" berhasil ditambahkan ke katalog perpustakaan!`);
+      const res = await fetch('/api/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (!result.success) {
+        alert(result.error || 'Gagal menambahkan buku baru');
+        return;
+      }
+
+      alert(`Buku "${payload.title}" berhasil ditambahkan ke katalog perpustakaan!`);
+      setNewBookTitle('');
+      setNewBookAuthor('');
+      setNewBookCover('');
+      setNewBookSynopsis('');
+      await loadAdminData();
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat menyimpan buku');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Delete book (API-connected)
+  const handleDeleteBook = async (bookId: string, title: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus buku "${title}" dari katalog?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/books?id=${bookId}`, {
+        method: 'DELETE',
+      });
+      const result = await res.json();
+      if (!result.success) {
+        alert(result.error || 'Gagal menghapus buku');
+        return;
+      }
+
+      alert(`Buku "${title}" berhasil dihapus.`);
+      setBooks((prev) => prev.filter((b) => b.id !== bookId));
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat menghapus buku');
+    }
   };
 
   // Metric computations
@@ -231,6 +279,29 @@ export default function AdminPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={loadAdminData}
+                disabled={isLoadingData}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer disabled:opacity-60"
+                title="Segarkan data dari server"
+              >
+                <svg
+                  className={`w-3.5 h-3.5 text-stone-600 ${isLoadingData ? 'animate-spin' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                <span>{isLoadingData ? 'Memuat...' : 'Segarkan'}</span>
+              </button>
+
               <Link
                 href="/"
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors"
@@ -642,6 +713,7 @@ export default function AdminPage() {
                       <th className="px-6 py-3">Rak</th>
                       <th className="px-6 py-3">Stok</th>
                       <th className="px-6 py-3">Rating</th>
+                      <th className="px-6 py-3 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
@@ -665,6 +737,15 @@ export default function AdminPage() {
                         <td className="px-6 py-3.5">
                           <span className="font-bold text-amber-600">★ {b.rating.toFixed(1)}</span>
                           <span className="text-[10px] text-stone-400 block">({b.reviewsCount} ulasan)</span>
+                        </td>
+                        <td className="px-6 py-3.5 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBook(b.id, b.title)}
+                            className="px-2.5 py-1 text-rose-700 hover:text-rose-900 hover:bg-rose-50 border border-rose-200 rounded text-[11px] font-semibold cursor-pointer transition-colors"
+                          >
+                            Hapus
+                          </button>
                         </td>
                       </tr>
                     ))}

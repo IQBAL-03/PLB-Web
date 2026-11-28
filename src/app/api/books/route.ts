@@ -186,3 +186,35 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+// DELETE /api/books?id=... - Delete a book (Staff/Admin)
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID buku wajib disertakan' },
+        { status: 400 }
+      );
+    }
+
+    if (isTiDBConfigured()) {
+      await queryTiDB('DELETE FROM books WHERE id = ?', [id]);
+    }
+
+    memoryDb.books = memoryDb.books.filter((b) => b.id !== id);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Buku berhasil dihapus dari katalog',
+    });
+  } catch (error: any) {
+    console.error('Error deleting book:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Gagal menghapus buku' },
+      { status: 500 }
+    );
+  }
+}

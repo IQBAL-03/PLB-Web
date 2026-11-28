@@ -62,8 +62,11 @@ export default function HomePage() {
     }, 4000);
   };
 
-  // Load persisted local storage or fetch from API on mount
+  // Fetch live data from API on mount with localStorage & starter fallback
   useEffect(() => {
+    let isMounted = true;
+
+    // 1. Initial local load
     if (typeof window !== 'undefined') {
       try {
         const storedBooks = localStorage.getItem('sisperpus_books');
@@ -81,6 +84,41 @@ export default function HomePage() {
         console.error('Error loading stored state:', e);
       }
     }
+
+    // 2. Fetch live data from backend API
+    const loadLiveApiData = async () => {
+      try {
+        const [booksRes, membersRes, reviewsRes, txRes] = await Promise.allSettled([
+          fetch('/api/books', { cache: 'no-store' }).then((r) => r.json()),
+          fetch('/api/members', { cache: 'no-store' }).then((r) => r.json()),
+          fetch('/api/reviews', { cache: 'no-store' }).then((r) => r.json()),
+          fetch('/api/transactions', { cache: 'no-store' }).then((r) => r.json()),
+        ]);
+
+        if (!isMounted) return;
+
+        if (booksRes.status === 'fulfilled' && booksRes.value?.success && Array.isArray(booksRes.value?.data)) {
+          setBooks(booksRes.value.data);
+        }
+        if (membersRes.status === 'fulfilled' && membersRes.value?.success && Array.isArray(membersRes.value?.data)) {
+          setMembers(membersRes.value.data);
+        }
+        if (reviewsRes.status === 'fulfilled' && reviewsRes.value?.success && Array.isArray(reviewsRes.value?.data)) {
+          setReviews(reviewsRes.value.data);
+        }
+        if (txRes.status === 'fulfilled' && txRes.value?.success && Array.isArray(txRes.value?.data)) {
+          setTransactions(txRes.value.data);
+        }
+      } catch (err) {
+        console.warn('API sync warning (using offline cache):', err);
+      }
+    };
+
+    loadLiveApiData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Sync to local storage
@@ -107,150 +145,161 @@ export default function HomePage() {
     );
   }, [transactions]);
 
-  // Handle borrowing a book
-  const handleBorrowBook = (
+  // Handle borrowing a book with API integration
+  const handleBorrowBook = async (
     bookId: string,
     volumeNumber: number | null,
     nis: string,
     studentName: string
   ) => {
-    const today = new Date();
-    const dueDate = new Date();
-    dueDate.setDate(today.getDate() + 7);
+    try {
+      const res = await fetch('/api/transactions/borrow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nis, bookId, volumeNumber }),
+      });
 
-    const targetBook = books.find((b) => b.id === bookId);
-    if (!targetBook) return;
+      const resData = await res.json();
 
-    // Check fine status
-    const targetMember = members.find((m) => m.nis === nis);
-    if (targetMember && targetMember.status === 'Ada Denda') {
-      addToast(
-        'Peminjaman ditolak: Siswa memiliki denda keterlambatan buku yang belum dilunasi di perpustakaan.',
-        'error',
-        'Peminjaman Ditolak'
+      if (!res.ok || !resData.success) {
+        addToast(
+          resData.error || 'Peminjaman ditolak oleh sistem perpustakaan.',
+          'error',
+          'Peminjaman Gagal'
+        );
+        return;
+      }
+
+      const newTx: Transaction = resData.data;
+
+      // Update local state
+      setTransactions((prev) => [newTx, ...prev]);
+
+      setBooks((prev) =>
+        prev.map((b) => {
+          if (b.id !== bookId) return b;
+          let updatedVolumes = b.volumes;
+          if (volumeNumber && b.hasVolumes && b.volumes) {
+            updatedVolumes = b.volumes.map((v) =>
+              v.volumeNumber === volumeNumber
+                ? { ...v, stock: Math.max(0, v.stock - 1) }
+                : v
+            );
+          }
+          return {
+            ...b,
+            stock: Math.max(0, b.stock - 1),
+            borrowCount: (b.borrowCount || 0) + 1,
+            volumes: updatedVolumes,
+          };
+        })
       );
-      return;
+
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.nis === nis ? { ...m, activeLoans: m.activeLoans + 1 } : m
+        )
+      );
+
+      setSelectedBook(null);
+
+      addToast(
+        resData.message || `Buku berhasil dipinjam atas nama ${studentName}. Batas pengembalian: ${newTx.dueDate}.`,
+        'success',
+        'Peminjaman Berhasil!'
+      );
+    } catch (err: any) {
+      console.error('Borrow request error:', err);
+      addToast(
+        'Terjadi kendala saat menghubungkan ke database server.',
+        'error',
+        'Koneksi Gagal'
+      );
     }
-
-    // Create new transaction
-    const newTx: Transaction = {
-      id: `TRX-${Date.now()}`,
-      nis,
-      studentName,
-      classRoom: targetMember?.classRoom || 'XII-PPLG',
-      bookId,
-      bookTitle: targetBook.title,
-      volumeNumber,
-      price: targetBook.price,
-      loanDate: today.toISOString().split('T')[0],
-      dueDate: dueDate.toISOString().split('T')[0],
-      returnDate: null,
-      status: 'Dipinjam',
-      fine: 0,
-      finePaid: true,
-      createdAt: new Date().toISOString(),
-    };
-
-    setTransactions((prev) => [newTx, ...prev]);
-
-    // Update book stock and borrow count
-    setBooks((prev) =>
-      prev.map((b) => {
-        if (b.id !== bookId) return b;
-        let updatedVolumes = b.volumes;
-        if (volumeNumber && b.hasVolumes && b.volumes) {
-          updatedVolumes = b.volumes.map((v) =>
-            v.volumeNumber === volumeNumber
-              ? { ...v, stock: Math.max(0, v.stock - 1) }
-              : v
-          );
-        }
-        return {
-          ...b,
-          stock: Math.max(0, b.stock - 1),
-          borrowCount: (b.borrowCount || 0) + 1,
-          volumes: updatedVolumes,
-        };
-      })
-    );
-
-    // Update member's active loan count
-    setMembers((prev) =>
-      prev.map((m) =>
-        m.nis === nis ? { ...m, activeLoans: m.activeLoans + 1 } : m
-      )
-    );
-
-    setSelectedBook(null);
-
-    addToast(
-      `Buku "${targetBook.title}${volumeNumber ? ` (Vol. ${volumeNumber})` : ''}" berhasil dipinjam atas nama ${studentName}. Batas pengembalian: ${newTx.dueDate}.`,
-      'success',
-      'Peminjaman Berhasil!'
-    );
   };
 
-  // Handle submitting a review
-  const handleSubmitReview = (
+  // Handle submitting a review with API integration
+  const handleSubmitReview = async (
     bookId: string,
     rating: number,
     reviewText: string,
     nis: string,
     studentName: string
   ) => {
-    const newReview: BookReview = {
-      id: `rev-${Date.now()}`,
-      bookId,
-      nis,
-      studentName,
-      rating,
-      reviewText,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookId, rating, reviewText, nis, studentName }),
+      });
 
-    const updatedReviews = [newReview, ...reviews];
-    setReviews(updatedReviews);
+      const resData = await res.json();
 
-    // Recalculate book's rating and reviews count
-    const bookReviews = updatedReviews.filter((r) => r.bookId === bookId);
-    const avgRating =
-      bookReviews.reduce((acc, r) => acc + r.rating, 0) / bookReviews.length;
+      if (!res.ok || !resData.success) {
+        addToast(resData.error || 'Gagal mengirimkan ulasan buku.', 'error', 'Gagal Mengirim');
+        return;
+      }
 
-    setBooks((prev) =>
-      prev.map((b) =>
-        b.id === bookId
-          ? {
-              ...b,
-              rating: Number(avgRating.toFixed(1)),
-              reviewsCount: bookReviews.length,
-            }
-          : b
-      )
-    );
+      const newReview: BookReview = resData.data;
+      const updatedReviews = [newReview, ...reviews];
+      setReviews(updatedReviews);
 
-    addToast(
-      `Terima kasih ${studentName}! Penilaian bintang ${rating}/5 dan ulasan Anda telah disimpan.`,
-      'success',
-      'Ulasan Terkirim'
-    );
+      // Recalculate book average rating
+      const bookReviews = updatedReviews.filter((r) => r.bookId === bookId);
+      const avgRating =
+        bookReviews.reduce((acc, r) => acc + r.rating, 0) / bookReviews.length;
+
+      setBooks((prev) =>
+        prev.map((b) =>
+          b.id === bookId
+            ? {
+                ...b,
+                rating: Number(avgRating.toFixed(1)),
+                reviewsCount: bookReviews.length,
+              }
+            : b
+        )
+      );
+
+      addToast(
+        `Terima kasih ${studentName}! Penilaian bintang ${rating}/5 dan ulasan Anda telah disimpan.`,
+        'success',
+        'Ulasan Terkirim'
+      );
+    } catch (err) {
+      console.error('Review request error:', err);
+      addToast('Terjadi kendala saat menyimpan ulasan ke server.', 'error', 'Koneksi Gagal');
+    }
   };
 
-  // Handle register member
-  const handleRegisterMember = (nis: string, name: string, classRoom: string) => {
-    const newMember: Member = {
-      nis,
-      name,
-      classRoom,
-      activeLoans: 0,
-      status: 'Aktif',
-      createdAt: new Date().toISOString(),
-    };
-    setMembers((prev) => [newMember, ...prev]);
-    addToast(
-      `Pendaftaran anggota dengan NIS ${nis} (${name}) berhasil dibuat dan langsung berstatus Aktif.`,
-      'success',
-      'Anggota Baru Terdaftar'
-    );
+  // Handle register member with API integration
+  const handleRegisterMember = async (nis: string, name: string, classRoom: string) => {
+    try {
+      const res = await fetch('/api/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nis, name, classRoom }),
+      });
+
+      const resData = await res.json();
+
+      if (!res.ok || !resData.success) {
+        addToast(resData.error || 'Gagal mendaftarkan anggota baru.', 'error', 'Pendaftaran Gagal');
+        return;
+      }
+
+      const newMember: Member = resData.data;
+      setMembers((prev) => [newMember, ...prev]);
+
+      addToast(
+        `Pendaftaran anggota dengan NIS ${nis} (${name}) berhasil dibuat dan berstatus ${newMember.status}.`,
+        'success',
+        'Anggota Terdaftar'
+      );
+    } catch (err) {
+      console.error('Member register error:', err);
+      addToast('Terjadi kendala saat mendaftarkan anggota ke server.', 'error', 'Koneksi Gagal');
+    }
   };
 
   const handleOpenCoverPreview = (coverImg: string, title: string) => {

@@ -231,11 +231,10 @@ export default function CatalogSection({
                       e.stopPropagation();
                       onSelectBook(book);
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                      isBorrowed || isOutOfStock
-                        ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
-                        : 'bg-rose-900 hover:bg-rose-950 text-white shadow-xs cursor-pointer'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${isBorrowed || isOutOfStock
+                      ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
+                      : 'bg-rose-900 hover:bg-rose-950 text-white shadow-xs cursor-pointer'
+                      }`}
                   >
                     {isBorrowed ? 'Sudah Dipinjam' : isOutOfStock ? 'Habis' : 'Pinjam Buku'}
                   </button>
