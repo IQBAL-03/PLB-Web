@@ -82,21 +82,26 @@ export default function LibraryProfileSection() {
                 {active.desc}
               </p>
 
-              {/* Exact Operating Hours Highlight (Khusus Slide 2) */}
+              {/* Clean & Elegant Operating Hours Schedule (Khusus Slide 2) */}
               {active.isScheduleSlide && (
-                <div className="bg-black/35 backdrop-blur-xs rounded-xl p-3 border border-amber-400/25 mb-4 max-w-md">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-2">
-                    <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Jadwal Buka Perpustakaan</span>
-                  </div>
-                  <div className="space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between text-stone-200 border-b border-white/10 pb-1.5">
-                      <span className="font-medium text-stone-300">Senin – Kamis</span>
-                      <span className="font-bold text-amber-200">07.00 – 15.00 WIB</span>
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3 max-w-md mb-4">
+                  <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-2.5 sm:p-3 border border-white/15 transition-colors">
+                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-amber-300 mb-1">
+                      <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                      <span>Senin – Kamis</span>
                     </div>
-                    <div className="flex items-center justify-between text-stone-200 pt-0.5">
-                      <span className="font-medium text-stone-300">Jumat</span>
-                      <span className="font-bold text-amber-200">07.00 – 13.15 WIB</span>
+                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                      07.00 – 15.00 <span className="text-[10px] font-normal text-stone-300">WIB</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl p-2.5 sm:p-3 border border-white/15 transition-colors">
+                    <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-amber-300 mb-1">
+                      <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                      <span>Jumat</span>
+                    </div>
+                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                      07.00 – 13.15 <span className="text-[10px] font-normal text-stone-300">WIB</span>
                     </div>
                   </div>
                 </div>
