@@ -9,6 +9,8 @@ import { Transaction } from '@/types/transaction';
 import { starterBooks } from '@/data/starter-books';
 import { starterMembers } from '@/data/starter-members';
 import { starterTransactions } from '@/data/starter-transactions';
+import BookFormModal from '@/components/admin/BookFormModal';
+import BookReviewsModal from '@/components/admin/BookReviewsModal';
 
 type AdminTab = 'dashboard' | 'members' | 'books' | 'report';
 
@@ -22,16 +24,11 @@ export default function AdminPage() {
   const [members, setMembers] = useState<Member[]>(starterMembers);
   const [transactions, setTransactions] = useState<Transaction[]>(starterTransactions);
   const [isLoadingData, setIsLoadingData] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // New book form states
-  const [newBookTitle, setNewBookTitle] = useState('');
-  const [newBookAuthor, setNewBookAuthor] = useState('');
-  const [newBookCategory, setNewBookCategory] = useState('Komik & Manga');
-  const [newBookStock, setNewBookStock] = useState(5);
-  const [newBookShelf, setNewBookShelf] = useState('Rak Utama');
-  const [newBookCover, setNewBookCover] = useState('');
-  const [newBookSynopsis, setNewBookSynopsis] = useState('');
+  // Book modals states
+  const [isBookFormOpen, setIsBookFormOpen] = useState(false);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [reviewsModalBook, setReviewsModalBook] = useState<{ id: string; title: string } | null>(null);
 
   // Fetch live data from backend APIs
   const loadAdminData = async () => {
@@ -199,52 +196,6 @@ export default function AdminPage() {
       setMembers((prev) => prev.filter((m) => m.nis !== nis));
     } catch (err: any) {
       alert(err.message || 'Terjadi kesalahan saat menghapus anggota');
-    }
-  };
-
-  // Add new book (API-connected)
-  const handleAddBook = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newBookTitle.trim() || !newBookAuthor.trim()) return;
-
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        title: newBookTitle.trim(),
-        author: newBookAuthor.trim(),
-        category: newBookCategory,
-        language: 'Bahasa Indonesia',
-        price: 60000,
-        year: new Date().getFullYear().toString(),
-        shelf: newBookShelf,
-        stock: Number(newBookStock),
-        synopsis: newBookSynopsis || 'Sinopsis buku perpustakaan sekolah.',
-        coverImg: newBookCover || '',
-        badge: 'Buku Baru',
-      };
-
-      const res = await fetch('/api/books', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await res.json();
-      if (!result.success) {
-        alert(result.error || 'Gagal menambahkan buku baru');
-        return;
-      }
-
-      alert(`Buku "${payload.title}" berhasil ditambahkan ke katalog perpustakaan!`);
-      setNewBookTitle('');
-      setNewBookAuthor('');
-      setNewBookCover('');
-      setNewBookSynopsis('');
-      await loadAdminData();
-    } catch (err: any) {
-      alert(err.message || 'Terjadi kesalahan saat menyimpan buku');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -744,112 +695,31 @@ export default function AdminPage() {
                   Kelola Koleksi Buku Perpustakaan
                 </h1>
                 <p className="text-xs text-stone-500">
-                  Katalog, volume seri manga, dan ketersediaan stok fisik
+                  Katalog, seri multi-volume beserta sampul, moderasi komentar, dan stok fisik
                 </p>
               </div>
 
-              <input
-                type="text"
-                value={bookSearch}
-                onChange={(e) => setBookSearch(e.target.value)}
-                placeholder="Cari judul, penulis, rak..."
-                className="text-xs px-3.5 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-rose-800 w-64 max-w-full"
-              />
+              <div className="flex flex-wrap items-center gap-2.5">
+                <input
+                  type="text"
+                  value={bookSearch}
+                  onChange={(e) => setBookSearch(e.target.value)}
+                  placeholder="Cari judul, penulis, rak..."
+                  className="text-xs px-3.5 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-1 focus:ring-rose-800 w-56 max-w-full bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingBook(null);
+                    setIsBookFormOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-rose-900 hover:bg-rose-950 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  + Tambah Buku / Series
+                </button>
+              </div>
             </div>
 
-            {/* Add Book Form */}
-            <div className="bg-white rounded-2xl border border-stone-200 shadow-xs p-6">
-              <h3 className="font-serif font-bold text-base text-stone-900 mb-4">
-                Tambah Buku Baru ke Katalog
-              </h3>
-              <form onSubmit={handleAddBook} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Judul Buku</label>
-                  <input
-                    type="text"
-                    value={newBookTitle}
-                    onChange={(e) => setNewBookTitle(e.target.value)}
-                    placeholder="Contoh: Filosofi Kopi"
-                    required
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Penulis</label>
-                  <input
-                    type="text"
-                    value={newBookAuthor}
-                    onChange={(e) => setNewBookAuthor(e.target.value)}
-                    placeholder="Contoh: Dee Lestari"
-                    required
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Kategori</label>
-                  <select
-                    value={newBookCategory}
-                    onChange={(e) => setNewBookCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg bg-white"
-                  >
-                    <option value="Fiksi & Sastra">Fiksi & Sastra</option>
-                    <option value="Komik & Manga">Komik & Manga</option>
-                    <option value="Sains & Teknologi">Sains & Teknologi</option>
-                    <option value="Sejarah & Biografi">Sejarah & Biografi</option>
-                    <option value="Pengembangan Diri">Pengembangan Diri</option>
-                    <option value="Buku Referensi">Buku Referensi</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Stok Eksemplar</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={newBookStock}
-                    onChange={(e) => setNewBookStock(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Lokasi Rak</label>
-                  <input
-                    type="text"
-                    value={newBookShelf}
-                    onChange={(e) => setNewBookShelf(e.target.value)}
-                    placeholder="Contoh: Rak F-01"
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-stone-700 mb-1">URL Sampul (Opsional)</label>
-                  <input
-                    type="url"
-                    value={newBookCover}
-                    onChange={(e) => setNewBookCover(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg"
-                  />
-                </div>
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <label className="block font-semibold text-stone-700 mb-1">Sinopsis</label>
-                  <textarea
-                    rows={2}
-                    value={newBookSynopsis}
-                    onChange={(e) => setNewBookSynopsis(e.target.value)}
-                    placeholder="Deskripsi singkat buku..."
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg"
-                  />
-                </div>
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 bg-rose-900 hover:bg-rose-950 text-white font-semibold rounded-lg transition-colors cursor-pointer"
-                  >
-                    Simpan Buku Baru
-                  </button>
-                </div>
-              </form>
-            </div>
 
             {/* Books Table */}
             <div className="bg-white rounded-2xl border border-stone-200 shadow-xs overflow-hidden">
@@ -858,7 +728,7 @@ export default function AdminPage() {
                   <thead className="bg-stone-50 text-stone-600 font-bold uppercase tracking-wider border-b border-stone-200">
                     <tr>
                       <th className="px-6 py-3">Sampul &amp; Judul</th>
-                      <th className="px-6 py-3">Kategori</th>
+                      <th className="px-6 py-3">Kategori &amp; Tag</th>
                       <th className="px-6 py-3">Penulis</th>
                       <th className="px-6 py-3">Rak</th>
                       <th className="px-6 py-3">Stok</th>
@@ -875,12 +745,26 @@ export default function AdminPage() {
                             alt={b.title}
                             className="w-10 h-14 object-cover rounded shadow-xs shrink-0"
                           />
-                          <div>
+                          <div className="min-w-0">
                             <span className="font-bold text-stone-900 block">{b.title}</span>
-                            <span className="text-[10px] text-stone-400">ID: {b.id}</span>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] font-mono text-stone-400">ID: {b.id}</span>
+                              {b.hasVolumes && b.volumes && b.volumes.length > 0 && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
+                                  Series {b.volumes.length} Vol
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
-                        <td className="px-6 py-3.5 font-medium text-stone-700">{b.category}</td>
+                        <td className="px-6 py-3.5">
+                          <span className="font-medium text-stone-700 block">{b.category}</span>
+                          {b.badge && (
+                            <span className="inline-block mt-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-900 border border-rose-200">
+                              {b.badge}
+                            </span>
+                          )}
+                        </td>
                         <td className="px-6 py-3.5 text-stone-600">{b.author}</td>
                         <td className="px-6 py-3.5 font-medium text-stone-700">{b.shelf}</td>
                         <td className="px-6 py-3.5 font-bold text-stone-900">{b.stock} Eks</td>
@@ -889,13 +773,32 @@ export default function AdminPage() {
                           <span className="text-[10px] text-stone-400 block">({b.reviewsCount} ulasan)</span>
                         </td>
                         <td className="px-6 py-3.5 text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteBook(b.id, b.title)}
-                            className="px-2.5 py-1 text-rose-700 hover:text-rose-900 hover:bg-rose-50 border border-rose-200 rounded text-[11px] font-semibold cursor-pointer transition-colors"
-                          >
-                            Hapus
-                          </button>
+                          <div className="flex flex-wrap items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingBook(b);
+                                setIsBookFormOpen(true);
+                              }}
+                              className="px-2.5 py-1 text-stone-800 hover:bg-stone-200 bg-stone-100 border border-stone-300 rounded text-[11px] font-semibold cursor-pointer transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setReviewsModalBook({ id: b.id, title: b.title })}
+                              className="px-2.5 py-1 text-amber-900 hover:bg-amber-100 bg-amber-50 border border-amber-200 rounded text-[11px] font-semibold cursor-pointer transition-colors"
+                            >
+                              Ulasan ({b.reviewsCount || 0})
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBook(b.id, b.title)}
+                              className="px-2.5 py-1 text-rose-700 hover:text-rose-900 hover:bg-rose-50 border border-rose-200 rounded text-[11px] font-semibold cursor-pointer transition-colors"
+                            >
+                              Hapus
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1027,6 +930,21 @@ export default function AdminPage() {
           <p className="text-[11px] text-stone-400">Sesi Petugas Aktif &bull; SMK Praktik Lintas Bidang</p>
         </div>
       </footer>
+
+      <BookFormModal
+        isOpen={isBookFormOpen}
+        editingBook={editingBook}
+        existingBooks={books}
+        onClose={() => setIsBookFormOpen(false)}
+        onSaved={loadAdminData}
+      />
+
+      <BookReviewsModal
+        bookId={reviewsModalBook?.id ?? null}
+        bookTitle={reviewsModalBook?.title ?? ''}
+        onClose={() => setReviewsModalBook(null)}
+        onMutated={loadAdminData}
+      />
     </div>
   );
 }

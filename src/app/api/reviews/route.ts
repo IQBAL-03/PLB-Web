@@ -126,3 +126,86 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+// DELETE /api/reviews - Remove a review & recalculate book rating
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const body = await req.json().catch(() => ({}));
+    const id = (searchParams.get('id') || body.id || '').trim();
+    const bookId = (searchParams.get('bookId') || body.bookId || '').trim();
+    const nis = (searchParams.get('nis') || body.nis || '').trim();
+
+    if (!id && (!bookId || !nis)) {
+      return NextResponse.json(
+        { success: false, error: 'ID ulasan atau kombinasi bookId & nis wajib disertakan' },
+        { status: 400 }
+      );
+    }
+
+    let resolvedBookId = bookId;
+
+    if (isTiDBConfigured()) {
+      if (!resolvedBookId && id) {
+        const rows = await queryTiDB<any>('SELECT book_id FROM book_reviews WHERE id = ? LIMIT 1', [id]);
+        if (rows && rows.length > 0) {
+          resolvedBookId = String(rows[0].book_id || '');
+        }
+      }
+
+      if (id) {
+        await queryTiDB('DELETE FROM book_reviews WHERE id = ?', [id]);
+      } else {
+        await queryTiDB('DELETE FROM book_reviews WHERE book_id = ? AND nis = ?', [bookId, nis]);
+      }
+
+      if (resolvedBookId) {
+        const stats = await queryTiDB<any>(
+          'SELECT COALESCE(ROUND(AVG(rating), 1), 0) as avg_rating, COUNT(*) as cnt FROM book_reviews WHERE book_id = ?',
+          [resolvedBookId]
+        );
+        const cnt = stats && stats[0] ? Number(stats[0].cnt) || 0 : 0;
+        const avg = cnt > 0 && stats && stats[0] ? Number(stats[0].avg_rating) || 0 : 0;
+        await queryTiDB('UPDATE books SET rating = ?, reviews_count = ? WHERE id = ?', [
+          avg,
+          cnt,
+          resolvedBookId,
+        ]);
+      }
+    }
+
+    if (!resolvedBookId && id) {
+      const target = memoryDb.reviews.find((r) => r.id === id);
+      if (target) resolvedBookId = target.bookId;
+    }
+
+    memoryDb.reviews = memoryDb.reviews.filter((r) => {
+      if (id) return r.id !== id;
+      return !(r.bookId === bookId && r.nis === nis);
+    });
+
+    if (resolvedBookId) {
+      const book = memoryDb.books.find((b) => b.id === resolvedBookId);
+      if (book) {
+        const remaining = memoryDb.reviews.filter((r) => r.bookId === resolvedBookId);
+        const avg =
+          remaining.length > 0
+            ? Number((remaining.reduce((sum, r) => sum + r.rating, 0) / remaining.length).toFixed(1))
+            : 0;
+        book.rating = avg;
+        book.reviewsCount = remaining.length;
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Komentar berhasil dihapus dan rating buku diperbarui.',
+    });
+  } catch (error: any) {
+    console.error('Error deleting review:', error);
+    return NextResponse.json(
+      { success: false, error: error.message || 'Gagal menghapus komentar' },
+      { status: 500 }
+    );
+  }
+}
