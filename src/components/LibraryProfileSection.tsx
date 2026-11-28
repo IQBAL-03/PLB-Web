@@ -22,7 +22,7 @@ export default function LibraryProfileSection() {
       desc: 'Layanan sirkulasi peminjaman, pengembalian buku fisik, dan konsultasi literasi akademik di Gedung Literasi Lt. 2 buka setiap hari sekolah dengan jadwal:',
       btnText: 'TATA CARA PINJAM',
       btnHref: '#panduan',
-      image: 'https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&w=1200&q=80',
+      image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80',
       alt: 'Meja Sirkulasi Perpustakaan',
       isScheduleSlide: true,
     },
@@ -51,14 +51,14 @@ export default function LibraryProfileSection() {
     <section id="profil" className="py-6 sm:py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Outer Card with Sleek Border & Proportional Radius */}
       <div className="relative rounded-3xl shadow-xl overflow-hidden border border-rose-900/30">
-        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[360px] lg:min-h-[380px]">
+        <div className="grid grid-cols-1 md:grid-cols-12 min-h-[360px] md:h-[370px] lg:h-[380px]">
           
           {/* Left Column: Proportional Library Photo */}
-          <div className="md:col-span-6 lg:col-span-7 relative bg-stone-900 overflow-hidden">
+          <div className="md:col-span-6 lg:col-span-7 relative bg-stone-900 overflow-hidden h-52 sm:h-60 md:h-full">
             <img
               src={active.image}
               alt={active.alt}
-              className="w-full h-56 md:h-full object-cover transition-all duration-700 hover:scale-105"
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700 hover:scale-105"
             />
             {/* Subtle Gradient Shadow for depth */}
             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/35 via-transparent to-transparent pointer-events-none" />

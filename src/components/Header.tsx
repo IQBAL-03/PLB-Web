@@ -41,7 +41,7 @@ export default function Header({ onOpenMemberCard, onOpenSearch }: HeaderProps) 
                 Sorotan
               </Link>
               <Link href="#panduan" className="hover:text-rose-900 transition-colors py-1">
-                Tata Cara
+                Panduan
               </Link>
               <Link href="#profil" className="hover:text-rose-900 transition-colors py-1">
                 Profil
