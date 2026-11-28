@@ -3,6 +3,7 @@
 import React from 'react';
 import { Book } from '@/types/book';
 import { SpotlightResult } from '@/lib/spotlight';
+import { Star, Calendar } from 'lucide-react';
 
 interface SpotlightSectionProps {
   spotlight: SpotlightResult | null;
@@ -22,6 +23,9 @@ export default function SpotlightSection({
   const { book, reasonBadge, reasonDetail, weekLabel } = spotlight;
   const ratingScore = (Number(book.rating) || 0).toFixed(1);
   const reviewsCount = book.reviewsCount || 0;
+  const highlightLabel = reasonDetail.includes('•')
+    ? reasonDetail.split('•')[1]?.trim()
+    : reasonDetail;
 
   return (
     <section id="sorotan" className="py-10 sm:py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,9 +59,7 @@ export default function SpotlightSection({
 
               {/* Gold star rating badge on bottom-right of cover */}
               <div className="absolute -bottom-3 -right-3 bg-amber-500 text-stone-950 px-3 py-1 rounded-full font-extrabold text-xs shadow-lg flex items-center gap-1 border-2 border-white">
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
+                <Star className="w-3.5 h-3.5 fill-current text-stone-950" />
                 <span>{ratingScore}</span>
               </div>
             </div>
@@ -65,23 +67,47 @@ export default function SpotlightSection({
 
           {/* Book details */}
           <div className="md:col-span-7 lg:col-span-8 flex flex-col justify-center">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="bg-amber-500/20 text-amber-200 border border-amber-200/30 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-xs">
-                {reasonBadge}
+            {/* Top Badges & Timing */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-3.5">
+              <span className="bg-amber-400 text-stone-950 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                <Star className="w-3 h-3 fill-current text-stone-950" />
+                <span>{reasonBadge}</span>
               </span>
-              <span className="text-rose-200 text-xs font-medium">{weekLabel} • {book.category}</span>
+              <span className="bg-white/10 text-white border border-white/20 text-[10px] sm:text-xs font-medium px-3 py-1 rounded-full backdrop-blur-xs">
+                {book.category}
+              </span>
+              <span className="text-rose-200/90 text-xs font-medium flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 text-amber-300/80" />
+                <span>{weekLabel}</span>
+              </span>
             </div>
 
             <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight mb-2 text-white">
               {book.title}
             </h2>
 
-            <p className="text-amber-100 font-medium text-sm sm:text-base mb-1">
-              Karya {book.author} &bull; Tahun {book.year}
-            </p>
+            {/* Author & Release Year info */}
+            <div className="flex items-center gap-2 text-rose-100/90 text-xs sm:text-sm mb-3">
+              <span className="font-medium">Karya {book.author}</span>
+              <span>&bull;</span>
+              <span className="text-rose-200/80">Tahun {book.year}</span>
+            </div>
 
-            <div className="text-amber-300 text-xs sm:text-sm font-semibold mb-4">
-              {reasonDetail}
+            {/* Clean Highlight Rating Banner */}
+            <div className="inline-flex items-center gap-2.5 sm:gap-3 bg-white/10 border border-white/15 px-3.5 py-1.5 rounded-xl backdrop-blur-xs mb-4 w-fit">
+              <div className="flex items-center gap-1.5">
+                <div className="flex text-amber-400 gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <span className="font-bold text-white text-xs sm:text-sm ml-1">{ratingScore}</span>
+                <span className="text-rose-200/70 text-xs">/ 5.0</span>
+              </div>
+              <span className="w-1 h-1 rounded-full bg-rose-400/80" />
+              <span className="text-amber-300 font-semibold text-xs">
+                {highlightLabel}
+              </span>
             </div>
 
             <p className="text-stone-200 text-xs sm:text-sm leading-relaxed mb-6 max-w-2xl line-clamp-4 whitespace-pre-line">
@@ -107,7 +133,7 @@ export default function SpotlightSection({
               <button
                 type="button"
                 onClick={() => onSelectBook(book)}
-                className="px-6 py-3 rounded-lg bg-rose-900 hover:bg-rose-950 text-white font-semibold text-sm transition-colors shadow-md cursor-pointer border border-rose-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="px-6 py-3 rounded-xl bg-rose-900 hover:bg-rose-950 text-white font-bold text-sm transition-all shadow-md cursor-pointer border border-rose-700/80 focus:outline-none focus:ring-2 focus:ring-amber-400 active:scale-95"
               >
                 Pinjam Buku Ini Sekarang
               </button>
