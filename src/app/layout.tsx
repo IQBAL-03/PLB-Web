@@ -30,8 +30,12 @@ export default function RootLayout({
     <html
       lang="id"
       className={`${plusJakartaSans.variable} ${merriweather.variable} scroll-smooth`}
+      suppressHydrationWarning
     >
-      <body className="bg-[#F6F2EA] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-900 selection:text-white">
+      <body
+        className="bg-[#F6F2EA] text-stone-800 font-sans antialiased min-h-screen flex flex-col selection:bg-rose-900 selection:text-white"
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>
