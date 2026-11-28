@@ -76,15 +76,17 @@ export default function LibraryProfileSection() {
                 {active.title}
               </h2>
 
-              <p className="text-xs sm:text-[13px] text-stone-200 leading-relaxed font-normal mb-3 max-w-md">
+              <p className={`text-xs sm:text-[13px] text-stone-200 leading-relaxed font-normal max-w-md ${
+                active.isScheduleSlide ? 'mb-3' : 'mb-6 sm:mb-8'
+              }`}>
                 {active.desc}
               </p>
 
-              {/* Exact Operating Hours Highlight */}
-              {active.isScheduleSlide ? (
+              {/* Exact Operating Hours Highlight (Khusus Slide 2) */}
+              {active.isScheduleSlide && (
                 <div className="bg-black/35 backdrop-blur-xs rounded-xl p-3 border border-amber-400/25 mb-4 max-w-md">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-2">
-                    <Clock className="w-3.5 h-3.5" />
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
                     <span>Jadwal Buka Perpustakaan</span>
                   </div>
                   <div className="space-y-1.5 text-xs">
@@ -97,11 +99,6 @@ export default function LibraryProfileSection() {
                       <span className="font-bold text-amber-200">07.00 – 13.15 WIB</span>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="inline-flex items-center gap-2 bg-black/25 backdrop-blur-xs border border-white/15 px-3 py-1.5 rounded-lg text-xs mb-4 text-amber-200">
-                  <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span className="font-medium">Senin–Kamis 07.00–15.00 • Jumat 07.00–13.15 WIB</span>
                 </div>
               )}
 
