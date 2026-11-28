@@ -41,13 +41,13 @@ export default function HeroSection({
     <section id="beranda" className="pt-8 sm:pt-12 pb-10 sm:pb-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl p-6 sm:p-10 lg:p-12 shadow-sm border border-stone-200/90 relative overflow-hidden">
-          
+
           {/* Subtle Ambient Background Accents */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-100/40 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
           <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-rose-50/60 rounded-full blur-3xl pointer-events-none" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
-            
+
             {/* Left Column: Heading, OPAC Search & Fast Filters */}
             <div className="lg:col-span-7 flex flex-col">
               <div className="inline-flex items-center gap-2 mb-3.5 flex-wrap">
@@ -128,7 +128,7 @@ export default function HeroSection({
             {/* Right Column: 3D Aesthetic Real Books Showcase */}
             <div className="lg:col-span-5 flex justify-center py-4 lg:py-0">
               <div className="relative w-full max-w-md flex items-center justify-center">
-                
+
                 {/* Floating Badge: Koleksi Populer */}
                 <div className="absolute -top-3 left-4 z-20 bg-rose-950 text-amber-300 text-[10px] font-bold px-3 py-1 rounded-full shadow-md border border-amber-400/30 backdrop-blur-xs flex items-center gap-1.5 animate-pulse">
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -162,7 +162,7 @@ export default function HeroSection({
                     alt="Sampul Seporsi Mie Ayam Sebelum Mati"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
-                  
+
                   {/* Rating badge on cover */}
                   <div className="absolute top-2 right-2 bg-stone-900/85 backdrop-blur-xs text-amber-400 font-bold text-[10px] px-2 py-0.5 rounded shadow-sm">
                     ★ 5.0
