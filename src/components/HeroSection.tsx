@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import { Search, Sparkles, BookOpen, ShieldCheck } from 'lucide-react';
 
 interface HeroSectionProps {
   searchQuery: string;
@@ -30,61 +30,84 @@ export default function HeroSection({
     }
   };
 
+  const handleBookClick = () => {
+    const catalogElem = document.getElementById('katalog');
+    if (catalogElem) {
+      catalogElem.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <section id="beranda" className="pt-8 sm:pt-12 pb-12 sm:pb-16">
+    <section id="beranda" className="pt-8 sm:pt-12 pb-10 sm:pb-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-12 shadow-sm border border-stone-200 relative overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="bg-white rounded-3xl p-6 sm:p-10 lg:p-12 shadow-sm border border-stone-200/90 relative overflow-hidden">
+          
+          {/* Subtle Ambient Background Accents */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-100/40 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-rose-50/60 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
+            
+            {/* Left Column: Heading, OPAC Search & Fast Filters */}
             <div className="lg:col-span-7 flex flex-col">
-              <div className="inline-flex items-center gap-2 mb-3">
-                <span className="text-[11px] sm:text-xs font-bold text-rose-900 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full uppercase tracking-wider">
-                  Sistem Perpustakaan Sekolah
+              <div className="inline-flex items-center gap-2 mb-3.5 flex-wrap">
+                <span className="text-[11px] sm:text-xs font-bold text-amber-300 bg-rose-950 px-3 py-1 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                  <span>Sistem Perpustakaan Sekolah</span>
                 </span>
-                <span className="text-xs text-stone-500 font-medium">Koleksi Terverifikasi</span>
+                <span className="text-xs text-stone-500 font-semibold flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Koleksi Fisik Terverifikasi</span>
+                </span>
               </div>
+
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 tracking-tight leading-tight mb-4">
                 Temukan Cerita &amp; Ilmu Favoritmu
               </h1>
-              <p className="text-stone-600 text-sm sm:text-base leading-relaxed mb-8 max-w-xl">
-                Jelajahi ribuan koleksi buku sastra, sains, ensiklopedia, dan buku pelajaran sekolah. Pinjam buku dengan mudah menggunakan Nomor Induk Siswa.
+
+              <p className="text-stone-600 text-sm sm:text-base leading-relaxed mb-7 max-w-xl">
+                Jelajahi ribuan koleksi sastra, sains, ensiklopedia akademik, dan serial manga edukatif. Pinjam buku dengan mudah dan cepat menggunakan Nomor Induk Siswa (NIS).
               </p>
 
+              {/* Modern OPAC Search Bar */}
               <form
                 onSubmit={handleSearchSubmit}
-                className="bg-stone-50 border border-stone-300 rounded-xl p-2 sm:p-2.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-xs mb-6"
+                className="bg-stone-50 hover:bg-white focus-within:bg-white border-2 border-stone-300 focus-within:border-rose-900 rounded-2xl p-2 sm:p-2.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-xs transition-all mb-6"
               >
-                <div className="flex items-center gap-2.5 flex-grow px-3 py-1">
-                  <svg
-                    className="w-5 h-5 text-stone-400 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                <div className="flex items-center gap-3 flex-grow px-3 py-1">
+                  <Search className="w-5 h-5 text-stone-400 shrink-0" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    placeholder="Cari judul buku, pengarang, atau topik..."
-                    className="w-full text-xs sm:text-sm bg-transparent border-none text-stone-900 placeholder-stone-400 focus:outline-none"
+                    placeholder="Cari judul buku, pengarang, manga, atau topik..."
+                    className="w-full text-xs sm:text-sm bg-transparent border-none text-stone-900 placeholder-stone-400 focus:outline-none font-medium"
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => onSearchChange('')}
+                      className="text-stone-400 hover:text-stone-700 text-xs font-bold px-1.5 py-0.5 rounded-full hover:bg-stone-200"
+                    >
+                      &times;
+                    </button>
+                  )}
                 </div>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-lg bg-rose-900 hover:bg-rose-950 text-white font-semibold text-xs sm:text-sm transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-800 shrink-0"
+                  className="px-6 py-3 rounded-xl bg-rose-900 hover:bg-rose-950 text-white font-bold text-xs sm:text-sm transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-rose-800 shrink-0 cursor-pointer flex items-center justify-center gap-2"
                 >
-                  Cari Buku
+                  <Search className="w-4 h-4 text-amber-300" />
+                  <span>Cari Buku</span>
                 </button>
               </form>
 
+              {/* Quick Filter Pills */}
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="text-stone-500 font-medium">Pilihan Cepat:</span>
+                <span className="text-stone-500 font-semibold flex items-center gap-1">
+                  <BookOpen className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Pilihan Cepat:</span>
+                </span>
                 {quickFilters.map((category) => (
                   <button
                     key={category}
@@ -94,39 +117,88 @@ export default function HeroSection({
                       const catElem = document.getElementById('katalog');
                       if (catElem) catElem.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="px-3 py-1 rounded-full bg-stone-100 hover:bg-rose-900 hover:text-white text-stone-700 font-medium transition-colors cursor-pointer focus:outline-none"
+                    className="px-3.5 py-1.5 rounded-full bg-stone-100 hover:bg-rose-900 hover:text-white text-stone-700 font-semibold transition-all cursor-pointer border border-stone-200/80 shadow-2xs hover:shadow-xs active:scale-95"
                   >
-                    {category === 'Sains & Teknologi' ? 'Sains & Astronomi' : category === 'Sejarah & Biografi' ? 'Sejarah Tokoh' : category}
+                    {category}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-full max-w-sm flex items-center justify-center p-4">
-                <div className="w-36 sm:w-44 aspect-[3/4] rounded-lg overflow-hidden shadow-md transform -rotate-6 translate-y-3 border-2 border-white relative">
-                  <img
-                    src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80"
-                    alt="Buku Novel Klasik"
-                    className="w-full h-full object-cover"
-                  />
+            {/* Right Column: 3D Aesthetic Real Books Showcase */}
+            <div className="lg:col-span-5 flex justify-center py-4 lg:py-0">
+              <div className="relative w-full max-w-md flex items-center justify-center">
+                
+                {/* Floating Badge: Koleksi Populer */}
+                <div className="absolute -top-3 left-4 z-20 bg-rose-950 text-amber-300 text-[10px] font-bold px-3 py-1 rounded-full shadow-md border border-amber-400/30 backdrop-blur-xs flex items-center gap-1.5 animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span>Koleksi Unggulan Siswa</span>
                 </div>
-                <div className="w-40 sm:w-48 aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transform z-10 border-2 border-white -mx-8 relative">
+
+                {/* Left Book: Look Back (3D Tilted) */}
+                <div
+                  onClick={handleBookClick}
+                  className="w-32 sm:w-40 aspect-[3/4] rounded-xl overflow-hidden shadow-xl transform -rotate-12 translate-y-4 hover:-translate-y-2 hover:-rotate-6 transition-all duration-300 border-2 border-white cursor-pointer relative bg-stone-900 group"
+                  title="Klik untuk melihat di katalog: Look Back"
+                >
                   <img
-                    src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80"
-                    alt="Buku Sastra Pilihan"
-                    className="w-full h-full object-cover"
+                    src="https://res.cloudinary.com/tla0kvyw/image/upload/v1795280539/sisperpus/covers/cz2u1ghpk1jwmw1f3raz.png"
+                    alt="Sampul Look Back"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                    <span className="text-[10px] font-bold text-white leading-tight">Look Back</span>
+                  </div>
                 </div>
-                <div className="w-36 sm:w-44 aspect-[3/4] rounded-lg overflow-hidden shadow-md transform rotate-6 translate-y-3 border-2 border-white relative">
+
+                {/* Center Main Book: Seporsi Mie Ayam Sebelum Mati (Standing Tall & Prominent) */}
+                <div
+                  onClick={handleBookClick}
+                  className="w-40 sm:w-48 aspect-[3/4] rounded-xl overflow-hidden shadow-2xl transform z-10 hover:-translate-y-3 hover:scale-105 transition-all duration-300 border-3 border-amber-300/40 -mx-6 relative bg-stone-900 cursor-pointer group"
+                  title="Klik untuk melihat di katalog: Seporsi Mie Ayam Sebelum Mati"
+                >
                   <img
-                    src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80"
-                    alt="Buku Inspirasi Pelajar"
-                    className="w-full h-full object-cover"
+                    src="https://res.cloudinary.com/tla0kvyw/image/upload/v1795421943/sisperpus/covers/inej87lksstjuvr8u97c.jpg"
+                    alt="Sampul Seporsi Mie Ayam Sebelum Mati"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
+                  
+                  {/* Rating badge on cover */}
+                  <div className="absolute top-2 right-2 bg-stone-900/85 backdrop-blur-xs text-amber-400 font-bold text-[10px] px-2 py-0.5 rounded shadow-sm">
+                    ★ 5.0
+                  </div>
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2.5">
+                    <span className="text-[10px] font-bold text-amber-300">Fiksi &amp; Sastra</span>
+                    <span className="text-xs font-bold text-white leading-tight">Seporsi Mie Ayam...</span>
+                  </div>
                 </div>
+
+                {/* Right Book: Girl's Last Tour (3D Tilted Right) */}
+                <div
+                  onClick={handleBookClick}
+                  className="w-32 sm:w-40 aspect-[3/4] rounded-xl overflow-hidden shadow-xl transform rotate-12 translate-y-4 hover:-translate-y-2 hover:rotate-6 transition-all duration-300 border-2 border-white cursor-pointer relative bg-stone-900 group"
+                  title="Klik untuk melihat di katalog: Girl's Last Tour"
+                >
+                  <img
+                    src="https://res.cloudinary.com/tla0kvyw/image/upload/v1795618570/sisperpus/covers/q4zacx2i0axolglffjyu.avif"
+                    alt="Sampul Girl's Last Tour"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                    <span className="text-[10px] font-bold text-white leading-tight">Girl&apos;s Last Tour</span>
+                  </div>
+                </div>
+
+                {/* Floating Bottom Info Pill */}
+                <div className="absolute -bottom-4 z-20 bg-white/95 text-stone-800 text-[11px] font-bold px-3.5 py-1.5 rounded-full shadow-lg border border-stone-200 backdrop-blur-xs flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>Buku Siap Dipinjam Hari Ini</span>
+                </div>
+
               </div>
             </div>
+
           </div>
         </div>
       </div>
