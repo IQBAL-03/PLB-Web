@@ -126,6 +126,11 @@ export default function BookModal({
     }
   };
 
+  const handleQuickFillNis = (nis: string) => {
+    const fakeEvent = { target: { value: nis } } as React.ChangeEvent<HTMLInputElement>;
+    handleNisChange(fakeEvent);
+  };
+
   const handleBorrowSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!borrowerNis || !borrowerName) return;
@@ -388,6 +393,16 @@ export default function BookModal({
                             placeholder="Ketik NIS Anda (Contoh: 20261001)"
                             required
                           />
+                          <div className="flex items-center gap-1.5 flex-wrap mt-1.5 text-[11px]">
+                            <span className="text-stone-500 font-medium">Uji Cepat (1-Klik):</span>
+                            <button
+                              type="button"
+                              onClick={() => handleQuickFillNis('20261001')}
+                              className="bg-stone-100 hover:bg-rose-100 text-stone-700 hover:text-rose-900 border border-stone-200 px-2 py-0.5 rounded cursor-pointer transition-colors font-medium"
+                            >
+                              20261001 (Ahmad Pratama - Aktif)
+                            </button>
+                          </div>
                           {nisStatusMessage.text && (
                             <div
                               className={`mt-1.5 text-xs p-2.5 rounded-lg font-medium flex flex-wrap items-center justify-between gap-1.5 ${

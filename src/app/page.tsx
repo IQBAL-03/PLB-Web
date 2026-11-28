@@ -355,8 +355,18 @@ export default function HomePage() {
           onPreviewCover={handleOpenCoverPreview}
         />
 
-        {/* 4 Steps Borrowing Guide (Option A - Polished) */}
-        <BorrowingGuideSection />
+        {/* 4 Steps Borrowing Guide (Option A - Polished & Interactive) */}
+        <BorrowingGuideSection
+          onOpenMemberCard={() => setIsMemberCardOpen(true)}
+          onExploreCatalog={() => {
+            const el = document.getElementById('katalog');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          onViewProfile={() => {
+            const el = document.getElementById('profil');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+        />
 
         {/* School Profile & 4 Facilities (Option A - Theme Matched) */}
         <LibraryProfileSection />

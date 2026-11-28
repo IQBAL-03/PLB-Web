@@ -1,33 +1,56 @@
 'use client';
 
 import React from 'react';
-import { BookOpen, UserCheck, MapPin, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { BookOpen, UserCheck, MapPin, Clock, ArrowRight } from 'lucide-react';
 
-export default function BorrowingGuideSection() {
+interface BorrowingGuideSectionProps {
+  onOpenMemberCard?: () => void;
+  onExploreCatalog?: () => void;
+  onViewProfile?: () => void;
+}
+
+export default function BorrowingGuideSection({
+  onOpenMemberCard,
+  onExploreCatalog,
+  onViewProfile,
+}: BorrowingGuideSectionProps) {
+  const handleScrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const steps = [
     {
       step: '01',
       title: 'Pilih Koleksi Buku',
       desc: 'Jelajahi ribuan buku dan seri manga di katalog. Klik pada kartu buku untuk memeriksa sisa stok atau memilih nomor volume yang diinginkan.',
       icon: BookOpen,
+      actionText: 'Buka Katalog Buku',
+      onClick: onExploreCatalog || (() => handleScrollTo('katalog')),
     },
     {
       step: '02',
       title: 'Masukkan NIS Siswa',
       desc: 'Ketik Nomor Induk Siswa Anda. Sistem otomatis memvalidasi kartu anggota yang aktif dan memastikan tidak ada denda tertunggak.',
       icon: UserCheck,
+      actionText: 'Cek / Daftar Kartu',
+      onClick: onOpenMemberCard || (() => handleScrollTo('katalog')),
     },
     {
       step: '03',
       title: 'Ambil Fisik di Lt. 2',
       desc: 'Datang ke meja sirkulasi perpustakaan di Gedung Literasi Lantai 2. Tunjukkan NIS ke petugas pustakawan untuk serah terima buku fisik.',
       icon: MapPin,
+      actionText: 'Lihat Info Gedung',
+      onClick: onViewProfile || (() => handleScrollTo('profil')),
     },
     {
       step: '04',
       title: '7 Hari & Bebas Denda',
       desc: 'Maksimal waktu pinjam adalah 7 hari kerja (maksimal 2 buku). Kembalikan tepat waktu agar tetap bebas denda Rp 1.000 / hari.',
       icon: Clock,
+      actionText: 'Mulai Pinjam',
+      onClick: onExploreCatalog || (() => handleScrollTo('katalog')),
     },
   ];
 
@@ -45,14 +68,16 @@ export default function BorrowingGuideSection() {
           </p>
         </div>
 
-        {/* 4 Steps Grid: Polos, Solid Default (Tidak Fading), dengan Efek Hover Halus */}
+        {/* 4 Steps Grid: Interactive & Clickable with Smooth Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {steps.map((item, index) => {
             const Icon = item.icon;
             return (
               <div
                 key={item.step}
-                className="group bg-stone-50/60 rounded-2xl p-6 border-2 border-stone-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1.5 hover:border-rose-900/40 hover:bg-white transition-all duration-300 flex flex-col justify-between"
+                onClick={item.onClick}
+                className="group bg-stone-50/60 rounded-2xl p-6 border-2 border-stone-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-rose-900/40 hover:bg-white transition-all duration-300 flex flex-col justify-between cursor-pointer"
+                title={`Klik untuk: ${item.actionText}`}
               >
                 <div>
                   {/* Step Top Bar: Solid Crisp Number and Icon */}
@@ -69,23 +94,21 @@ export default function BorrowingGuideSection() {
                     </div>
                   </div>
 
-                  {/* Title (Polos tanpa badge kuning) */}
-                  <h3 className="font-serif font-bold text-base sm:text-lg text-stone-900 mb-2">
+                  {/* Title */}
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-stone-900 mb-2 group-hover:text-rose-900 transition-colors">
                     {item.title}
                   </h3>
 
-                  {/* Description: Solid & Jelas */}
+                  {/* Description */}
                   <p className="text-xs sm:text-[13px] text-stone-600 leading-relaxed font-normal">
                     {item.desc}
                   </p>
                 </div>
 
-                {/* Footer Indicator: Interaktif saat di-hover */}
-                <div className="mt-6 pt-3.5 border-t border-stone-200 flex items-center justify-between text-xs font-semibold text-stone-500">
-                  <span>Langkah {item.step} dari 04</span>
-                  {index < steps.length - 1 && (
-                    <ArrowRight className="w-4 h-4 text-rose-800 group-hover:translate-x-1.5 group-hover:text-rose-950 transition-all duration-300" />
-                  )}
+                {/* Footer Indicator with Action Label */}
+                <div className="mt-6 pt-3.5 border-t border-stone-200 flex items-center justify-between text-xs font-semibold text-stone-500 group-hover:text-rose-900 transition-colors">
+                  <span>{item.actionText}</span>
+                  <ArrowRight className="w-4 h-4 text-rose-800 group-hover:translate-x-1.5 group-hover:text-rose-950 transition-all duration-300" />
                 </div>
               </div>
             );
